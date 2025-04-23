@@ -1,8 +1,21 @@
 <script setup lang="ts">
-import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
+import EditTaskModal from '@/components/EditTaskModal.vue';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { Check, EllipsisVertical } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -10,26 +23,237 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/tasks',
     },
 ];
+
+const props = defineProps({
+    tasks: Array,
+});
+
+const showCreateModal = ref(false);
+
+const form = useForm({
+    title: '',
+    description: '',
+});
+
+const submit = () => {
+    form.post(route('tasks.store'), {
+        onSuccess: () => {
+            form.reset();
+        },
+    });
+
+    showCreateModal.value = false;
+};
+
+const activeMenu = ref(null);
+const menuRef = ref(null);
+
+const toggleMenu = (taskId) => {
+    activeMenu.value = activeMenu.value === taskId ? null : taskId;
+};
+
+const selectedTask = ref(null);
+const showEditModal = ref(false && selectedTask.value != null);
+
+const closeEditModal = () => {
+    showEditModal.value = false;
+};
+
+const editTask = (task) => {
+    activeMenu.value = null;
+    selectedTask.value = task;
+    showEditModal.value = true;
+};
+
+const completed = computed(() => props.tasks.filter((t) => t.done).length);
+const total = computed(() => props.tasks.length);
+const percent = computed(() => (total.value ? Math.round((completed.value / total.value) * 100) : 0));
+
+const updateTask = (task, updates) => {
+    router.put(route('tasks.update', task.id), updates, {
+        preserveScroll: true,
+        onSuccess: (page) => {
+            const updatedTask = page.props.tasks.find((t) => t.id === task.id);
+
+            if (updatedTask) {
+                task.title = updatedTask.title;
+                task.done = updatedTask.done;
+            }
+        },
+        onError: (errors) => {
+            console.log('Erro ao atualizar tarefa:', errors);
+        },
+    });
+};
+
+const deleteTask = (taskId) => {
+    router.delete(route('tasks.delete', taskId), {
+        preserveScroll: true,
+        onSuccess: () => closeModal(),
+        onError: (errors) => {
+            console.log('Erro ao atualizar tarefa:', errors);
+        },
+    });
+};
+
+const closeModal = () => {};
 </script>
 
 <template>
     <Head title="Daily Tasks" />
 
+    <EditTaskModal :task="selectedTask" v-if="showEditModal" @close="closeEditModal" />
+
+    <!-- create modal -->
+    <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-end">
+        <div class="absolute inset-0 bg-black opacity-60" @click="showCreateModal = false"></div>
+        <div
+            class="border-sidebar-border/70 dark:border-sidebar-border bg-background relative z-50 h-screen w-4/5 rounded-l-xl rounded-bl-xl border md:w-2/5"
+        >
+            <div class="p-5">
+                <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100">Create Task</h2>
+                <!-- <p class="text-gray-800 dark:text-gray-100">Este texto é escuro no tema claro e claro no tema escuro.</p> -->
+
+                <form @submit.prevent="submit" class="space-y-4">
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Título</label>
+                        <input
+                            id="title"
+                            v-model="form.title"
+                            type="text"
+                            class="border-sidebar-border/70 dark:border-sidebar-border bg-background mt-1 block w-full rounded border p-2 dark:text-white"
+                        />
+                        <p v-if="form.errors.title" class="mt-1 text-sm text-red-500">{{ form.errors.title }}</p>
+                    </div>
+
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Descrição</label>
+                        <textarea
+                            id="description"
+                            v-model="form.description"
+                            class="border-sidebar-border/70 dark:border-sidebar-border bg-background mt-1 block w-full rounded border p-2 dark:text-white"
+                        />
+                        <p v-if="form.errors.description" class="mt-1 text-sm text-red-500">{{ form.errors.description }}</p>
+                    </div>
+
+                    <button
+                        type="submit"
+                        :disabled="form.processing"
+                        class="rounded bg-indigo-600 px-4 py-2 text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                    >
+                        {{ form.processing ? 'Salvando...' : 'Salvar' }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- create modal -->
+
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div class="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-                    <PlaceholderPattern />
+            <div class="flex justify-between">
+                <!-- progress -->
+                <div class="w-full max-w-md">
+                    <div class="w-full max-w-md" v-if="tasks.length > 0">
+                        <div class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Progress: {{ percent }}%</div>
+
+                        <div class="h-4 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                            <div class="h-full bg-green-500 transition-all duration-300 ease-in-out" :style="{ width: `${percent}%` }" />
+                        </div>
+                    </div>
                 </div>
-                <div class="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-                    <PlaceholderPattern />
-                </div>
-                <div class="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-                    <PlaceholderPattern />
-                </div>
+
+                <button
+                    class="inline-flex items-center rounded-xl bg-indigo-600 px-6 py-2.5 font-semibold text-white shadow-md transition-all duration-300 hover:bg-indigo-700 hover:shadow-lg focus:ring-4 focus:ring-indigo-300 focus:outline-none dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-indigo-600"
+                    @click="showCreateModal = !showCreateModal"
+                >
+                    Create
+                </button>
             </div>
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
-                <PlaceholderPattern />
+                <div class="p-5">
+                    <!-- tasks -->
+                    <div v-if="tasks.length > 0">
+                        <ul class="space-y-2 divide-y">
+                            <li v-for="task in tasks" :key="task.id" class="flex flex-wrap items-center justify-between p-4">
+                                <div class="flex flex-wrap gap-4">
+                                    <label class="group inline-flex cursor-pointer items-center">
+                                        <input
+                                            type="checkbox"
+                                            :checked="task.done"
+                                            @change="updateTask(task, { done: !task.done })"
+                                            class="peer sr-only"
+                                        />
+                                        <div
+                                            class="flex h-5 w-5 items-center justify-center rounded border-2 border-gray-300 transition-colors duration-300 peer-checked:border-green-600 peer-checked:bg-green-600"
+                                        >
+                                            <Check v-if="task.done" class="h-4 w-4 text-white" />
+                                        </div>
+                                    </label>
+
+                                    <div :class="['text-gray-700 dark:text-gray-300', { 'line-through': task.done }]">
+                                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ task.title }}</h2>
+                                        <p class="text-gray-700 dark:text-gray-300">{{ task.description }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="relative inline-block text-left">
+                                    <button @click="toggleMenu(task.id)" class="p-2">
+                                        <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
+                                    </button>
+
+                                    <div
+                                        v-if="activeMenu === task.id"
+                                        ref="menuRef"
+                                        class="bg-sidebar absolute right-2 z-50 mt-2 w-40 overflow-hidden rounded shadow"
+                                    >
+                                        <button
+                                            @click="editTask(task)"
+                                            class="dark:hover:bg-muted block w-full px-4 py-2 text-left hover:bg-gray-100"
+                                        >
+                                            Editar
+                                        </button>
+
+                                        <Dialog>
+                                            <DialogTrigger as-child>
+                                                <div
+                                                    class="block w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                                    variant="destructive"
+                                                >
+                                                    Delete
+                                                </div>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <form class="space-y-6" @submit.prevent="deleteTask(task.id)">
+                                                    <DialogHeader class="space-y-3">
+                                                        <DialogTitle>Are you sure you want to delete ths task?</DialogTitle>
+                                                        <DialogDescription>
+                                                            Once your task is deleted there is no way of recover it back.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+
+                                                    <DialogFooter class="gap-2">
+                                                        <DialogClose as-child>
+                                                            <Button variant="secondary" @click="closeModal"> Cancel </Button>
+                                                        </DialogClose>
+
+                                                        <Button variant="destructive" :disabled="form.processing">
+                                                            <button type="submit">Delete task</button>
+                                                        </Button>
+                                                    </DialogFooter>
+                                                </form>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div v-else>
+                        <p class="text-gray-800 dark:text-gray-100">There are no tasks yet!</p>
+                    </div>
+                </div>
+                <!-- <PlaceholderPattern /> -->
             </div>
         </div>
     </AppLayout>
