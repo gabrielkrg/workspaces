@@ -31,7 +31,7 @@ const closeEditModal = () => {
     <div class="fixed inset-0 z-50 flex items-center justify-end">
         <div class="absolute inset-0 bg-black opacity-60" @click="closeEditModal"></div>
         <div
-            class="border-sidebar-border/70 dark:border-sidebar-border bg-background relative z-50 h-screen w-4/5 rounded-l-xl rounded-bl-xl border md:w-2/5"
+            class="border-sidebar-border/70 dark:border-sidebar-border bg-background relative z-50 h-full w-4/5 rounded-l-xl rounded-bl-xl border md:w-2/5"
         >
             <div class="p-5">
                 <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100">Edit Task</h2>

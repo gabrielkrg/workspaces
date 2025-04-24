@@ -108,7 +108,7 @@ const closeModal = () => {};
     <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-end">
         <div class="absolute inset-0 bg-black opacity-60" @click="showCreateModal = false"></div>
         <div
-            class="border-sidebar-border/70 dark:border-sidebar-border bg-background relative z-50 h-screen w-4/5 rounded-l-xl rounded-bl-xl border md:w-2/5"
+            class="border-sidebar-border/70 dark:border-sidebar-border bg-background relative z-50 h-full w-4/5 rounded-l-xl rounded-bl-xl border md:w-2/5"
         >
             <div class="p-5">
                 <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100">Create Task</h2>
@@ -157,7 +157,7 @@ const closeModal = () => {};
                     <div class="w-full max-w-md" v-if="tasks.length > 0">
                         <div class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Progress: {{ percent }}%</div>
 
-                        <div class="h-4 w-full overflow-hidden rounded-full bg-gray-200 shadow-md dark:bg-gray-700">
+                        <div class="bg-sidebar-accent h-4 w-full overflow-hidden rounded-full shadow-md">
                             <div class="h-full bg-green-500 transition-all duration-300 ease-in-out" :style="{ width: `${percent}%` }" />
                         </div>
                     </div>
@@ -170,6 +170,7 @@ const closeModal = () => {};
                     Create
                 </button>
             </div>
+
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
                 <div class="p-5">
                     <!-- tasks -->
