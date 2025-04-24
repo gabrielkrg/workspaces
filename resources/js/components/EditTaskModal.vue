@@ -35,7 +35,6 @@ const closeEditModal = () => {
         >
             <div class="p-5">
                 <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100">Edit Task</h2>
-                <!-- <p class="text-gray-800 dark:text-gray-100">Este texto é escuro no tema claro e claro no tema escuro.</p> -->
 
                 <form @submit.prevent="submit" class="space-y-4">
                     <div>
@@ -62,9 +61,9 @@ const closeEditModal = () => {
                     <button
                         type="submit"
                         :disabled="form.processing"
-                        class="rounded bg-indigo-600 px-4 py-2 text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                        class="cursor-pointer rounded bg-green-600 px-4 py-2 text-white transition hover:bg-green-700 disabled:opacity-50"
                     >
-                        {{ form.processing ? 'Salvando...' : 'Salvar' }}
+                        {{ form.processing ? 'Saving...' : 'Save' }}
                     </button>
                 </form>
             </div>

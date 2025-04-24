@@ -139,9 +139,9 @@ const closeModal = () => {};
                     <button
                         type="submit"
                         :disabled="form.processing"
-                        class="rounded bg-indigo-600 px-4 py-2 text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                        class="cursor-pointer rounded bg-green-600 px-4 py-2 text-white transition hover:bg-green-700 disabled:opacity-50"
                     >
-                        {{ form.processing ? 'Salvando...' : 'Salvar' }}
+                        {{ form.processing ? 'Saving...' : 'Save' }}
                     </button>
                 </form>
             </div>
@@ -157,14 +157,14 @@ const closeModal = () => {};
                     <div class="w-full max-w-md" v-if="tasks.length > 0">
                         <div class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Progress: {{ percent }}%</div>
 
-                        <div class="h-4 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                        <div class="h-4 w-full overflow-hidden rounded-full bg-gray-200 shadow-md dark:bg-gray-700">
                             <div class="h-full bg-green-500 transition-all duration-300 ease-in-out" :style="{ width: `${percent}%` }" />
                         </div>
                     </div>
                 </div>
 
                 <button
-                    class="inline-flex items-center rounded-xl bg-indigo-600 px-6 py-2.5 font-semibold text-white shadow-md transition-all duration-300 hover:bg-indigo-700 hover:shadow-lg focus:ring-4 focus:ring-indigo-300 focus:outline-none dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-indigo-600"
+                    class="inline-flex cursor-pointer items-center rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-md transition-all duration-300 hover:bg-green-700 hover:shadow-lg focus:ring-4 focus:ring-green-300 focus:outline-none dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-600"
                     @click="showCreateModal = !showCreateModal"
                 >
                     Create
@@ -176,8 +176,8 @@ const closeModal = () => {};
                     <div v-if="tasks.length > 0">
                         <ul class="space-y-2 divide-y">
                             <li v-for="task in tasks" :key="task.id" class="flex items-center justify-between gap-4 p-4">
-                                <div class="flex gap-4">
-                                    <label class="group inline-flex cursor-pointer items-center">
+                                <div class="flex items-start gap-4">
+                                    <label class="group mt-2 inline-flex cursor-pointer items-center">
                                         <input
                                             type="checkbox"
                                             :checked="task.done"
@@ -198,8 +198,8 @@ const closeModal = () => {};
                                 </div>
 
                                 <div class="relative inline-block text-left">
-                                    <button @click="toggleMenu(task.id)" class="p-2">
-                                        <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
+                                    <button @click="toggleMenu(task.id)" class="cursor-pointer p-2">
+                                        <EllipsisVertical class="m-5 h-5 w-5 text-gray-900 dark:text-white" />
                                     </button>
 
                                     <div
@@ -211,13 +211,13 @@ const closeModal = () => {};
                                             @click="editTask(task)"
                                             class="dark:hover:bg-muted block w-full px-4 py-2 text-left hover:bg-gray-100"
                                         >
-                                            Editar
+                                            Edit
                                         </button>
 
                                         <Dialog>
                                             <DialogTrigger as-child>
                                                 <div
-                                                    class="block w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                                    class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
                                                     variant="destructive"
                                                 >
                                                     Delete
@@ -234,7 +234,7 @@ const closeModal = () => {};
 
                                                     <DialogFooter class="gap-2">
                                                         <DialogClose as-child>
-                                                            <Button variant="secondary" @click="closeModal"> Cancel </Button>
+                                                            <Button variant="secondary" @click="closeModal">Cancel</Button>
                                                         </DialogClose>
 
                                                         <Button variant="destructive" :disabled="form.processing">

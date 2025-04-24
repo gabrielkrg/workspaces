@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CheckCircleIcon, XCircleIcon } from 'lucide-vue-next';
+import { CheckCircleIcon, XCircleIcon, XIcon } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps({
@@ -59,7 +59,9 @@ const textColor = computed(() => {
                         <p class="text-sm text-gray-600">{{ message }}</p>
                     </div>
                 </div>
-                <button @click="visible = false" class="ml-4 text-sm tracking-wide text-gray-400 uppercase hover:text-gray-600">Close</button>
+                <button @click="visible = false" class="ml-4 cursor-pointer text-sm tracking-wide text-gray-400 hover:text-gray-600">
+                    <XIcon />
+                </button>
             </div>
         </div>
     </transition>
