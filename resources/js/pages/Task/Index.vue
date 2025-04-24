@@ -151,7 +151,7 @@ const closeModal = () => {};
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <div class="flex justify-between">
+            <div class="flex justify-between gap-4">
                 <!-- progress -->
                 <div class="w-full max-w-md">
                     <div class="w-full max-w-md" v-if="tasks.length > 0">
@@ -175,8 +175,8 @@ const closeModal = () => {};
                     <!-- tasks -->
                     <div v-if="tasks.length > 0">
                         <ul class="space-y-2 divide-y">
-                            <li v-for="task in tasks" :key="task.id" class="flex flex-wrap items-center justify-between p-4">
-                                <div class="flex flex-wrap gap-4">
+                            <li v-for="task in tasks" :key="task.id" class="flex items-center justify-between gap-4 p-4">
+                                <div class="flex gap-4">
                                     <label class="group inline-flex cursor-pointer items-center">
                                         <input
                                             type="checkbox"
@@ -192,8 +192,8 @@ const closeModal = () => {};
                                     </label>
 
                                     <div :class="['text-gray-700 dark:text-gray-300', { 'line-through': task.done }]">
-                                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ task.title }}</h2>
-                                        <p class="text-gray-700 dark:text-gray-300">{{ task.description }}</p>
+                                        <h2 class="line-clamp text-lg font-semibold text-gray-900 dark:text-white">{{ task.title }}</h2>
+                                        <p class="line-clamp text-gray-700 dark:text-gray-300">{{ task.description }}</p>
                                     </div>
                                 </div>
 
@@ -258,3 +258,12 @@ const closeModal = () => {};
         </div>
     </AppLayout>
 </template>
+
+<style scoped>
+.line-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
