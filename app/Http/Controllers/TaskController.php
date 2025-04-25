@@ -13,8 +13,7 @@ class TaskController extends Controller
     {
         $user = Auth::user();
 
-        $query = $user->tasks()
-            ->where('workspace_id', $user->workspace_id)
+        $query = Task::where('workspace_id', $user->workspace_id)
             ->latest();
 
         $tasks = $query->get();

@@ -2,10 +2,11 @@
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
+import Workspace from '@/components/Workspace.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { CalendarFold, LayoutGrid, ListTodo, NotebookText, SquareKanban, SquareStack } from 'lucide-vue-next';
+import { CalendarFold, LayoutGrid, ListTodo, NotebookText, SquareKanban } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -52,11 +53,6 @@ const footerNavItems: NavItem[] = [
     //     href: 'https://laravel.com/docs/starter-kits',
     //     icon: BookOpen,
     // },
-    {
-        title: 'Workspace',
-        href: '/settings/workspace',
-        icon: SquareStack,
-    },
 ];
 </script>
 
@@ -80,6 +76,7 @@ const footerNavItems: NavItem[] = [
 
         <SidebarFooter>
             <NavFooter :items="footerNavItems" />
+            <Workspace />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

@@ -267,7 +267,7 @@ const closeModal = () => {};
                         </ul>
                     </div>
                     <div v-else>
-                        <p class="text-gray-800 dark:text-gray-100">There are no tasks yet!</p>
+                        <p class="text-gray-800 dark:text-gray-100">There are no tasks yet</p>
                     </div>
                 </div>
                 <!-- <PlaceholderPattern /> -->

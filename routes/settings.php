@@ -24,4 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/workspace', [WorkspaceController::class, 'edit'])->name('workspace.edit');
     Route::post('settings/workspace', [WorkspaceController::class, 'store'])->name('workspace.store');
     Route::patch('settings/workspace', [WorkspaceController::class, 'update'])->name('workspace.update');
+
+    Route::get('settings/workspaces/invite/{token}', [WorkspaceController::class, 'acceptInvite'])->name('workspace.invite.accept');
+    Route::post('settings/workspaces/{workspace}/invite', [WorkspaceController::class, 'generateInviteLink'])->name('workspace.invite.generate');
 });

@@ -6,14 +6,14 @@ import { Head } from '@inertiajs/vue3';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Daily Tasks',
-        href: '/tasks',
+        title: 'Notes',
+        href: '/notes',
     },
 ];
 </script>
 
 <template>
-    <Head title="Daily Tasks" />
+    <Head title="Notes" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
