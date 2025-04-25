@@ -13,7 +13,10 @@ class TaskController extends Controller
     {
         $user = Auth::user();
 
-        $query = $user->tasks()->latest();
+        $query = $user->tasks()
+            ->where('workspace_id', $user->workspace_id)
+            ->latest();
+
         $tasks = $query->get();
 
         return Inertia::render('Task/Index', ['tasks' => $tasks]);
@@ -33,9 +36,11 @@ class TaskController extends Controller
             'title' => $validated['title'],
             'description' => $validated['description'] ?? '',
             'done' => false,
+            'user_id' => $user->id,
+            'workspace_id' => $user->workspace_id,
         ]);
 
-        $user->tasks()->save($task);
+        $task->save();
 
         return redirect()->back()->with('success', 'Task created successfully!');
     }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -27,6 +28,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Notes
     Route::get('notes', [NoteController::class, 'index'])->name('notes.index');
+
+    // Workspaces
+    Route::get('workspaces', [WorkspaceController::class, 'index'])->name('workspaces.index');
+    Route::post('workspaces', [WorkspaceController::class, 'store'])->name('workspaces.store');
 });
 
 require __DIR__.'/settings.php';

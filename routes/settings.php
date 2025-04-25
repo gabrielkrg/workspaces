@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -18,4 +19,9 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/appearance', function () {
         return Inertia::render('settings/Appearance');
     })->name('appearance');
+
+
+    Route::get('settings/workspace', [WorkspaceController::class, 'edit'])->name('workspace.edit');
+    Route::post('settings/workspace', [WorkspaceController::class, 'store'])->name('workspace.store');
+    Route::patch('settings/workspace', [WorkspaceController::class, 'update'])->name('workspace.update');
 });

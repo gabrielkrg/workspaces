@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { CalendarFold, LayoutGrid, ListTodo } from 'lucide-vue-next';
+import { CalendarFold, LayoutGrid, ListTodo, NotebookText, SquareKanban, SquareStack } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -14,15 +14,30 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
     },
+    // {
+    //     title: 'Workspaces',
+    //     href: '/workspaces',
+    //     icon: SquareStack,
+    // },
     {
-        title: 'Daily Tasks',
+        title: 'Tasks',
         href: '/tasks',
         icon: ListTodo,
     },
     {
-        title: 'Events',
-        href: '/Events',
+        title: 'Calendar',
+        href: '/calendar',
         icon: CalendarFold,
+    },
+    {
+        title: 'Kanban',
+        href: '/kanban',
+        icon: SquareKanban,
+    },
+    {
+        title: 'Notes',
+        href: '/notes',
+        icon: NotebookText,
     },
 ];
 
@@ -37,6 +52,11 @@ const footerNavItems: NavItem[] = [
     //     href: 'https://laravel.com/docs/starter-kits',
     //     icon: BookOpen,
     // },
+    {
+        title: 'Workspace',
+        href: '/settings/workspace',
+        icon: SquareStack,
+    },
 ];
 </script>
 

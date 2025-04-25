@@ -9,7 +9,7 @@ class Task extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'done', 'user_id'];
+    protected $fillable = ['title', 'description', 'done', 'user_id', 'workspace_id'];
 
     protected $guarded = [];
 
@@ -20,5 +20,10 @@ class Task extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function workspace()
+    {
+        return $this->belongsTo(Workspace::class);
     }
 }

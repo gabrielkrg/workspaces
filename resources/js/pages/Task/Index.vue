@@ -15,7 +15,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { Check, EllipsisVertical } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { PopoverClose, PopoverContent, PopoverRoot, PopoverTrigger } from 'reka-ui';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -51,6 +52,20 @@ const menuRef = ref(null);
 const toggleMenu = (taskId) => {
     activeMenu.value = activeMenu.value === taskId ? null : taskId;
 };
+
+const handleClickOutside = (event) => {
+    if (menuRef.value && !menuRef.value.contains(event.target)) {
+        activeMenu.value = null;
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 
 const selectedTask = ref(null);
 const showEditModal = ref(false && selectedTask.value != null);
@@ -116,7 +131,7 @@ const closeModal = () => {};
 
                 <form @submit.prevent="submit" class="space-y-4">
                     <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Título</label>
+                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
                         <input
                             id="title"
                             v-model="form.title"
@@ -127,7 +142,7 @@ const closeModal = () => {};
                     </div>
 
                     <div>
-                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Descrição</label>
+                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                         <textarea
                             id="description"
                             v-model="form.description"
@@ -198,22 +213,22 @@ const closeModal = () => {};
                                     </div>
                                 </div>
 
-                                <div class="relative inline-block text-left">
-                                    <button @click="toggleMenu(task.id)" class="cursor-pointer p-2">
-                                        <EllipsisVertical class="m-5 h-5 w-5 text-gray-900 dark:text-white" />
-                                    </button>
-
-                                    <div
-                                        v-if="activeMenu === task.id"
-                                        ref="menuRef"
-                                        class="bg-sidebar absolute right-2 z-50 mt-2 w-40 overflow-hidden rounded shadow"
-                                    >
-                                        <button
-                                            @click="editTask(task)"
-                                            class="dark:hover:bg-muted block w-full px-4 py-2 text-left hover:bg-gray-100"
-                                        >
-                                            Edit
+                                <PopoverRoot class="relative">
+                                    <PopoverTrigger as-child>
+                                        <button class="cursor-pointer p-2">
+                                            <EllipsisVertical class="m-5 h-5 w-5 text-gray-900 dark:text-white" />
                                         </button>
+                                    </PopoverTrigger>
+
+                                    <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 overflow-hidden rounded shadow" align="end">
+                                        <PopoverClose as-child>
+                                            <button
+                                                @click="editTask(task)"
+                                                class="dark:hover:bg-muted block w-full px-4 py-2 text-left hover:bg-gray-100"
+                                            >
+                                                Edit
+                                            </button>
+                                        </PopoverClose>
 
                                         <Dialog>
                                             <DialogTrigger as-child>
@@ -224,18 +239,19 @@ const closeModal = () => {};
                                                     Delete
                                                 </div>
                                             </DialogTrigger>
+
                                             <DialogContent>
                                                 <form class="space-y-6" @submit.prevent="deleteTask(task.id)">
                                                     <DialogHeader class="space-y-3">
-                                                        <DialogTitle>Are you sure you want to delete ths task?</DialogTitle>
+                                                        <DialogTitle>Are you sure you want to delete this task?</DialogTitle>
                                                         <DialogDescription>
-                                                            Once your task is deleted there is no way of recover it back.
+                                                            Once your task is deleted, there’s no way to recover it.
                                                         </DialogDescription>
                                                     </DialogHeader>
 
                                                     <DialogFooter class="gap-2">
                                                         <DialogClose as-child>
-                                                            <Button variant="secondary" @click="closeModal">Cancel</Button>
+                                                            <Button variant="secondary">Cancel</Button>
                                                         </DialogClose>
 
                                                         <Button variant="destructive" :disabled="form.processing">
@@ -245,8 +261,8 @@ const closeModal = () => {};
                                                 </form>
                                             </DialogContent>
                                         </Dialog>
-                                    </div>
-                                </div>
+                                    </PopoverContent>
+                                </PopoverRoot>
                             </li>
                         </ul>
                     </div>

@@ -38,7 +38,7 @@ const closeEditModal = () => {
 
                 <form @submit.prevent="submit" class="space-y-4">
                     <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Título</label>
+                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
                         <input
                             id="title"
                             v-model="form.title"
@@ -49,7 +49,7 @@ const closeEditModal = () => {
                     </div>
 
                     <div>
-                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Descrição</label>
+                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                         <textarea
                             id="description"
                             v-model="form.description"

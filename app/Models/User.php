@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'workspace_id'
     ];
 
     /**
@@ -49,5 +50,17 @@ class User extends Authenticatable
     public function tasks()
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function workspace()
+    {
+        return $this->belongsTo(Workspace::class);
+    }
+
+    public function workspaces()
+    {
+        return $this->belongsToMany(Workspace::class)
+                    ->withPivot('role')
+                    ->withTimestamps();
     }
 }
