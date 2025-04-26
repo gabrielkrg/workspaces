@@ -18,15 +18,49 @@ class WorkspaceController extends Controller
 
     public function edit(Request $request)
     {
-        $workspaces = Auth::user()->workspaces;
-        // $workspaces = Auth::user()->workspaces()->wherePivot('role', 'owner')->get();
 
+        $user = Auth::user()->load(['workspace.users:id,name,email', 'workspaces']);
 
-        return Inertia::render('settings/Workspace', ['workspaces' => $workspaces]);
+        return Inertia::render('settings/Workspace', ['user' => $user]);
     }
 
 
-    public function update(Request $request)
+    public function update(Request $request, Workspace $workspace)
+    {
+        $this->authorize('update', $workspace);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'users' => 'array',
+            'users.*.id' => 'required|integer|exists:users,id',
+            'users.*.pivot.role' => 'required|string|in:editor,viewer,owner',
+        ]);
+
+
+        $workspace->update([
+            'name' => $validated['name'],
+        ]);
+
+            $currentUserIds = $workspace->users->pluck('id')->toArray();
+
+            $newUserIds = collect($validated['users'])->pluck('id')->toArray();
+
+            $usersToRemove = array_diff($currentUserIds, $newUserIds);
+            foreach ($usersToRemove as $userId) {
+                $workspace->users()->detach($userId);
+            }
+
+            foreach ($validated['users'] as $user) {
+                $workspace->users()->updateExistingPivot($user['id'], [
+                    'role' => $user['pivot']['role'],
+                ]);
+            }
+
+        return back()->with('success', 'Workspace updated successfully.');
+    }
+
+
+    public function set(Request $request)
     {
         $validated = $request->validate([
             'workspace_id' => 'required|exists:workspaces,id',
