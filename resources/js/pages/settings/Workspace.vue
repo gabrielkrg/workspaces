@@ -3,16 +3,28 @@ import { Head, useForm } from '@inertiajs/vue3';
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import InputError from '@/components/InputError.vue';
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { AccordionContent, AccordionItem, AccordionRoot, AccordionTrigger } from 'reka-ui';
 
 import axios from 'axios';
-import { ChevronDown } from 'lucide-vue-next';
+import { Trash2Icon } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 const props = defineProps({
@@ -96,7 +108,7 @@ const genereteLink = () => {
 const clipboard_errors = ref('');
 const copyToClipboard = async (link) => {
     if (!navigator.clipboard) {
-        clipboard_errors.value = "Browser doesn't support automatic copy. Copy it manually";
+        clipboard_errors.value = "Your browser doesn't support automatic copy. Copy it manually";
         return;
     }
 
@@ -124,235 +136,176 @@ watch(
         <Head title="Workspace settings" />
 
         <SettingsLayout>
-            <AccordionRoot type="single" collapsible defaultValue="workspace-info" class="w-full divide-y">
-                <AccordionItem value="workspace-info">
-                    <AccordionTrigger class="flex w-full cursor-pointer items-center justify-between py-2 text-xl font-semibold">
-                        <span>Current workspace</span>
-                        <ChevronDown class="h-5 w-5 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <div class="flex flex-col space-y-6">
-                            <HeadingSmall title="" description="Change your current workspace" />
-
-                            <form @submit.prevent="update" class="mb-6 space-y-6">
-                                <div class="grid gap-2">
-                                    <Label for="name">Name</Label>
-                                    <Input
-                                        id="name"
-                                        v-model="updateForm.name"
-                                        type="text"
-                                        class="mt-1 block w-full"
-                                        placeholder="Current name"
-                                        required
-                                    />
-                                    <InputError class="mt-2" :message="updateForm.errors.name" />
+            <div class="flex flex-wrap gap-3">
+                <Dialog>
+                    <DialogTrigger as-child>
+                        <Button variant="outline"> Edit Workspace </Button>
+                    </DialogTrigger>
+                    <DialogContent class="sm:max-w-[425px]">
+                        <form @submit.prevent="update" class="mb-6 space-y-6">
+                            <DialogHeader>
+                                <DialogTitle>Edit Workspace</DialogTitle>
+                                <DialogDescription> Make changes to your workspace here. Click save when you're done. </DialogDescription>
+                            </DialogHeader>
+                            <div class="grid gap-4 py-4">
+                                <div class="grid grid-cols-4 items-center gap-4">
+                                    <Label for="name" class="text-right"> Name </Label>
+                                    <Input id="name" v-model="updateForm.name" class="col-span-3" />
                                 </div>
+                            </div>
+                            <DialogFooter>
+                                <Button type="submit"> Save changes </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
 
-                                <div class="space-y-6">
-                                    <div
-                                        v-for="user in updateForm.users"
-                                        :key="user.id"
-                                        class="border-sidebar-border/70 dark:border-sidebar-border rounded-lg border p-4"
-                                    >
-                                        <div class="flex justify-between">
-                                            <div>
-                                                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ user.name }}</h2>
-                                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ user.email }}</p>
-                                            </div>
+                <Dialog>
+                    <DialogTrigger as-child>
+                        <Button variant="outline"> Create Workspace </Button>
+                    </DialogTrigger>
+                    <DialogContent class="sm:max-w-[425px]">
+                        <form @submit.prevent="create" class="mb-6 space-y-6">
+                            <DialogHeader>
+                                <DialogTitle>Create Workspace</DialogTitle>
+                                <DialogDescription> Create a workspace here. Click save when you're done. </DialogDescription>
+                            </DialogHeader>
+                            <div class="grid gap-4 py-4">
+                                <div class="grid grid-cols-4 items-center gap-4">
+                                    <Label for="name" class="text-right"> Name </Label>
+                                    <Input id="name" v-model="createForm.name" class="col-span-3" />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button type="submit"> Save </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            </div>
 
-                                            <!-- Botão de exclusão -->
-                                            <button type="button" @click="removeUser(user.id)" class="cursor-pointer text-red-500 hover:text-red-700">
-                                                Excluir
-                                            </button>
-                                        </div>
+            <div class="space-y-6 divide-y">
+                <div class="flex flex-col space-y-6">
+                    <HeadingSmall title="Current workspace" description="Change your current workspace" />
 
-                                        <!-- Radios para o role -->
-                                        <div class="mt-4 flex flex-col space-y-2">
-                                            <label class="flex items-center space-x-2">
-                                                <input
-                                                    type="radio"
-                                                    :name="'role-' + user.id"
-                                                    value="viewer"
-                                                    v-model="user.pivot.role"
-                                                    class="accent-green-600 focus:ring-green-500 dark:focus:ring-green-400"
-                                                />
-                                                <span class="text-gray-700 dark:text-gray-300">Viewer</span>
-                                            </label>
+                    <form @submit.prevent="set" class="mb-6">
+                        <div class="flex flex-col space-y-2">
+                            <Label for="workspace">Workspace</Label>
+                            <Select v-model="setForm.workspace_id">
+                                <SelectTrigger id="workspace" class="w-full">
+                                    <SelectValue placeholder="Select" />
+                                </SelectTrigger>
+                                <SelectContent position="popper">
+                                    <SelectItem v-for="workspace in workspaces" :key="workspace.id" :value="workspace.id">
+                                        {{ workspace.name }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                                            <label class="flex items-center space-x-2">
-                                                <input
-                                                    type="radio"
-                                                    :name="'role-' + user.id"
-                                                    value="editor"
-                                                    v-model="user.pivot.role"
-                                                    class="accent-green-600 focus:ring-green-500 dark:focus:ring-green-400"
-                                                />
-                                                <span class="text-gray-700 dark:text-gray-300">Editor</span>
-                                            </label>
+                        <div class="flex items-center gap-4">
+                            <Button :disabled="setForm.processing">Save</Button>
 
-                                            <label class="flex items-center space-x-2">
-                                                <input
-                                                    type="radio"
-                                                    :name="'role-' + user.id"
-                                                    value="owner"
-                                                    v-model="user.pivot.role"
-                                                    class="accent-green-600 focus:ring-green-500 dark:focus:ring-green-400"
-                                                />
-                                                <span class="text-gray-700 dark:text-gray-300">Owner</span>
-                                            </label>
-                                        </div>
+                            <Transition
+                                enter-active-class="transition ease-in-out"
+                                enter-from-class="opacity-0"
+                                leave-active-class="transition ease-in-out"
+                                leave-to-class="opacity-0"
+                            >
+                                <p v-show="setForm.recentlySuccessful" class="text-sm text-neutral-600">Saving.</p>
+                            </Transition>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="flex flex-col space-y-6">
+                    <HeadingSmall title="Generate link" description="Select the workspace that you want to create a access link" />
+
+                    <form @submit.prevent="genereteLink" class="mb-6">
+                        <div class="flex flex-col space-y-2">
+                            <Label for="generate">Workspace</Label>
+                            <Select v-model="workspaceLink">
+                                <SelectTrigger id="generate" class="w-full">
+                                    <SelectValue placeholder="Select" />
+                                </SelectTrigger>
+                                <SelectContent position="popper">
+                                    <SelectItem v-for="workspace in workspaces" :key="workspace.id" :value="workspace.id">
+                                        {{ workspace.name }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <Button>Generate</Button>
+                    </form>
+                </div>
+                <div v-if="link != ''">
+                    <div class="flex gap-2">
+                        <Input type="text" v-model="link" readonly @click="$event.target.select()" />
+
+                        <Button type="button" @click="copyToClipboard(link)" class="cursor-pointer">
+                            {{ copied ? 'Copied!' : 'Copy' }}
+                        </Button>
+                    </div>
+                    <InputError :message="clipboard_errors" />
+                </div>
+
+                <div class="space-y-6">
+                    <HeadingSmall title="Manage users" description="Manage the users permissions for the current selected workspace" />
+                    <Card class="mb-6 w-full">
+                        <CardHeader>
+                            <CardTitle>People with access</CardTitle>
+                            <CardDescription>Below are the people with access to the current workspace.</CardDescription>
+                        </CardHeader>
+                        <form class="space-y-4" @submit.prevent="update">
+                            <CardContent class="space-y-6">
+                                <div class="flex items-center justify-between gap-4" v-for="user in updateForm.users" :key="user.id">
+                                    <div class="flex flex-col">
+                                        <HeadingSmall :title="user.name" :description="user.email" />
+                                    </div>
+
+                                    <div class="flex gap-3">
+                                        <Select v-model="user.pivot.role" :key="user.id">
+                                            <SelectTrigger id="role">
+                                                <SelectValue placeholder="Select" />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper">
+                                                <SelectItem value="owner"> Owner </SelectItem>
+                                                <SelectItem value="viewer"> Can view </SelectItem>
+                                                <SelectItem value="editor"> Can edit </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+
+                                        <AlertDialog>
+                                            <AlertDialogTrigger as-child>
+                                                <Button variant="destructive"> <Trash2Icon /> </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will remove the user from ther current workspace.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                                                    <Button variant="destructive" type="button" @click="removeUser(user.id)">
+                                                        <button type="submit">Delete</button>
+                                                    </Button>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
                                 </div>
-
-                                <div class="flex items-center gap-4">
-                                    <Button :disabled="updateForm.processing">Save</Button>
-
-                                    <Transition
-                                        enter-active-class="transition ease-in-out"
-                                        enter-from-class="opacity-0"
-                                        leave-active-class="transition ease-in-out"
-                                        leave-to-class="opacity-0"
-                                    >
-                                        <p v-show="setForm.recentlySuccessful" class="text-sm text-neutral-600">Saving.</p>
-                                    </Transition>
-                                </div>
-                            </form>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="workspace-set">
-                    <AccordionTrigger class="flex w-full cursor-pointer items-center justify-between py-2 text-xl font-semibold">
-                        <span>Change workspace</span>
-                        <ChevronDown class="h-5 w-5 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <div class="flex flex-col space-y-6">
-                            <HeadingSmall title="" description="Change your current workspace" />
-
-                            <form @submit.prevent="set" class="mb-6 space-y-6">
-                                <div class="grid gap-2">
-                                    <Label for="current">Workspace</Label>
-                                    <select
-                                        id="current"
-                                        v-model="setForm.workspace_id"
-                                        class="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive mt-1 block h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                                    >
-                                        <option v-for="workspace in workspaces" :key="workspace.id" :value="workspace.id">
-                                            {{ workspace.name }}
-                                        </option>
-                                    </select>
-                                    <InputError class="mt-2" :message="setForm.errors.workspace_id" />
-                                </div>
-
-                                <div class="flex items-center gap-4">
-                                    <Button :disabled="setForm.processing">Change</Button>
-
-                                    <Transition
-                                        enter-active-class="transition ease-in-out"
-                                        enter-from-class="opacity-0"
-                                        leave-active-class="transition ease-in-out"
-                                        leave-to-class="opacity-0"
-                                    >
-                                        <p v-show="setForm.recentlySuccessful" class="text-sm text-neutral-600">Changed.</p>
-                                    </Transition>
-                                </div>
-                            </form>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-
-                <!-- Segundo: Generate Workspace Link -->
-                <AccordionItem value="generate-link">
-                    <AccordionTrigger class="flex w-full cursor-pointer items-center justify-between py-2 text-xl font-semibold">
-                        <span>Generate workspace link</span>
-                        <ChevronDown class="h-5 w-5 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <div class="flex flex-col space-y-6">
-                            <HeadingSmall title="" description="Select the workspace that you want to create a access link" />
-
-                            <form @submit.prevent="genereteLink" class="mb-6 space-y-6">
-                                <div class="grid gap-2">
-                                    <Label for="generate">Workspace {{ workspaceLink }}</Label>
-                                    <select
-                                        id="generate"
-                                        v-model="workspaceLink"
-                                        class="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive mt-1 block h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                                    >
-                                        <option v-for="workspace in workspaces" :key="workspace.id" :value="workspace.id">
-                                            {{ workspace.name }}
-                                        </option>
-                                    </select>
-                                    <InputError :message="link_errors" />
-                                </div>
-
-                                <div class="flex items-center gap-4">
-                                    <Button>Generate</Button>
-                                </div>
-                            </form>
-                            <div class="mb-6 items-center" v-if="link != ''">
-                                <div class="flex gap-2">
-                                    <input
-                                        type="text"
-                                        :value="link"
-                                        readonly
-                                        @click="$event.target.select()"
-                                        class="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive block h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                                    />
-
-                                    <Button type="button" @click="copyToClipboard(link)" class="cursor-pointer">
-                                        {{ copied ? 'Copied!' : 'Copy' }}
-                                    </Button>
-                                </div>
-                                <InputError :message="clipboard_errors" />
-                            </div>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-
-                <!-- Terceiro: Create Workspace -->
-                <AccordionItem value="create-workspace">
-                    <AccordionTrigger class="flex w-full cursor-pointer items-center justify-between py-2 text-xl font-semibold">
-                        <span>Create new workspace</span>
-                        <ChevronDown class="h-5 w-5 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <div class="flex flex-col space-y-6">
-                            <HeadingSmall title="" description="Create your new workspace and start to work on it" />
-
-                            <form @submit.prevent="create" class="mb-6 space-y-6">
-                                <div class="grid gap-2">
-                                    <Label for="create">Name</Label>
-                                    <Input
-                                        id="create"
-                                        class="mt-1 block w-full"
-                                        v-model="createForm.name"
-                                        required
-                                        autocomplete="name"
-                                        placeholder=""
-                                    />
-
-                                    <InputError class="mt-2" :message="createForm.errors.name" />
-                                </div>
-
-                                <div class="flex items-center gap-4">
-                                    <Button :disabled="createForm.processing">Create</Button>
-
-                                    <Transition
-                                        enter-active-class="transition ease-in-out"
-                                        enter-from-class="opacity-0"
-                                        leave-active-class="transition ease-in-out"
-                                        leave-to-class="opacity-0"
-                                    >
-                                        <p v-show="createForm.recentlySuccessful" class="text-sm text-neutral-600">Created.</p>
-                                    </Transition>
-                                </div>
-                            </form>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-            </AccordionRoot>
+                            </CardContent>
+                            <CardFooter class="flex justify-between">
+                                <Button>Save</Button>
+                            </CardFooter>
+                        </form>
+                    </Card>
+                </div>
+            </div>
         </SettingsLayout>
     </AppLayout>
 </template>

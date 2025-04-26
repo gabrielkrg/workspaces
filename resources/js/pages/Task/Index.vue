@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import EditTaskModal from '@/components/EditTaskModal.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -11,6 +10,9 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -29,8 +31,6 @@ const props = defineProps({
     tasks: Array,
 });
 
-const showCreateModal = ref(false);
-
 const form = useForm({
     title: '',
     description: '',
@@ -42,16 +42,10 @@ const submit = () => {
             form.reset();
         },
     });
-
-    showCreateModal.value = false;
 };
 
 const activeMenu = ref(null);
 const menuRef = ref(null);
-
-const toggleMenu = (taskId) => {
-    activeMenu.value = activeMenu.value === taskId ? null : taskId;
-};
 
 const handleClickOutside = (event) => {
     if (menuRef.value && !menuRef.value.contains(event.target)) {
@@ -68,16 +62,28 @@ onUnmounted(() => {
 });
 
 const selectedTask = ref(null);
-const showEditModal = ref(false && selectedTask.value != null);
 
-const closeEditModal = () => {
-    showEditModal.value = false;
+const updateForm = useForm({
+    title: '',
+    description: '',
+});
+
+const selectTask = (task) => {
+    selectedTask.value = task;
+
+    updateForm.title = task.title;
+    updateForm.description = task.description;
 };
 
-const editTask = (task) => {
-    activeMenu.value = null;
-    selectedTask.value = task;
-    showEditModal.value = true;
+const update = (taskId) => {
+    if (selectedTask.value == null) return;
+
+    console.log(selectedTask.value);
+    updateForm.put(route('tasks.update', taskId), {
+        onSuccess: () => {
+            updateForm.reset();
+        },
+    });
 };
 
 const completed = computed(() => props.tasks.filter((t) => t.done).length);
@@ -117,53 +123,6 @@ const closeModal = () => {};
 <template>
     <Head title="Daily Tasks" />
 
-    <EditTaskModal :task="selectedTask" v-if="showEditModal" @close="closeEditModal" />
-
-    <!-- create modal -->
-    <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-end">
-        <div class="absolute inset-0 bg-black opacity-60" @click="showCreateModal = false"></div>
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border bg-background relative z-50 h-full w-4/5 rounded-l-xl rounded-bl-xl border md:w-2/5"
-        >
-            <div class="p-5">
-                <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100">Create Task</h2>
-                <!-- <p class="text-gray-800 dark:text-gray-100">Este texto é escuro no tema claro e claro no tema escuro.</p> -->
-
-                <form @submit.prevent="submit" class="space-y-4">
-                    <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
-                        <input
-                            id="title"
-                            v-model="form.title"
-                            type="text"
-                            class="border-sidebar-border/70 dark:border-sidebar-border bg-background mt-1 block w-full rounded border p-2 dark:text-white"
-                        />
-                        <p v-if="form.errors.title" class="mt-1 text-sm text-red-500">{{ form.errors.title }}</p>
-                    </div>
-
-                    <div>
-                        <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
-                        <textarea
-                            id="description"
-                            v-model="form.description"
-                            class="border-sidebar-border/70 dark:border-sidebar-border bg-background mt-1 block w-full rounded border p-2 dark:text-white"
-                        />
-                        <p v-if="form.errors.description" class="mt-1 text-sm text-red-500">{{ form.errors.description }}</p>
-                    </div>
-
-                    <button
-                        type="submit"
-                        :disabled="form.processing"
-                        class="cursor-pointer rounded bg-green-600 px-4 py-2 text-white transition hover:bg-green-700 disabled:opacity-50"
-                    >
-                        {{ form.processing ? 'Saving...' : 'Save' }}
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!-- create modal -->
-
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div class="flex justify-between gap-4">
@@ -178,12 +137,35 @@ const closeModal = () => {};
                     </div>
                 </div>
 
-                <button
-                    class="inline-flex cursor-pointer items-center rounded-xl bg-green-600 px-6 py-2.5 font-semibold text-white shadow-md transition-all duration-300 hover:bg-green-700 hover:shadow-lg focus:ring-4 focus:ring-green-300 focus:outline-none dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-600"
-                    @click="showCreateModal = !showCreateModal"
-                >
-                    Create
-                </button>
+                <Sheet>
+                    <SheetTrigger as-child>
+                        <Button variant="default"> Create </Button>
+                    </SheetTrigger>
+                    <SheetContent>
+                        <form @submit.prevent="submit">
+                            <SheetHeader>
+                                <SheetTitle>Create task</SheetTitle>
+                                <SheetDescription> Fill the fields to create a new task. Click save when you're done. </SheetDescription>
+                            </SheetHeader>
+                            <div class="grid gap-4 p-4">
+                                <div class="grid grid-cols-4 items-center gap-4">
+                                    <Label for="title" class="text-right"> Title </Label>
+                                    <Input id="title" v-model="form.title" class="col-span-3" />
+                                </div>
+
+                                <div class="grid grid-cols-4 items-center gap-4">
+                                    <Label for="description" class="text-right"> Description </Label>
+                                    <Input id="description" v-model="form.description" class="col-span-3" />
+                                </div>
+                            </div>
+                            <SheetFooter>
+                                <SheetClose as-child>
+                                    <Button type="submit"> Save changes </Button>
+                                </SheetClose>
+                            </SheetFooter>
+                        </form>
+                    </SheetContent>
+                </Sheet>
             </div>
 
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
@@ -222,12 +204,40 @@ const closeModal = () => {};
 
                                     <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 overflow-hidden rounded shadow" align="end">
                                         <PopoverClose as-child>
-                                            <button
-                                                @click="editTask(task)"
-                                                class="dark:hover:bg-muted block w-full px-4 py-2 text-left hover:bg-gray-100"
-                                            >
-                                                Edit
-                                            </button>
+                                            <Sheet>
+                                                <SheetTrigger as-child>
+                                                    <div
+                                                        @click="selectTask(task)"
+                                                        class="dark:hover:bg-muted block w-full px-4 py-2 text-left hover:bg-gray-100"
+                                                    >
+                                                        Edit
+                                                    </div>
+                                                </SheetTrigger>
+                                                <SheetContent>
+                                                    <form @submit.prevent="update(task)">
+                                                        <SheetHeader>
+                                                            <SheetTitle>Edit task</SheetTitle>
+                                                            <SheetDescription> Click save when you're done. </SheetDescription>
+                                                        </SheetHeader>
+                                                        <div class="grid gap-4 p-4">
+                                                            <div class="grid grid-cols-4 items-center gap-4">
+                                                                <Label for="title" class="text-right"> Title </Label>
+                                                                <Input id="title" v-model="updateForm.title" class="col-span-3" />
+                                                            </div>
+
+                                                            <div class="grid grid-cols-4 items-center gap-4">
+                                                                <Label for="description" class="text-right"> Description </Label>
+                                                                <Input id="description" v-model="updateForm.description" class="col-span-3" />
+                                                            </div>
+                                                        </div>
+                                                        <SheetFooter>
+                                                            <SheetClose as-child>
+                                                                <Button type="submit"> Save changes </Button>
+                                                            </SheetClose>
+                                                        </SheetFooter>
+                                                    </form>
+                                                </SheetContent>
+                                            </Sheet>
                                         </PopoverClose>
 
                                         <Dialog>
