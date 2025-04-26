@@ -11,7 +11,14 @@ class WorkspacePolicy
     {
         return $workspace->users()
                 ->where('user_id', $user->id)
-                ->wherePivot('role', 'owner')
+                ->wherePivotIn('role', ['owner', 'editor'])
                 ->exists();
     }
+
+    public function view(User $user, Workspace $workspace)
+        {
+            return $workspace->users()
+                    ->where('user_id', $user->id)
+                    ->exists();
+        }
 }

@@ -3,15 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\Workspace;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class TaskController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index()
     {
         $user = Auth::user();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
+
+        $this->authorize('view', $workspace);
 
         $query = Task::where('workspace_id', $user->workspace_id)
             ->latest();
@@ -24,12 +32,16 @@ class TaskController extends Controller
     public function store(Request $request)
     {
 
+        $user = Auth::user();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
+
+        $this->authorize('update', $workspace);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
-
-        $user = Auth::user();
 
         $task = new Task([
             'title' => $validated['title'],
@@ -46,6 +58,12 @@ class TaskController extends Controller
 
     public function update(Task $task, Request $request)
     {
+        $user = Auth::user();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
+
+        $this->authorize('update', $workspace);
+
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
@@ -59,6 +77,12 @@ class TaskController extends Controller
 
     public function delete(Task $task)
     {
+        $user = Auth::user();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
+
+        $this->authorize('update', $workspace);
+
         $task->delete();
 
         return redirect()->back()->with('success', 'Task deleted successfully!');

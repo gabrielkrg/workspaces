@@ -41,20 +41,20 @@ class WorkspaceController extends Controller
             'name' => $validated['name'],
         ]);
 
-            $currentUserIds = $workspace->users->pluck('id')->toArray();
+        $currentUserIds = $workspace->users->pluck('id')->toArray();
 
-            $newUserIds = collect($validated['users'])->pluck('id')->toArray();
+        $newUserIds = collect($validated['users'])->pluck('id')->toArray();
 
-            $usersToRemove = array_diff($currentUserIds, $newUserIds);
-            foreach ($usersToRemove as $userId) {
-                $workspace->users()->detach($userId);
-            }
+        $usersToRemove = array_diff($currentUserIds, $newUserIds);
+        foreach ($usersToRemove as $userId) {
+            $workspace->users()->detach($userId);
+        }
 
-            foreach ($validated['users'] as $user) {
-                $workspace->users()->updateExistingPivot($user['id'], [
-                    'role' => $user['pivot']['role'],
-                ]);
-            }
+        foreach ($validated['users'] as $user) {
+            $workspace->users()->updateExistingPivot($user['id'], [
+                'role' => $user['pivot']['role'],
+            ]);
+        }
 
         return back()->with('success', 'Workspace updated successfully.');
     }
