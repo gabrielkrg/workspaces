@@ -3,19 +3,24 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Workspace;
 use App\Models\WorkspaceInvite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 
 class WorkspaceController extends Controller
 {
+    use AuthorizesRequests;
+
     public function edit(Request $request)
     {
         $workspaces = Auth::user()->workspaces;
+        // $workspaces = Auth::user()->workspaces()->wherePivot('role', 'owner')->get();
+
 
         return Inertia::render('settings/Workspace', ['workspaces' => $workspaces]);
     }
@@ -53,7 +58,7 @@ class WorkspaceController extends Controller
 
     public function generateInviteLink(Request $request, Workspace $workspace)
     {
-        // $this->authorize('update', $workspace);
+        $this->authorize('update', $workspace);
 
         $invite = WorkspaceInvite::create([
             'workspace_id' => $workspace->id,
@@ -62,8 +67,19 @@ class WorkspaceController extends Controller
         ]);
 
         return response()->json([
-            'url' => route('workspace.invite.accept', $invite->token),
+            'url' => route('workspace.invite.screen', $invite->token),
         ]);
+    }
+
+    public function inviteScreen($token)
+    {
+        $invite = WorkspaceInvite::where('token', $token)->firstOrFail();
+
+        if ($invite->isExpired()) {
+            return response()->json(['message' => 'This link have expired.'], 410);
+        }
+
+        return Inertia::render('Workspace/Invite', ['token' => $token]);
     }
 
     public function acceptInvite($token)
@@ -71,21 +87,17 @@ class WorkspaceController extends Controller
         $invite = WorkspaceInvite::where('token', $token)->firstOrFail();
 
         if ($invite->isExpired()) {
-            return response()->json(['message' => 'Este link expirou.'], 410);
+            return response()->json(['message' => 'This link have expired.'], 410);
         }
 
         $user = auth()->user();
 
-        // Evita duplicação
         $invite->workspace->users()->syncWithoutDetaching([
             $user->id => ['role' => 'viewer'],
         ]);
 
         $invite->delete();
 
-        return response()->json([
-            'message' => 'Você foi adicionado ao workspace!',
-            'workspace' => $invite->workspace,
-        ]);
+        return redirect()->route('dashboard')->with('success', 'You were added to the workpace!');
     }
 }

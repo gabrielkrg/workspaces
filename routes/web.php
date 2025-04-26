@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\WorkspaceController;
@@ -22,6 +24,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::put('tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('tasks/{task}', [TaskController::class, 'delete'])->name('tasks.delete');
+
+    // Calendar
+    Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
+
+    // Kanban
+    Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
 
     // Events
     Route::get('events', [EventController::class, 'index'])->name('events.index');
