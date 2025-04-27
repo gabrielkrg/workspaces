@@ -11,14 +11,12 @@ use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-
 class WorkspaceController extends Controller
 {
     use AuthorizesRequests;
 
     public function edit(Request $request)
     {
-
         $user = Auth::user()->load(['workspace.users:id,name,email', 'workspaces']);
 
         return Inertia::render('settings/Workspace', ['user' => $user]);
@@ -56,7 +54,7 @@ class WorkspaceController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Workspace updated successfully.');
+        return redirect()->back()->with('success', 'Workspace updated successfully.');
     }
 
 

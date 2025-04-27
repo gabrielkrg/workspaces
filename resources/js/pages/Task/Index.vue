@@ -160,7 +160,7 @@ const closeModal = () => {};
                             </div>
                             <SheetFooter>
                                 <SheetClose as-child>
-                                    <Button type="submit"> Save changes </Button>
+                                    <Button type="submit"> Save </Button>
                                 </SheetClose>
                             </SheetFooter>
                         </form>
