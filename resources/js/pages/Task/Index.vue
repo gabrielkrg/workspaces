@@ -125,7 +125,7 @@ const closeModal = () => {};
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <div class="flex justify-between gap-4">
+            <div class="flex items-end justify-between gap-4">
                 <!-- progress -->
                 <div class="w-full max-w-md">
                     <div class="w-full max-w-md" v-if="tasks.length > 0">

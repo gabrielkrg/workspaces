@@ -13,6 +13,8 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -260,7 +262,12 @@ watch(
                         <form class="space-y-4" @submit.prevent="update">
                             <CardContent class="space-y-6">
                                 <div class="flex items-center justify-between gap-4" v-for="user in updateForm.users" :key="user.id">
-                                    <div class="flex flex-col">
+                                    <div class="flex flex-wrap items-center gap-4">
+                                        <Avatar>
+                                            <AvatarImage src="https://github.com/unovue.png" alt="@unovue" />
+                                            <AvatarFallback>CN</AvatarFallback>
+                                        </Avatar>
+
                                         <HeadingSmall :title="user.name" :description="user.email" />
                                     </div>
 
