@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -150,12 +151,17 @@ const closeModal = () => {};
                             <div class="grid gap-4 p-4">
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="title" class="text-right"> Title </Label>
-                                    <Input id="title" v-model="form.title" class="col-span-3" />
+                                    <Input id="title" v-model="form.title" class="col-span-4" />
                                 </div>
 
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="description" class="text-right"> Description </Label>
-                                    <Input id="description" v-model="form.description" class="col-span-3" />
+                                    <Textarea
+                                        id="description"
+                                        v-model="form.description"
+                                        placeholder="Type your description here."
+                                        class="col-span-4"
+                                    />
                                 </div>
                             </div>
                             <SheetFooter>
@@ -216,18 +222,18 @@ const closeModal = () => {};
                                                 <SheetContent>
                                                     <form @submit.prevent="update(task)">
                                                         <SheetHeader>
-                                                            <SheetTitle>Edit task</SheetTitle>
+                                                            <SheetTitle> Edit task </SheetTitle>
                                                             <SheetDescription> Click save when you're done. </SheetDescription>
                                                         </SheetHeader>
                                                         <div class="grid gap-4 p-4">
                                                             <div class="grid grid-cols-4 items-center gap-4">
                                                                 <Label for="title" class="text-right"> Title </Label>
-                                                                <Input id="title" v-model="updateForm.title" class="col-span-3" />
+                                                                <Input id="title" v-model="updateForm.title" class="col-span-4" />
                                                             </div>
 
                                                             <div class="grid grid-cols-4 items-center gap-4">
                                                                 <Label for="description" class="text-right"> Description </Label>
-                                                                <Input id="description" v-model="updateForm.description" class="col-span-3" />
+                                                                <Textarea id="description" v-model="updateForm.description" class="col-span-4" />
                                                             </div>
                                                         </div>
                                                         <SheetFooter>

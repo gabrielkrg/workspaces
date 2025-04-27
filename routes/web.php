@@ -7,6 +7,7 @@ use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\TaskController as APITaskController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -40,6 +41,11 @@ Route::middleware(['auth'])->group(function () {
     // Workspaces
     Route::get('workspaces', [WorkspaceController::class, 'index'])->name('workspaces.index');
     Route::post('workspaces', [WorkspaceController::class, 'store'])->name('workspaces.store');
+});
+
+// API
+Route::middleware(['auth'])->group(function () {
+    Route::get('/tasks/heatmap', [APITaskController::class, 'heatmap'])->name('tasks.heatmap');
 });
 
 require __DIR__.'/settings.php';

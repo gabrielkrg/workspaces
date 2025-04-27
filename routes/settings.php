@@ -24,9 +24,9 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/workspace', [WorkspaceController::class, 'edit'])->name('workspace.edit');
     Route::post('settings/workspace', [WorkspaceController::class, 'store'])->name('workspace.store');
     Route::put('settings/workspace/{workspace}', [WorkspaceController::class, 'update'])->name('workspace.update');
+    Route::delete('settings/workspace/{workspace}', [WorkspaceController::class, 'destroy'])->name('workspace.destroy');
 
     Route::patch('settings/workspace/set', [WorkspaceController::class, 'set'])->name('workspace.set');
-
     Route::get('workspace/invite/{token}', [WorkspaceController::class, 'inviteScreen'])->name('workspace.invite.screen');
     Route::get('workspace/invite-accept/{token}', [WorkspaceController::class, 'acceptInvite'])->name('workspace.invite.accept');
     Route::post('settings/workspaces/{workspace}/invite', [WorkspaceController::class, 'generateInviteLink'])->name('workspace.invite.generate');

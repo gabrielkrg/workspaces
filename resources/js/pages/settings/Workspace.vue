@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
-
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import InputError from '@/components/InputError.vue';
 import {
@@ -14,26 +12,28 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useInitials } from '@/composables/useInitials';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem } from '@/types';
+import { Head, router, useForm } from '@inertiajs/vue3';
 
 import axios from 'axios';
 import { Trash2Icon } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     user: Object,
 });
 
-const workspaces = props.user?.workspaces;
+const { getInitials } = useInitials();
+const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '');
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -42,19 +42,24 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const isDialogEditOpen = ref(false);
+const isDialogCreateOpen = ref(false);
+
 const updateForm = useForm({
-    name: props.user?.workspace.name,
-    users: props.user?.workspace.users,
+    name: props.user?.workspace?.name,
+    users: props.user?.workspace?.users,
 });
 
 const update = () => {
-    updateForm.put(route('workspace.update', props.user?.workspace), {
+    updateForm.put(route('workspace.update', props.user.workspace), {
         preserveScroll: true,
         onSuccess: () => updateForm.reset(),
         onError: (errors) => {
             console.log(errors);
         },
     });
+
+    isDialogEditOpen.value = false;
 };
 
 const removeUser = (userId) => {
@@ -80,12 +85,22 @@ const create = () => {
         preserveScroll: true,
         onSuccess: () => createForm.reset(),
     });
+
+    isDialogCreateOpen.value = false;
+};
+
+const deleteWorkspace = (workspaceId) => {
+    router.delete(route('workspace.destroy', workspaceId), {
+        preserveScroll: true,
+        onSuccess: () => createForm.reset(),
+    });
 };
 
 const workspaceLink = ref(props.user?.workspace_id);
 const link = ref('');
 const copied = ref(false);
 const link_errors = ref('');
+
 const genereteLink = () => {
     if (workspaceLink.value == null) return;
     link.value = '';
@@ -122,15 +137,6 @@ const copyToClipboard = async (link) => {
         console.error('Erro ao copiar:', e);
     }
 };
-
-watch(
-    () => props.user.workspace.users,
-    (newUsers) => {
-        console.log(newUsers);
-        updateForm.users = newUsers;
-    },
-    { deep: true },
-);
 </script>
 
 <template>
@@ -139,7 +145,7 @@ watch(
 
         <SettingsLayout>
             <div class="flex flex-wrap gap-3">
-                <Dialog>
+                <Dialog v-model:open="isDialogEditOpen">
                     <DialogTrigger as-child>
                         <Button variant="outline"> Edit Workspace </Button>
                     </DialogTrigger>
@@ -162,7 +168,7 @@ watch(
                     </DialogContent>
                 </Dialog>
 
-                <Dialog>
+                <Dialog v-model:open="isDialogCreateOpen">
                     <DialogTrigger as-child>
                         <Button variant="outline"> Create Workspace </Button>
                     </DialogTrigger>
@@ -198,15 +204,37 @@ watch(
                                     <SelectValue placeholder="Select" />
                                 </SelectTrigger>
                                 <SelectContent position="popper">
-                                    <SelectItem v-for="workspace in workspaces" :key="workspace.id" :value="workspace.id">
+                                    <SelectItem v-for="workspace in props.user?.workspaces" :key="workspace.id" :value="workspace.id">
                                         {{ workspace.name }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-wrap items-center gap-3">
                             <Button :disabled="setForm.processing">Save</Button>
+
+                            <AlertDialog>
+                                <AlertDialogTrigger as-child>
+                                    <Button variant="destructive"> Delete </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will remove the workspace
+                                            <span class="font-bold text-red-900">{{ user.workspace?.name }}</span> and tasks permanently.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                                        <Button variant="destructive" type="button" @click="deleteWorkspace(user.workspace_id)">
+                                            <button type="submit">Delete</button>
+                                        </Button>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
 
                             <Transition
                                 enter-active-class="transition ease-in-out"
@@ -231,7 +259,7 @@ watch(
                                     <SelectValue placeholder="Select" />
                                 </SelectTrigger>
                                 <SelectContent position="popper">
-                                    <SelectItem v-for="workspace in workspaces" :key="workspace.id" :value="workspace.id">
+                                    <SelectItem v-for="workspace in props.user?.workspaces" :key="workspace.id" :value="workspace.id">
                                         {{ workspace.name }}
                                     </SelectItem>
                                 </SelectContent>
@@ -241,15 +269,15 @@ watch(
                         <Button>Generate</Button>
                     </form>
                 </div>
-                <div v-if="link != ''">
-                    <div class="flex gap-2">
+                <div v-if="link != ''" class="">
+                    <div class="mb-6 flex gap-2">
                         <Input type="text" v-model="link" readonly @click="$event.target.select()" />
 
                         <Button type="button" @click="copyToClipboard(link)" class="cursor-pointer">
                             {{ copied ? 'Copied!' : 'Copy' }}
                         </Button>
                     </div>
-                    <InputError :message="clipboard_errors" />
+                    <InputError :message="clipboard_errors" class="mb-6" />
                 </div>
 
                 <div class="space-y-6">
@@ -260,18 +288,24 @@ watch(
                             <CardDescription>Below are the people with access to the current workspace.</CardDescription>
                         </CardHeader>
                         <form class="space-y-4" @submit.prevent="update">
-                            <CardContent class="space-y-6">
-                                <div class="flex items-center justify-between gap-4" v-for="user in updateForm.users" :key="user.id">
-                                    <div class="flex flex-wrap items-center gap-4">
+                            <CardContent class="space-y-6 divide-y">
+                                <div
+                                    class="flex flex-col flex-wrap items-start justify-between pb-6 md:flex-row md:items-center"
+                                    v-for="user in updateForm.users"
+                                    :key="user.id"
+                                >
+                                    <div class="flex items-center gap-3">
                                         <Avatar>
-                                            <AvatarImage src="https://github.com/unovue.png" alt="@unovue" />
-                                            <AvatarFallback>CN</AvatarFallback>
+                                            <AvatarImage v-if="showAvatar" :src="user.avatar" :alt="user.name" />
+                                            <AvatarFallback class="text-black dark:text-white">
+                                                {{ getInitials(user.name) }}
+                                            </AvatarFallback>
                                         </Avatar>
 
                                         <HeadingSmall :title="user.name" :description="user.email" />
                                     </div>
 
-                                    <div class="flex gap-3">
+                                    <div class="mt-2 flex gap-3">
                                         <Select v-model="user.pivot.role" :key="user.id">
                                             <SelectTrigger id="role">
                                                 <SelectValue placeholder="Select" />

@@ -22,6 +22,23 @@ class WorkspaceController extends Controller
         return Inertia::render('settings/Workspace', ['user' => $user]);
     }
 
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $user = Auth::user();
+
+        $workspace = Workspace::create([
+            'name' => $request->name,
+            'user_id' => $user->id,
+        ]);
+
+        $workspace->users()->attach($user->id, ['role' => 'owner']);
+
+        return redirect()->route('workspace.edit')->with('success', 'Workspace created successfully!');
+    }
 
     public function update(Request $request, Workspace $workspace)
     {
@@ -54,7 +71,7 @@ class WorkspaceController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('success', 'Workspace updated successfully.');
+        return redirect()->route('workspace.edit')->with('success', 'Workspace updated successfully!');
     }
 
 
@@ -66,25 +83,7 @@ class WorkspaceController extends Controller
 
         Auth::user()->update($validated);
 
-        return redirect()->back()->with('success', 'Workspace changed successfully!');
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
-
-        $user = Auth::user();
-
-        $workspace = Workspace::create([
-            'name' => $request->name,
-            'user_id' => $user->id,
-        ]);
-
-        $workspace->users()->attach($user->id, ['role' => 'owner']);
-
-        return redirect()->back()->with('success', 'Workspace changed successfully!');
+        return redirect()->route('workspace.edit')->with('success', 'Workspace changed successfully!');
     }
 
 
@@ -131,5 +130,14 @@ class WorkspaceController extends Controller
         $invite->delete();
 
         return redirect()->route('dashboard')->with('success', 'You were added to the workpace!');
+    }
+
+    public function destroy(Workspace $workspace)
+    {
+        $this->authorize('update', $workspace);
+
+        $workspace->delete();
+
+        return redirect()->route('workspace.edit')->with('success', 'Workspace deleted successfully!');
     }
 }
