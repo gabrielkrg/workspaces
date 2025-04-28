@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HeadingSmall from '@/components/HeadingSmall.vue';
 import { Chart as ChartJS, Filler, Legend, LineElement, PointElement, RadialLinearScale, Tooltip } from 'chart.js';
 import { Radar } from 'vue-chartjs';
 
@@ -47,5 +48,10 @@ const props = defineProps({
 </script>
 
 <template>
-    <Radar :data="chartData" :options="chartOptions" />
+    <div class="flex flex-col p-5 text-center">
+        <HeadingSmall title="Workspaces tasks" description="Here you have the total number of tasks per workspaces" class="mb-5" />
+        <div>
+            <Radar :data="chartData" :options="chartOptions" />
+        </div>
+    </div>
 </template>

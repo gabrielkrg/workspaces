@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HeadingSmall from '@/components/HeadingSmall.vue';
 import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import { defineProps } from 'vue';
 import { Line } from 'vue-chartjs';
@@ -34,5 +35,10 @@ const props = defineProps({
 </script>
 
 <template>
-    <Line :data="chartData" :options="chartOptions" class="p-5" />
+    <div class="flex flex-col p-5 text-center">
+        <HeadingSmall title="Workspaces tasks" description="Here you have the total number of tasks per workspaces" class="mb-5" />
+        <div>
+            <Line :data="chartData" :options="chartOptions" />
+        </div>
+    </div>
 </template>

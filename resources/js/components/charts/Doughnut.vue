@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HeadingSmall from '@/components/HeadingSmall.vue';
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from 'chart.js';
 import { defineProps } from 'vue';
 import { Doughnut } from 'vue-chartjs';
@@ -8,18 +9,17 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Define props with TypeScript types
 const props = defineProps({
+    title: {
+        type: String,
+        default: 'Title',
+    },
+    description: {
+        type: String,
+        default: 'Description',
+    },
     chartData: {
         type: Object as () => Record<string, any>,
-        default: () => ({
-            labels: ['VueJs', 'EmberJs', 'ReactJs', 'AngularJs'],
-            datasets: [
-                {
-                    // backgroundColor: ['#41B883', '#E46651', '#00D8FF', '#DD1B16'],
-                    backgroundColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)'],
-                    data: [40, 20, 80, 10],
-                },
-            ],
-        }),
+        required: true,
     },
     chartOptions: {
         type: Object as () => Record<string, any>,
@@ -32,5 +32,10 @@ const props = defineProps({
 </script>
 
 <template>
-    <Doughnut :data="chartData" :options="chartOptions" class="p-5" />
+    <div class="flex flex-col p-5 text-center">
+        <HeadingSmall :title="title" :description="description" class="mb-5" />
+        <div>
+            <Doughnut :data="chartData" :options="chartOptions" />
+        </div>
+    </div>
 </template>

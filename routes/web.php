@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\NoteController;
@@ -11,13 +12,10 @@ use App\Http\Controllers\Api\TaskController as APITaskController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    // return Inertia::render('Welcome');
-    return Inertia::render('Dashboard');
+    return redirect()->route('dashboard');
 })->middleware(['auth', 'verified'])->name('home');
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
     // Tasks

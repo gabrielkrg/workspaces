@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HeadingSmall from '@/components/HeadingSmall.vue';
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip } from 'chart.js';
 import { Bar } from 'vue-chartjs';
 
@@ -38,5 +39,10 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 </script>
 
 <template>
-    <Bar :data="chartData" :options="chartOptions" class="p-5" />
+    <div class="flex flex-col p-5 text-center">
+        <HeadingSmall title="Workspaces tasks" description="Here you have the total number of tasks per workspaces" class="mb-5" />
+        <div>
+            <Bar :data="chartData" :options="chartOptions" />
+        </div>
+    </div>
 </template>
