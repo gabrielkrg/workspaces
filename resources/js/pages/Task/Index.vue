@@ -12,13 +12,14 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { Check, EllipsisVertical } from 'lucide-vue-next';
-import { PopoverClose, PopoverContent, PopoverRoot, PopoverTrigger } from 'reka-ui';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -35,6 +36,7 @@ const props = defineProps({
 const form = useForm({
     title: '',
     description: '',
+    repeat: 'none',
 });
 
 const submit = () => {
@@ -66,6 +68,7 @@ const selectedTask = ref(null);
 
 const updateForm = useForm({
     title: '',
+    repeat: '',
     description: '',
 });
 
@@ -73,6 +76,7 @@ const selectTask = (task) => {
     selectedTask.value = task;
 
     updateForm.title = task.title;
+    updateForm.repeat = task.repeat;
     updateForm.description = task.description;
 };
 
@@ -96,9 +100,9 @@ const updateTask = (task, updates) => {
         preserveScroll: true,
         onSuccess: (page) => {
             const updatedTask = page.props.tasks.find((t) => t.id === task.id);
-
             if (updatedTask) {
                 task.title = updatedTask.title;
+                task.repeat = updatedTask.repeat;
                 task.done = updatedTask.done;
             }
         },
@@ -108,6 +112,7 @@ const updateTask = (task, updates) => {
     });
 };
 
+const closeModal = () => {};
 const deleteTask = (taskId) => {
     router.delete(route('tasks.delete', taskId), {
         preserveScroll: true,
@@ -117,8 +122,6 @@ const deleteTask = (taskId) => {
         },
     });
 };
-
-const closeModal = () => {};
 </script>
 
 <template>
@@ -140,7 +143,7 @@ const closeModal = () => {};
 
                 <Sheet>
                     <SheetTrigger as-child>
-                        <Button variant="default"> Create </Button>
+                        <Button variant="default" class="cursor-pointer"> Create </Button>
                     </SheetTrigger>
                     <SheetContent>
                         <form @submit.prevent="submit">
@@ -152,6 +155,20 @@ const closeModal = () => {};
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="title" class="text-right"> Title </Label>
                                     <Input id="title" v-model="form.title" class="col-span-4" />
+                                </div>
+
+                                <div class="flex flex-col gap-4">
+                                    <Label for="title" class="text-right"> Repat </Label>
+                                    <Select v-model="form.repeat" class="">
+                                        <SelectTrigger id="role" class="w-full">
+                                            <SelectValue placeholder="Select" />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            <SelectItem value="none"> Never </SelectItem>
+                                            <SelectItem value="daily"> Daily </SelectItem>
+                                            <SelectItem value="monthly"> Monthly </SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <div class="grid grid-cols-4 items-center gap-4">
@@ -166,7 +183,7 @@ const closeModal = () => {};
                             </div>
                             <SheetFooter>
                                 <SheetClose as-child>
-                                    <Button type="submit"> Save </Button>
+                                    <Button type="submit" class="cursor-pointer"> Save </Button>
                                 </SheetClose>
                             </SheetFooter>
                         </form>
@@ -179,7 +196,7 @@ const closeModal = () => {};
                     <!-- tasks -->
                     <div v-if="tasks.length > 0">
                         <ul class="space-y-2 divide-y">
-                            <li v-for="task in tasks" :key="task.id" class="flex items-center justify-between gap-4 p-4">
+                            <li v-for="task in tasks" :key="task.id" class="flex flex-row items-center justify-between gap-4 p-4">
                                 <div class="flex items-start gap-4">
                                     <label class="group mt-2 inline-flex cursor-pointer items-center">
                                         <input
@@ -195,57 +212,80 @@ const closeModal = () => {};
                                         </div>
                                     </label>
 
-                                    <div :class="['text-gray-700 dark:text-gray-300', { 'line-through': task.done }]">
-                                        <h2 class="line-clamp text-lg font-semibold text-gray-900 dark:text-white">{{ task.title }}</h2>
-                                        <p class="line-clamp text-gray-700 dark:text-gray-300">{{ task.description }}</p>
+                                    <div>
+                                        <div
+                                            class="inline-flex rounded bg-green-700 px-1 text-xs font-normal text-white capitalize"
+                                            v-if="task.repeat != 'none'"
+                                        >
+                                            {{ task.repeat }}
+                                        </div>
+                                        <div :class="['text-gray-700 dark:text-gray-300', { 'line-through': task.done }]">
+                                            <div class="flex flex-wrap gap-3">
+                                                <h2 class="line-clamp inline-flex gap-3 text-lg font-semibold text-gray-900 dark:text-white">
+                                                    {{ task.title }}
+                                                </h2>
+                                            </div>
+                                            <p class="line-clamp text-gray-700 dark:text-gray-300">{{ task.description }}</p>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <PopoverRoot class="relative">
+                                <Popover class="relative">
                                     <PopoverTrigger as-child>
                                         <button class="cursor-pointer p-2">
                                             <EllipsisVertical class="m-5 h-5 w-5 text-gray-900 dark:text-white" />
                                         </button>
                                     </PopoverTrigger>
 
-                                    <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 overflow-hidden rounded shadow" align="end">
-                                        <PopoverClose as-child>
-                                            <Sheet>
-                                                <SheetTrigger as-child>
-                                                    <div
-                                                        @click="selectTask(task)"
-                                                        class="dark:hover:bg-muted block w-full px-4 py-2 text-left hover:bg-gray-100"
-                                                    >
-                                                        Edit
-                                                    </div>
-                                                </SheetTrigger>
-                                                <SheetContent>
-                                                    <form @submit.prevent="update(task)">
-                                                        <SheetHeader>
-                                                            <SheetTitle> Edit task </SheetTitle>
-                                                            <SheetDescription> Click save when you're done. </SheetDescription>
-                                                        </SheetHeader>
-                                                        <div class="grid gap-4 p-4">
-                                                            <div class="grid grid-cols-4 items-center gap-4">
-                                                                <Label for="title" class="text-right"> Title </Label>
-                                                                <Input id="title" v-model="updateForm.title" class="col-span-4" />
-                                                            </div>
-
-                                                            <div class="grid grid-cols-4 items-center gap-4">
-                                                                <Label for="description" class="text-right"> Description </Label>
-                                                                <Textarea id="description" v-model="updateForm.description" class="col-span-4" />
-                                                            </div>
+                                    <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow" align="end">
+                                        <Sheet>
+                                            <SheetTrigger as-child>
+                                                <div
+                                                    @click="selectTask(task)"
+                                                    class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100"
+                                                >
+                                                    Edit
+                                                </div>
+                                            </SheetTrigger>
+                                            <SheetContent>
+                                                <form @submit.prevent="update(task)">
+                                                    <SheetHeader>
+                                                        <SheetTitle> Edit task </SheetTitle>
+                                                        <SheetDescription> Click save when you're done. </SheetDescription>
+                                                    </SheetHeader>
+                                                    <div class="grid gap-4 p-4">
+                                                        <div class="grid grid-cols-4 items-center gap-4">
+                                                            <Label for="title" class="text-right"> Title </Label>
+                                                            <Input id="title" v-model="updateForm.title" class="col-span-4" />
                                                         </div>
-                                                        <SheetFooter>
-                                                            <SheetClose as-child>
-                                                                <Button type="submit"> Save changes </Button>
-                                                            </SheetClose>
-                                                        </SheetFooter>
-                                                    </form>
-                                                </SheetContent>
-                                            </Sheet>
-                                        </PopoverClose>
 
+                                                        <div class="flex flex-col gap-4">
+                                                            <Label for="title" class="text-right"> Repat </Label>
+                                                            <Select v-model="updateForm.repeat" class="">
+                                                                <SelectTrigger id="role" class="w-full">
+                                                                    <SelectValue placeholder="Select" />
+                                                                </SelectTrigger>
+                                                                <SelectContent position="popper">
+                                                                    <SelectItem value="none"> Never </SelectItem>
+                                                                    <SelectItem value="daily"> Daily </SelectItem>
+                                                                    <SelectItem value="monthly"> Monthly </SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+
+                                                        <div class="grid grid-cols-4 items-center gap-4">
+                                                            <Label for="description" class="text-right"> Description </Label>
+                                                            <Textarea id="description" v-model="updateForm.description" class="col-span-4" />
+                                                        </div>
+                                                    </div>
+                                                    <SheetFooter>
+                                                        <SheetClose as-child>
+                                                            <Button type="submit"> Save changes </Button>
+                                                        </SheetClose>
+                                                    </SheetFooter>
+                                                </form>
+                                            </SheetContent>
+                                        </Sheet>
                                         <Dialog>
                                             <DialogTrigger as-child>
                                                 <div
@@ -278,7 +318,7 @@ const closeModal = () => {};
                                             </DialogContent>
                                         </Dialog>
                                     </PopoverContent>
-                                </PopoverRoot>
+                                </Popover>
                             </li>
                         </ul>
                     </div>

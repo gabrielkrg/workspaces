@@ -26,7 +26,7 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 
 import axios from 'axios';
 import { Trash2Icon } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     user: Object,
@@ -45,13 +45,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 const isDialogEditOpen = ref(false);
 const isDialogCreateOpen = ref(false);
 
+const workspaceUsers = ref(props.user?.workspace?.users);
 const updateForm = useForm({
     name: props.user?.workspace?.name,
     users: props.user?.workspace?.users,
 });
 
 const update = () => {
-    updateForm.put(route('workspace.update', props.user.workspace), {
+    updateForm.put(route('workspace.update', props.user?.workspace), {
         preserveScroll: true,
         onSuccess: () => updateForm.reset(),
         onError: (errors) => {
@@ -67,7 +68,7 @@ const removeUser = (userId) => {
 };
 
 const setForm = useForm({
-    workspace_id: props.user?.workspace_id,
+    workspace_id: props.user?.workspace?.id,
 });
 
 const set = () => {
@@ -96,7 +97,7 @@ const deleteWorkspace = (workspaceId) => {
     });
 };
 
-const workspaceLink = ref(props.user?.workspace_id);
+const workspaceLink = ref(props.user?.workspace?.id);
 const link = ref('');
 const copied = ref(false);
 const link_errors = ref('');
@@ -137,6 +138,15 @@ const copyToClipboard = async (link) => {
         console.error('Erro ao copiar:', e);
     }
 };
+
+watch(
+    () => props.user?.workspace,
+    (n) => {
+        workspaceLink.value = n?.id;
+        workspaceUsers.value = n?.users;
+    },
+    { immediate: true },
+);
 </script>
 
 <template>
@@ -147,7 +157,7 @@ const copyToClipboard = async (link) => {
             <div class="flex flex-wrap gap-3">
                 <Dialog v-model:open="isDialogEditOpen">
                     <DialogTrigger as-child>
-                        <Button variant="outline"> Edit Workspace </Button>
+                        <Button variant="outline" class="cursor-pointer"> Edit Workspace </Button>
                     </DialogTrigger>
                     <DialogContent class="sm:max-w-[425px]">
                         <form @submit.prevent="update" class="mb-6 space-y-6">
@@ -162,7 +172,7 @@ const copyToClipboard = async (link) => {
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button type="submit"> Save changes </Button>
+                                <Button type="submit" class="cursor-pointer"> Save changes </Button>
                             </DialogFooter>
                         </form>
                     </DialogContent>
@@ -170,7 +180,7 @@ const copyToClipboard = async (link) => {
 
                 <Dialog v-model:open="isDialogCreateOpen">
                     <DialogTrigger as-child>
-                        <Button variant="outline"> Create Workspace </Button>
+                        <Button variant="outline" class="cursor-pointer"> Create Workspace </Button>
                     </DialogTrigger>
                     <DialogContent class="sm:max-w-[425px]">
                         <form @submit.prevent="create" class="mb-6 space-y-6">
@@ -185,7 +195,7 @@ const copyToClipboard = async (link) => {
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button type="submit"> Save </Button>
+                                <Button type="submit" class="cursor-pointer"> Save </Button>
                             </DialogFooter>
                         </form>
                     </DialogContent>
@@ -212,29 +222,7 @@ const copyToClipboard = async (link) => {
                         </div>
 
                         <div class="flex flex-wrap items-center gap-3">
-                            <Button :disabled="setForm.processing">Save</Button>
-
-                            <AlertDialog>
-                                <AlertDialogTrigger as-child>
-                                    <Button variant="destructive"> Delete </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This action cannot be undone. This will remove the workspace
-                                            <span class="font-bold text-red-900">{{ user.workspace?.name }}</span> and tasks permanently.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-
-                                        <Button variant="destructive" type="button" @click="deleteWorkspace(user.workspace_id)">
-                                            <button type="submit">Delete</button>
-                                        </Button>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
+                            <Button :disabled="setForm.processing" class="cursor-pointer">Save</Button>
 
                             <Transition
                                 enter-active-class="transition ease-in-out"
@@ -248,7 +236,7 @@ const copyToClipboard = async (link) => {
                     </form>
                 </div>
 
-                <div class="flex flex-col space-y-6">
+                <div class="flex flex-col space-y-6" v-if="user?.workspace">
                     <HeadingSmall title="Generate link" description="Select the workspace that you want to create a access link" />
 
                     <form @submit.prevent="genereteLink" class="mb-6">
@@ -266,7 +254,7 @@ const copyToClipboard = async (link) => {
                             </Select>
                         </div>
 
-                        <Button>Generate</Button>
+                        <Button class="cursor-pointer">Generate</Button>
                     </form>
                 </div>
                 <div v-if="link != ''" class="">
@@ -280,7 +268,7 @@ const copyToClipboard = async (link) => {
                     <InputError :message="clipboard_errors" class="mb-6" />
                 </div>
 
-                <div class="space-y-6">
+                <div class="space-y-6" v-if="user?.workspace">
                     <HeadingSmall title="Manage users" description="Manage the users permissions for the current selected workspace" />
                     <Card class="mb-6 w-full">
                         <CardHeader>
@@ -291,7 +279,7 @@ const copyToClipboard = async (link) => {
                             <CardContent class="space-y-6 divide-y">
                                 <div
                                     class="flex flex-col flex-wrap items-start justify-between pb-6 md:flex-row md:items-center"
-                                    v-for="user in updateForm.users"
+                                    v-for="user in workspaceUsers"
                                     :key="user.id"
                                 >
                                     <div class="flex items-center gap-3">
@@ -319,7 +307,7 @@ const copyToClipboard = async (link) => {
 
                                         <AlertDialog>
                                             <AlertDialogTrigger as-child>
-                                                <Button variant="destructive"> <Trash2Icon /> </Button>
+                                                <Button variant="destructive" class="cursor-pointer"> <Trash2Icon /> </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
                                                 <AlertDialogHeader>
@@ -341,10 +329,41 @@ const copyToClipboard = async (link) => {
                                 </div>
                             </CardContent>
                             <CardFooter class="flex justify-between">
-                                <Button>Save</Button>
+                                <Button class="cursor-pointer">Save</Button>
                             </CardFooter>
                         </form>
                     </Card>
+                </div>
+
+                <div class="flex flex-col space-y-6" v-if="user?.workspace">
+                    <HeadingSmall
+                        :title="`Delete ${user.workspace?.name}`"
+                        description="The workspace will deleted together with all the tasks in it"
+                    />
+
+                    <div class="inline">
+                        <AlertDialog>
+                            <AlertDialogTrigger as-child>
+                                <Button variant="destructive" class="cursor-pointer"> Delete </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will remove the workspace
+                                        <span class="font-bold text-red-900">{{ user.workspace?.name }}</span> and tasks permanently.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                                    <Button variant="destructive" type="button" @click="deleteWorkspace(user.workspace?.id)">
+                                        <button type="submit">Delete</button>
+                                    </Button>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
                 </div>
             </div>
         </SettingsLayout>

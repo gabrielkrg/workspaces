@@ -22,7 +22,8 @@ class TaskController extends Controller
         $this->authorize('view', $workspace);
 
         $query = Task::where('workspace_id', $user->workspace_id)
-            ->latest();
+            ->orderBy('done', 'asc')
+            ->orderBy('created_at', 'desc');
 
         $tasks = $query->get();
 
@@ -31,7 +32,6 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
-
         $user = Auth::user();
 
         $workspace = Workspace::findOrFail($user->workspace_id);
@@ -40,12 +40,14 @@ class TaskController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'repeat' => 'required|string|in:daily,monthly,none',
             'description' => 'nullable|string',
         ]);
 
         $task = new Task([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? '',
+            'repeat' => $validated['repeat'],
             'done' => false,
             'user_id' => $user->id,
             'workspace_id' => $user->workspace_id,
@@ -58,6 +60,7 @@ class TaskController extends Controller
 
     public function update(Task $task, Request $request)
     {
+
         $user = Auth::user();
 
         $workspace = Workspace::findOrFail($user->workspace_id);
@@ -66,6 +69,7 @@ class TaskController extends Controller
 
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
+            'repeat' => 'sometimes|string|in:daily,monthly,none',
             'description' => 'nullable|string',
             'done' => 'sometimes|boolean',
         ]);
