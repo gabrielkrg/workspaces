@@ -63,4 +63,9 @@ class User extends Authenticatable
                     ->withPivot('role')
                     ->withTimestamps();
     }
+
+    public function tags()
+    {
+        return $this->hasMany(Tag::class);
+    }
 }

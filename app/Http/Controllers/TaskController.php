@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tag;
 use App\Models\Task;
 use App\Models\Workspace;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -13,21 +14,45 @@ class TaskController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index()
+    public function index(Request $request)
     {
+
         $user = Auth::user();
 
         $workspace = Workspace::findOrFail($user->workspace_id);
 
         $this->authorize('view', $workspace);
 
-        $query = Task::where('workspace_id', $user->workspace_id)
+        $query = Task::with('tags')
+            ->where('workspace_id', $user->workspace_id)
             ->orderBy('done', 'asc')
             ->orderBy('created_at', 'desc');
 
-        $tasks = $query->get();
+        if ($request->filled('tag')) {
+            $query->whereHas('tags', function ($q) use ($request) {
+                $q->where('name', $request->tag);
+            });
+        }
 
-        return Inertia::render('Task/Index', ['tasks' => $tasks]);
+        // ✅ Filtro por done (true ou false)
+        if ($request->filled('done')) {
+            $done = filter_var($request->done, FILTER_VALIDATE_BOOLEAN); // converte 'true'/'false' em boolean
+            $query->where('done', $done);
+        }
+
+        // 🔠 Filtro por título (search)
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        $tasks = $query->get();
+        $tags = $user->tags()->where('workspace_id', $user->workspace_id)->get();
+
+        return Inertia::render('Task/Index', [
+            'tasks' => $tasks,
+            'tags' => $tags,
+            'filters' => $request->only(['tag', 'done', 'search']),
+        ]);
     }
 
     public function store(Request $request)
@@ -42,6 +67,8 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'repeat' => 'required|string|in:daily,monthly,none',
             'description' => 'nullable|string',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:50',
         ]);
 
         $task = new Task([
@@ -55,12 +82,23 @@ class TaskController extends Controller
 
         $task->save();
 
+        if (!empty($validated['tags'])) {
+            $tagIds = collect($validated['tags'])->map(function ($tagName) use ($user) {
+                return Tag::firstOrCreate([
+                    'name' => $tagName,
+                    'user_id' => $user->id,
+                    'workspace_id' => $user->workspace_id,
+                ])->id;
+            });
+
+            $task->tags()->attach($tagIds);
+        }
+
         return redirect()->back()->with('success', 'Task created successfully!');
     }
 
     public function update(Task $task, Request $request)
     {
-
         $user = Auth::user();
 
         $workspace = Workspace::findOrFail($user->workspace_id);
@@ -72,9 +110,23 @@ class TaskController extends Controller
             'repeat' => 'sometimes|string|in:daily,monthly,none',
             'description' => 'nullable|string',
             'done' => 'sometimes|boolean',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:50',
         ]);
 
         $task->update($validated);
+
+        if (!empty($validated['tags'])) {
+            $tagIds = collect($validated['tags'])->map(function ($tagName) use ($user) {
+                return Tag::firstOrCreate([
+                    'name' => $tagName,
+                    'user_id' => $user->id,
+                    'workspace_id' => $user->workspace_id,
+                ])->id;
+            });
+
+            $task->tags()->sync($tagIds);
+        }
 
         return redirect()->back()->with('success', 'Task updated successfully!');
     }

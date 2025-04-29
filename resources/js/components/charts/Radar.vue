@@ -7,6 +7,14 @@ import { Radar } from 'vue-chartjs';
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
 const props = defineProps({
+    title: {
+        type: String,
+        default: 'Title',
+    },
+    description: {
+        type: String,
+        default: 'Description',
+    },
     chartData: {
         type: Object as () => Record<string, any>,
         default: () => ({
@@ -49,7 +57,7 @@ const props = defineProps({
 
 <template>
     <div class="flex flex-col p-5 text-center">
-        <HeadingSmall title="Workspaces tasks" description="Here you have the total number of tasks per workspaces" class="mb-5" />
+        <HeadingSmall :title="title" :description="description" class="mb-5" />
         <div>
             <Radar :data="chartData" :options="chartOptions" />
         </div>

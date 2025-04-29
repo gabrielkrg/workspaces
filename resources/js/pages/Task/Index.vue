@@ -15,12 +15,13 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { TagsInput, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText } from '@/components/ui/tags-input';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { Check, EllipsisVertical } from 'lucide-vue-next';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -31,12 +32,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const props = defineProps({
     tasks: Array,
+    tags: Array,
+    filters: Object,
 });
 
 const form = useForm({
     title: '',
     description: '',
     repeat: 'none',
+    tags: [] as string[],
 });
 
 const submit = () => {
@@ -56,19 +60,12 @@ const handleClickOutside = (event) => {
     }
 };
 
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside);
-});
-
-onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
-});
-
 const selectedTask = ref(null);
 
 const updateForm = useForm({
     title: '',
     repeat: '',
+    tags: [] as string[],
     description: '',
 });
 
@@ -77,6 +74,7 @@ const selectTask = (task) => {
 
     updateForm.title = task.title;
     updateForm.repeat = task.repeat;
+    updateForm.tags = task.tags?.map((tag) => tag.name) || [];
     updateForm.description = task.description;
 };
 
@@ -122,6 +120,41 @@ const deleteTask = (taskId) => {
         },
     });
 };
+
+const filtersForm = useForm({
+    search: props.filters?.search || '',
+    tag: props.filters?.tag || '',
+    done: props.filters?.done || '',
+});
+
+const submitFilters = () => {
+    filtersForm.get(route('tasks.index'), {
+        preserveState: true,
+        replace: true,
+    });
+};
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
+
+watch(
+    () => filtersForm.tag,
+    () => {
+        submitFilters();
+    },
+);
+
+watch(
+    () => filtersForm.done,
+    () => {
+        submitFilters();
+    },
+);
 </script>
 
 <template>
@@ -130,14 +163,39 @@ const deleteTask = (taskId) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div class="flex items-end justify-between gap-4">
-                <!-- progress -->
-                <div class="w-full max-w-md">
-                    <div class="w-full max-w-md" v-if="tasks.length > 0">
-                        <div class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Progress: {{ percent }}%</div>
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                        <Label for="search">Title</Label>
+                        <Input @input="submitFilters" id="search" type="search" placeholder="Title" v-model="filtersForm.search" />
+                    </div>
 
-                        <div class="bg-sidebar-accent h-4 w-full overflow-hidden rounded-full shadow-md">
-                            <div class="h-full bg-green-500 transition-all duration-300 ease-in-out" :style="{ width: `${percent}%` }" />
-                        </div>
+                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                        <Label for="tag">Tag</Label>
+                        <Select v-model="filtersForm.tag">
+                            <SelectTrigger id="tag" class="w-full">
+                                <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent position="popper">
+                                <SelectItem :value="null"> All </SelectItem>
+                                <SelectItem v-for="tag in tags" :key="tag.name" :value="tag.name">
+                                    {{ tag.name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                        <Label for="tag">Status</Label>
+                        <Select v-model="filtersForm.done">
+                            <SelectTrigger id="tag" class="w-full">
+                                <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent position="popper">
+                                <SelectItem :value="null"> All </SelectItem>
+                                <SelectItem value="false"> Doing </SelectItem>
+                                <SelectItem value="true"> Done </SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 
@@ -171,6 +229,22 @@ const deleteTask = (taskId) => {
                                     </Select>
                                 </div>
 
+                                <div class="flex flex-col gap-4">
+                                    <Label for="title" class="text-right"> Tags </Label>
+                                    <TagsInput :model-value="form.tags" @update:model-value="(val) => (form.tags = val)">
+                                        <TagsInputItem v-for="tag in form.tags" :key="tag" :value="tag">
+                                            <TagsInputItemText />
+                                            <TagsInputItemDelete />
+                                        </TagsInputItem>
+
+                                        <TagsInputInput placeholder="Enter to add..." />
+                                    </TagsInput>
+
+                                    <div v-if="form.errors.tags" class="text-sm text-red-500">
+                                        {{ form.errors.tags }}
+                                    </div>
+                                </div>
+
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="description" class="text-right"> Description </Label>
                                     <Textarea
@@ -189,6 +263,17 @@ const deleteTask = (taskId) => {
                         </form>
                     </SheetContent>
                 </Sheet>
+            </div>
+
+            <!-- progress -->
+            <div class="w-full max-w-md">
+                <div class="w-full max-w-md" v-if="tasks.length > 0">
+                    <p class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Progress: {{ percent }}%</p>
+
+                    <div class="bg-sidebar-accent h-4 w-full overflow-hidden rounded-full shadow-md">
+                        <div class="h-full bg-green-500 transition-all duration-300 ease-in-out" :style="{ width: `${percent}%` }" />
+                    </div>
+                </div>
             </div>
 
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
@@ -213,12 +298,21 @@ const deleteTask = (taskId) => {
                                     </label>
 
                                     <div>
-                                        <div
-                                            class="inline-flex rounded bg-green-700 px-1 text-xs font-normal text-white capitalize"
-                                            v-if="task.repeat != 'none'"
-                                        >
-                                            {{ task.repeat }}
+                                        <div class="flex flex-wrap gap-1">
+                                            <div
+                                                class="flex rounded bg-green-700 px-1 text-xs font-normal text-white capitalize"
+                                                v-if="task.repeat != 'none'"
+                                            >
+                                                {{ task.repeat }}
+                                            </div>
+
+                                            <div v-for="tag in task.tags" :key="tag.index">
+                                                <div class="flex rounded bg-gray-400 px-1 text-xs font-normal text-white capitalize">
+                                                    {{ tag.name }}
+                                                </div>
+                                            </div>
                                         </div>
+
                                         <div :class="['text-gray-700 dark:text-gray-300', { 'line-through': task.done }]">
                                             <div class="flex flex-wrap gap-3">
                                                 <h2 class="line-clamp inline-flex gap-3 text-lg font-semibold text-gray-900 dark:text-white">
@@ -271,6 +365,25 @@ const deleteTask = (taskId) => {
                                                                     <SelectItem value="monthly"> Monthly </SelectItem>
                                                                 </SelectContent>
                                                             </Select>
+                                                        </div>
+
+                                                        <div class="flex flex-col gap-4">
+                                                            <Label for="title" class="text-right"> Tags </Label>
+                                                            <TagsInput
+                                                                :model-value="updateForm.tags"
+                                                                @update:model-value="(val) => (updateForm.tags = val)"
+                                                            >
+                                                                <TagsInputItem v-for="tag in updateForm.tags" :key="tag" :value="tag">
+                                                                    <TagsInputItemText />
+                                                                    <TagsInputItemDelete />
+                                                                </TagsInputItem>
+
+                                                                <TagsInputInput placeholder="Enter to add..." />
+                                                            </TagsInput>
+
+                                                            <div v-if="updateForm.errors.tags" class="text-sm text-red-500">
+                                                                {{ updateForm.errors.tags }}
+                                                            </div>
                                                         </div>
 
                                                         <div class="grid grid-cols-4 items-center gap-4">

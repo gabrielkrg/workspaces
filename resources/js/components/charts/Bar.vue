@@ -4,23 +4,41 @@ import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title
 import { Bar } from 'vue-chartjs';
 
 const props = defineProps({
+    title: {
+        type: String,
+        default: 'Title',
+    },
+    description: {
+        type: String,
+        default: 'Description',
+    },
     chartData: {
         type: Object as () => Record<string, any>,
         default: () => ({
-            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+            labels: [1, 2, 3, 4, 5, 6],
             datasets: [
                 {
-                    label: 'Data One',
+                    label: 'My First Dataset',
+                    data: [65, 59, 80, 81, 56, 55, 40],
                     backgroundColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(255, 159, 64, 1)',
-                        'rgba(255, 205, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(201, 203, 207, 1)',
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(255, 205, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(201, 203, 207, 0.2)',
                     ],
-                    data: [40, 20, 12, 39, 10, 40, 39, 80, 40, 20, 12, 11],
+                    borderColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(255, 159, 64)',
+                        'rgb(255, 205, 86)',
+                        'rgb(75, 192, 192)',
+                        'rgb(54, 162, 235)',
+                        'rgb(153, 102, 255)',
+                        'rgb(201, 203, 207)',
+                    ],
+                    borderWidth: 1,
                 },
             ],
         }),
@@ -29,7 +47,8 @@ const props = defineProps({
         type: Object as () => Record<string, any>,
         default: () => ({
             responsive: true,
-            maintainAspectRatio: false,
+            // maintainAspectRatio: false,
+            indexAxis: 'y',
         }),
     },
 });
@@ -40,8 +59,8 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 <template>
     <div class="flex flex-col p-5 text-center">
-        <HeadingSmall title="Workspaces tasks" description="Here you have the total number of tasks per workspaces" class="mb-5" />
-        <div>
+        <HeadingSmall :title="title" :description="description" class="mb-5" />
+        <div class="flex">
             <Bar :data="chartData" :options="chartOptions" />
         </div>
     </div>

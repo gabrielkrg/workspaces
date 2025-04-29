@@ -9,13 +9,21 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 // Define props with TypeScript types
 const props = defineProps({
+    title: {
+        type: String,
+        default: 'Title',
+    },
+    description: {
+        type: String,
+        default: 'Description',
+    },
     chartData: {
         type: Object as () => Record<string, any>,
         default: () => ({
             labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
             datasets: [
                 {
-                    label: 'My First Dataset',
+                    label: 'Workspaces',
                     data: [65, 59, 80, 81, 56, 55, 40],
                     fill: false,
                     borderColor: 'rgb(75, 192, 192)',
@@ -36,7 +44,8 @@ const props = defineProps({
 
 <template>
     <div class="flex flex-col p-5 text-center">
-        <HeadingSmall title="Workspaces tasks" description="Here you have the total number of tasks per workspaces" class="mb-5" />
+        <HeadingSmall :title="title" :description="description" class="mb-5" />
+
         <div>
             <Line :data="chartData" :options="chartOptions" />
         </div>
