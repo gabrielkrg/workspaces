@@ -43,7 +43,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const isDialogEditOpen = ref(false);
-const isDialogCreateOpen = ref(false);
 
 const updateForm = useForm({
     name: props.user?.workspace?.name,
@@ -76,6 +75,8 @@ const set = () => {
     });
 };
 
+const isDialogCreateOpen = ref(false);
+
 const createForm = useForm({
     name: '',
 });
@@ -92,7 +93,7 @@ const create = () => {
 const deleteWorkspace = (workspaceId) => {
     router.delete(route('workspace.destroy', workspaceId), {
         preserveScroll: true,
-        onSuccess: () => createForm.reset(),
+        onSuccess: () => {},
     });
 };
 
@@ -142,6 +143,9 @@ watch(
     () => props.user?.workspace,
     (n) => {
         workspaceLink.value = n?.id;
+
+        updateForm.name = n?.name;
+        updateForm.users = n?.users;
     },
     { immediate: true },
 );
