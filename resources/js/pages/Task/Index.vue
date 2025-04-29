@@ -158,7 +158,7 @@ const deleteTask = (taskId) => {
                                 </div>
 
                                 <div class="flex flex-col gap-4">
-                                    <Label for="title" class="text-right"> Repat </Label>
+                                    <Label for="title" class="text-right"> Repeat </Label>
                                     <Select v-model="form.repeat" class="">
                                         <SelectTrigger id="role" class="w-full">
                                             <SelectValue placeholder="Select" />
@@ -260,7 +260,7 @@ const deleteTask = (taskId) => {
                                                         </div>
 
                                                         <div class="flex flex-col gap-4">
-                                                            <Label for="title" class="text-right"> Repat </Label>
+                                                            <Label for="title" class="text-right"> Repeat </Label>
                                                             <Select v-model="updateForm.repeat" class="">
                                                                 <SelectTrigger id="role" class="w-full">
                                                                     <SelectValue placeholder="Select" />

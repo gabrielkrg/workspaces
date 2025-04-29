@@ -33,7 +33,7 @@ const props = defineProps({
 });
 
 const { getInitials } = useInitials();
-const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '');
+const showAvatar = computed(() => props.user?.avatar && props.user.avatar !== '');
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -45,7 +45,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 const isDialogEditOpen = ref(false);
 const isDialogCreateOpen = ref(false);
 
-const workspaceUsers = ref(props.user?.workspace?.users);
 const updateForm = useForm({
     name: props.user?.workspace?.name,
     users: props.user?.workspace?.users,
@@ -54,7 +53,7 @@ const updateForm = useForm({
 const update = () => {
     updateForm.put(route('workspace.update', props.user?.workspace), {
         preserveScroll: true,
-        onSuccess: () => updateForm.reset(),
+        onSuccess: () => {},
         onError: (errors) => {
             console.log(errors);
         },
@@ -143,7 +142,6 @@ watch(
     () => props.user?.workspace,
     (n) => {
         workspaceLink.value = n?.id;
-        workspaceUsers.value = n?.users;
     },
     { immediate: true },
 );
@@ -279,7 +277,7 @@ watch(
                             <CardContent class="space-y-6 divide-y">
                                 <div
                                     class="flex flex-col flex-wrap items-start justify-between pb-6 md:flex-row md:items-center"
-                                    v-for="user in workspaceUsers"
+                                    v-for="(user, index) in updateForm.users"
                                     :key="user.id"
                                 >
                                     <div class="flex items-center gap-3">
@@ -294,7 +292,7 @@ watch(
                                     </div>
 
                                     <div class="mt-2 flex gap-3">
-                                        <Select v-model="user.pivot.role" :key="user.id">
+                                        <Select v-model="updateForm.users[index].pivot.role" :key="user.id">
                                             <SelectTrigger id="role">
                                                 <SelectValue placeholder="Select" />
                                             </SelectTrigger>
