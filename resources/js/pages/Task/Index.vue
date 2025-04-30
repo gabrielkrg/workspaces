@@ -162,14 +162,14 @@ watch(
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <div class="flex items-end justify-between gap-4">
-                <div class="grid grid-cols-4 gap-4">
-                    <div class="grid w-full max-w-sm items-center gap-1.5">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
                         <Label for="search">Title</Label>
                         <Input @input="submitFilters" id="search" type="search" placeholder="Title" v-model="filtersForm.search" />
                     </div>
 
-                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                    <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
                         <Label for="tag">Tag</Label>
                         <Select v-model="filtersForm.tag">
                             <SelectTrigger id="tag" class="w-full">
@@ -184,7 +184,7 @@ watch(
                         </Select>
                     </div>
 
-                    <div class="grid w-full max-w-sm items-center gap-1.5">
+                    <div class="col-span-full grid max-w-sm items-center gap-1.5 md:col-span-1">
                         <Label for="tag">Status</Label>
                         <Select v-model="filtersForm.done">
                             <SelectTrigger id="tag" class="w-full">
@@ -192,7 +192,7 @@ watch(
                             </SelectTrigger>
                             <SelectContent position="popper">
                                 <SelectItem :value="null"> All </SelectItem>
-                                <SelectItem value="false"> Doing </SelectItem>
+                                <SelectItem value="false"> To do </SelectItem>
                                 <SelectItem value="true"> Done </SelectItem>
                             </SelectContent>
                         </Select>
@@ -231,14 +231,17 @@ watch(
 
                                 <div class="flex flex-col gap-4">
                                     <Label for="title" class="text-right"> Tags </Label>
-                                    <TagsInput :model-value="form.tags" @update:model-value="(val) => (form.tags = val)">
-                                        <TagsInputItem v-for="tag in form.tags" :key="tag" :value="tag">
-                                            <TagsInputItemText />
-                                            <TagsInputItemDelete />
-                                        </TagsInputItem>
+                                    <div>
+                                        <TagsInput :model-value="form.tags" @update:model-value="(val) => (form.tags = val)">
+                                            <TagsInputItem v-for="tag in form.tags" :key="tag" :value="tag">
+                                                <TagsInputItemText />
+                                                <TagsInputItemDelete />
+                                            </TagsInputItem>
 
-                                        <TagsInputInput placeholder="Enter to add..." />
-                                    </TagsInput>
+                                            <TagsInputInput placeholder="Tags..." />
+                                        </TagsInput>
+                                        <span class="text-xs text-gray-500"> Use comma <span class="font-bold">( , )</span> to add </span>
+                                    </div>
 
                                     <div v-if="form.errors.tags" class="text-sm text-red-500">
                                         {{ form.errors.tags }}
@@ -369,17 +372,22 @@ watch(
 
                                                         <div class="flex flex-col gap-4">
                                                             <Label for="title" class="text-right"> Tags </Label>
-                                                            <TagsInput
-                                                                :model-value="updateForm.tags"
-                                                                @update:model-value="(val) => (updateForm.tags = val)"
-                                                            >
-                                                                <TagsInputItem v-for="tag in updateForm.tags" :key="tag" :value="tag">
-                                                                    <TagsInputItemText />
-                                                                    <TagsInputItemDelete />
-                                                                </TagsInputItem>
+                                                            <div>
+                                                                <TagsInput
+                                                                    :model-value="updateForm.tags"
+                                                                    @update:model-value="(val) => (updateForm.tags = val)"
+                                                                >
+                                                                    <TagsInputItem v-for="tag in updateForm.tags" :key="tag" :value="tag">
+                                                                        <TagsInputItemText />
+                                                                        <TagsInputItemDelete />
+                                                                    </TagsInputItem>
 
-                                                                <TagsInputInput placeholder="Enter to add..." />
-                                                            </TagsInput>
+                                                                    <TagsInputInput placeholder="Tags..." />
+                                                                </TagsInput>
+                                                                <span class="text-xs text-gray-500">
+                                                                    Use comma <span class="font-bold">( , )</span> to add
+                                                                </span>
+                                                            </div>
 
                                                             <div v-if="updateForm.errors.tags" class="text-sm text-red-500">
                                                                 {{ updateForm.errors.tags }}
