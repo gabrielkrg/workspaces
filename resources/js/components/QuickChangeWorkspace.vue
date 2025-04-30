@@ -32,7 +32,7 @@ const set = () => {
 
 <template>
     <Dialog>
-        <DialogTrigger as-child class="fixed top-5 right-5">
+        <DialogTrigger as-child class="fixed top-3 right-3 md:top-5 md:right-5">
             <Button variant="outline"> Change workspace </Button>
         </DialogTrigger>
         <DialogContent class="sm:max-w-[425px]">
