@@ -29,4 +29,17 @@ class TaskController extends Controller
         return response()->json($tasks);
     }
 
+    public function latestChanges()
+    {
+        $user = Auth::user();
+        $workspaceIds = $user->workspaces()->pluck('workspaces.id');
+
+        $tasks = Task::with(['tags', 'workspace'])
+            ->whereIn('workspace_id', $workspaceIds)
+            ->orderBy('updated_at', 'desc')
+            ->take(10)
+            ->get();
+
+        return response()->json($tasks);
+    }
 }

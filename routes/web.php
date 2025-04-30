@@ -44,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
 // API
 Route::middleware(['auth'])->group(function () {
     Route::get('/tasks/heatmap', [APITaskController::class, 'heatmap'])->name('tasks.heatmap');
+    Route::get('/tasks/latest', [APITaskController::class, 'latestChanges'])->name('tasks.latest');
 });
 
 require __DIR__.'/settings.php';

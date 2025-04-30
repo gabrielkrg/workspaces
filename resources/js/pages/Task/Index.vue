@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogClose,
@@ -20,7 +21,8 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { Check, EllipsisVertical } from 'lucide-vue-next';
+import { Check, ChevronDown, EllipsisVertical } from 'lucide-vue-next';
+import { useFilter } from 'reka-ui';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -41,6 +43,21 @@ const form = useForm({
     description: '',
     repeat: 'none',
     tags: [] as string[],
+    delete_after: false,
+});
+
+const tagsList = props.tags?.map((tag) => ({
+    value: tag.name,
+    label: tag.name,
+}));
+
+const open = ref(false);
+const searchTag = ref('');
+
+const { contains } = useFilter({ sensitivity: 'base' });
+const filteredTags = computed(() => {
+    const options = tagsList.filter((i) => !form.tags.includes(i.label));
+    return searchTag.value ? options.filter((option) => contains(option.label, searchTag.value)) : options;
 });
 
 const submit = () => {
@@ -67,6 +84,7 @@ const updateForm = useForm({
     repeat: '',
     tags: [] as string[],
     description: '',
+    delete_after: false,
 });
 
 const selectTask = (task) => {
@@ -76,12 +94,12 @@ const selectTask = (task) => {
     updateForm.repeat = task.repeat;
     updateForm.tags = task.tags?.map((tag) => tag.name) || [];
     updateForm.description = task.description;
+    updateForm.delete_after = task.delete_after;
 };
 
 const update = (taskId) => {
     if (selectedTask.value == null) return;
 
-    console.log(selectedTask.value);
     updateForm.put(route('tasks.update', taskId), {
         onSuccess: () => {
             updateForm.reset();
@@ -163,7 +181,50 @@ watch(
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div class="flex flex-wrap items-end justify-between gap-4">
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 gap-4 md:hidden">
+                    <Popover>
+                        <PopoverTrigger as-child>
+                            <Button variant="outline"> Filters <ChevronDown class="h-5 w-5 text-gray-900 dark:text-white" /> </Button>
+                        </PopoverTrigger>
+                        <PopoverContent class="flex w-80 flex-col gap-3">
+                            <div class="flex w-full max-w-sm flex-col gap-1.5">
+                                <Label for="search-mobile">Title</Label>
+                                <Input @input="submitFilters" id="search-mobile" type="search" placeholder="Title" v-model="filtersForm.search" />
+                            </div>
+
+                            <div class="flex w-full max-w-sm flex-col gap-1.5">
+                                <Label for="tag-mobile">Tag</Label>
+                                <Select v-model="filtersForm.tag">
+                                    <SelectTrigger id="tag-mobile" class="w-full">
+                                        <SelectValue placeholder="Select" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectItem :value="null"> All </SelectItem>
+                                        <SelectItem v-for="tag in tags" :key="tag.name" :value="tag.name">
+                                            {{ tag.name }}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div class="flex w-full max-w-sm flex-col gap-1.5">
+                                <Label for="status-mobile">Status</Label>
+                                <Select v-model="filtersForm.done">
+                                    <SelectTrigger id="status-mobile" class="w-full">
+                                        <SelectValue placeholder="Select" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectItem :value="null"> All </SelectItem>
+                                        <SelectItem value="false"> To do </SelectItem>
+                                        <SelectItem value="true"> Done </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                </div>
+
+                <div class="hidden grid-cols-3 gap-4 md:grid">
                     <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
                         <Label for="search">Title</Label>
                         <Input @input="submitFilters" id="search" type="search" placeholder="Title" v-model="filtersForm.search" />
@@ -184,10 +245,10 @@ watch(
                         </Select>
                     </div>
 
-                    <div class="col-span-full grid max-w-sm items-center gap-1.5 md:col-span-1">
-                        <Label for="tag">Status</Label>
+                    <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
+                        <Label for="status">Status</Label>
                         <Select v-model="filtersForm.done">
-                            <SelectTrigger id="tag" class="w-full">
+                            <SelectTrigger id="status" class="w-full">
                                 <SelectValue placeholder="Select" />
                             </SelectTrigger>
                             <SelectContent position="popper">
@@ -240,6 +301,47 @@ watch(
 
                                             <TagsInputInput placeholder="Tags..." />
                                         </TagsInput>
+
+                                        <!-- <Combobox v-model="form.tags" v-model:open="open" :ignore-filter="true">
+                                            <ComboboxAnchor as-child>
+                                                <TagsInput v-model="form.tags">
+                                                    <TagsInputItem v-for="item in form.tags" :key="item" :value="item">
+                                                        <TagsInputItemText />
+                                                        <TagsInputItemDelete />
+                                                    </TagsInputItem>
+
+                                                    <ComboboxInput v-model="searchTag" as-child>
+                                                        <TagsInputInput placeholder="Tags..." @keydown.enter.prevent />
+                                                    </ComboboxInput>
+                                                </TagsInput>
+
+                                                <ComboboxList>
+                                                    <ComboboxEmpty />
+                                                    <ComboboxGroup>
+                                                        <ComboboxItem
+                                                            v-for="tag in filteredTags"
+                                                            :key="tag.value"
+                                                            :value="tag.label"
+                                                            @select.prevent="
+                                                                (ev) => {
+                                                                    if (typeof ev.detail.value === 'string') {
+                                                                        searchTag = '';
+                                                                        form.tags.push(ev.detail.value);
+                                                                    }
+
+                                                                    if (filteredTags.length === 0) {
+                                                                        open = false;
+                                                                    }
+                                                                }
+                                                            "
+                                                        >
+                                                            {{ tag.label }}
+                                                        </ComboboxItem>
+                                                    </ComboboxGroup>
+                                                </ComboboxList>
+                                            </ComboboxAnchor>
+                                        </Combobox> -->
+
                                         <span class="text-xs text-gray-500"> Use comma <span class="font-bold">( , )</span> to add </span>
                                     </div>
 
@@ -256,6 +358,21 @@ watch(
                                         placeholder="Type your description here."
                                         class="col-span-4"
                                     />
+                                </div>
+
+                                <div class="items-top flex gap-x-2">
+                                    <Checkbox id="delete" v-model="form.delete_after" />
+                                    <div class="grid gap-1.5 leading-none">
+                                        <label
+                                            for="delete"
+                                            class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                        >
+                                            Delete after conclusion
+                                        </label>
+                                        <p class="text-muted-foreground text-sm">
+                                            Be careful, if checked this tasks will be automatically deleted after conclusion.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                             <SheetFooter>
@@ -397,6 +514,21 @@ watch(
                                                         <div class="grid grid-cols-4 items-center gap-4">
                                                             <Label for="description" class="text-right"> Description </Label>
                                                             <Textarea id="description" v-model="updateForm.description" class="col-span-4" />
+                                                        </div>
+
+                                                        <div class="items-top flex gap-x-2">
+                                                            <Checkbox id="delete2" v-model="updateForm.delete_after" />
+                                                            <div class="grid gap-1.5 leading-none">
+                                                                <label
+                                                                    for="delete2"
+                                                                    class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                                                >
+                                                                    Delete after conclusion
+                                                                </label>
+                                                                <p class="text-muted-foreground text-sm">
+                                                                    Be careful, if checked this tasks will be automatically deleted after conclusion.
+                                                                </p>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <SheetFooter>

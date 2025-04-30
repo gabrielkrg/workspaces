@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Bar from '@/components/charts/Bar.vue';
 import Doughnut from '@/components/charts/Doughnut.vue';
+import LatestChanges from '@/components/LatestChanges.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
@@ -94,28 +95,31 @@ const workspcesLineData = {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex-col gap-4 rounded-xl p-4">
             <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div class="border-sidebar-border/70 dark:border-sidebar-border relative rounded-xl border">
+                <div>
+                    <LatestChanges />
+                </div>
+                <div>
                     <Bar
                         :title="'Workspaces tasks'"
                         :description="'Here you have to total number of tasks per workspace'"
                         :chartData="workspacesBarData"
                     />
                 </div>
-                <div class="border-sidebar-border/70 dark:border-sidebar-border relative rounded-xl border">
+                <div>
                     <Doughnut
                         :chartData="workspacesData"
                         :title="'Workspaces tasks'"
                         :description="'Here you have to total number of tasks per workspace'"
                     />
                 </div>
-                <!-- <div class="border-sidebar-border/70 dark:border-sidebar-border relative rounded-xl border">
+                <!-- <div>
                     <Line
                         :title="'Workspaces tasks'"
                         :description="'Here you have to total number of tasks per workspace'"
                         :chartData="workspcesLineData"
                     />
-                </div>
-                <div class="border-sidebar-border/70 dark:border-sidebar-border relative rounded-xl border">
+                </div> -->
+                <!-- <div>
                     <Radar :title="'Workspaces tasks'" :description="'Here you have to total number of tasks per workspace'" />
                 </div> -->
             </div>

@@ -69,6 +69,7 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
+            'delete_after' => 'required|boolean',
         ]);
 
         $task = new Task([
@@ -78,6 +79,7 @@ class TaskController extends Controller
             'done' => false,
             'user_id' => $user->id,
             'workspace_id' => $user->workspace_id,
+            'delete_after' => $validated['delete_after'],
         ]);
 
         $task->save();
@@ -112,6 +114,7 @@ class TaskController extends Controller
             'done' => 'sometimes|boolean',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
+            'delete_after' => 'sometimes|boolean',
         ]);
 
         $task->update($validated);
@@ -126,6 +129,12 @@ class TaskController extends Controller
             });
 
             $task->tags()->sync($tagIds);
+        }
+
+        if($task->delete_after && $task->done)
+        {
+            $this->delete($task);
+            return redirect()->back()->with('success', 'Task concluded and deleted successfully!');
         }
 
         return redirect()->back()->with('success', 'Task updated successfully!');
