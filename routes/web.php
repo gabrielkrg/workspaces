@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\UserController as ApiUserController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
@@ -8,8 +9,7 @@ use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\TaskController as APITaskController;
-use Inertia\Inertia;
+use App\Http\Controllers\Api\TaskController as ApiTaskController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -43,8 +43,9 @@ Route::middleware(['auth'])->group(function () {
 
 // API
 Route::middleware(['auth'])->group(function () {
-    Route::get('/tasks/heatmap', [APITaskController::class, 'heatmap'])->name('tasks.heatmap');
-    Route::get('/tasks/latest', [APITaskController::class, 'latestChanges'])->name('tasks.latest');
+    // Tasks
+    Route::get('/tasks/heatmap', [ApiTaskController::class, 'heatmap'])->name('tasks.heatmap');
+    Route::get('/tasks/latest', [ApiTaskController::class, 'latestChanges'])->name('tasks.latest');
 });
 
 require __DIR__.'/settings.php';
