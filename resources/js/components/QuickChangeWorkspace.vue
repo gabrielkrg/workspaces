@@ -34,7 +34,7 @@ const set = () => {
 <template>
     <Dialog>
         <DialogTrigger as-child class="fixed top-3 right-3 md:top-5 md:right-5">
-            <Button variant="secondary" size="sm" class="cursor-pointer"> <SquareStack /> Change workspace </Button>
+            <Button variant="secondary" size="sm" class="z-40 cursor-pointer"> <SquareStack /> Change workspace </Button>
         </DialogTrigger>
         <DialogContent class="sm:max-w-[425px]">
             <DialogHeader>
