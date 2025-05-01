@@ -9,7 +9,7 @@ class Workspace extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'user_id'];
+    protected $fillable = ['name', 'time_zone', 'user_id'];
 
     protected $guarded = [];
 

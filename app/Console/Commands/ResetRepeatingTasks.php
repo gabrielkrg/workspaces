@@ -23,22 +23,35 @@ class ResetRepeatingTasks extends Command
      */
     protected $description = 'Reset the status of the tasks based on the repeat';
 
-    /**
-     * Execute the console command.
-     */
-     public function handle()
-     {
-         // Resetar tarefas diárias
-         Task::where('repeat', 'daily')
-             ->update(['done' => false]);
+    public function handle()
+    {
+        $workspaces = Workspace::whereNotNull('time_zone')->get();
 
-         // Resetar tarefas mensais somente no dia 1
-         if (now()->day == 1) {
-             Task::where('repeat', 'monthly')
-                 ->update(['done' => false]);
-         }
+        foreach ($workspaces as $workspace) {
+            $now = now($workspace->time_zone);
 
-         $this->info('Repeat tasks reseted successfully.');
-         Log::info('Command tasks:reset-daily run at ' . now());
-     }
+            // Resetar tarefas diárias (meia-noite no timezone do workspace)
+            if ($now->format('H:i') === '00:00') {
+                Task::where('workspace_id', $workspace->id)
+                    ->where('repeat', 'daily')
+                    ->update(['done' => false]);
+            }
+
+            // Resetar tarefas semanais (toda segunda-feira no timezone do workspace)
+            if ($now->isMonday() && $now->format('H:i') === '00:00') {
+                Task::where('workspace_id', $workspace->id)
+                    ->where('repeat', 'weekly')
+                    ->update(['done' => false]);
+            }
+
+            // Resetar tarefas mensais (dia 1 do mês no timezone do workspace)
+            if ($now->isSameDay($now->copy()->startOfMonth()) && $now->format('H:i') === '00:00') {
+                Task::where('workspace_id', $workspace->id)
+                    ->where('repeat', 'monthly')
+                    ->update(['done' => false]);
+            }
+        }
+
+        $this->info('Repeat tasks reset according to workspace time zones.');
+    }
 }

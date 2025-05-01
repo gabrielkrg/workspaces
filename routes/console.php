@@ -10,6 +10,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command(ResetRepeatingTasks::class)
-    ->dailyAt('00:00');
-
-// Schedule::command(ResetRepeatingTasks::class)->everyMinute();
+    ->everyMinute();

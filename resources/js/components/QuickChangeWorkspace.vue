@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label'; /* PartiallyEnd: #3632/scriptSetup.vue */
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { type SharedData, type User } from '@/types';
 import { useForm, usePage } from '@inertiajs/vue3';
+import { SquareStack } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 const page = usePage<SharedData>();
@@ -33,7 +34,7 @@ const set = () => {
 <template>
     <Dialog>
         <DialogTrigger as-child class="fixed top-3 right-3 md:top-5 md:right-5">
-            <Button variant="outline"> Change workspace </Button>
+            <Button variant="secondary" size="sm" class="cursor-pointer"> <SquareStack /> Change workspace </Button>
         </DialogTrigger>
         <DialogContent class="sm:max-w-[425px]">
             <DialogHeader>

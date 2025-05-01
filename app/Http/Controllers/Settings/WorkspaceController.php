@@ -46,14 +46,15 @@ class WorkspaceController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'time_zone' => 'required|string',
             'users' => 'array',
             'users.*.id' => 'required|integer|exists:users,id',
             'users.*.pivot.role' => 'required|string|in:editor,viewer,owner',
         ]);
 
-
         $workspace->update([
             'name' => $validated['name'],
+            'time_zone' => $validated['time_zone'],
         ]);
 
         $currentUserIds = $workspace->users->pluck('id')->toArray();

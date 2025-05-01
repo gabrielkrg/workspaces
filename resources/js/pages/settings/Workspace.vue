@@ -17,8 +17,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useInitials } from '@/composables/useInitials';
+import { timezones } from '@/constants/timezones';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem } from '@/types';
@@ -47,6 +48,7 @@ const isDialogEditOpen = ref(false);
 const updateForm = useForm({
     name: props.user?.workspace?.name,
     users: props.user?.workspace?.users,
+    time_zone: props.user?.workspace?.time_zone,
 });
 
 const update = () => {
@@ -144,8 +146,11 @@ watch(
     (n) => {
         workspaceLink.value = n?.id;
 
+        setForm.workspace_id = n?.id;
+
         updateForm.name = n?.name;
         updateForm.users = n?.users;
+        updateForm.time_zone = n?.time_zone;
     },
     { immediate: true },
 );
@@ -171,6 +176,24 @@ watch(
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="name" class="text-right"> Name </Label>
                                     <Input id="name" v-model="updateForm.name" class="col-span-3" />
+                                </div>
+                            </div>
+                            <div class="grid gap-4 py-4">
+                                <div class="grid grid-cols-4 items-center gap-4">
+                                    <Label for="time_zone" class="text-right"> Time Zone </Label>
+                                    <Select for="time_zone" v-model="updateForm.time_zone" class="col-span-3 w-full">
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a time zone" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectLabel>Time zone</SelectLabel>
+                                                <SelectItem v-for="tz in timezones" :key="tz.value" :value="tz.value">
+                                                    {{ tz.label }}
+                                                </SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
                             <DialogFooter>
