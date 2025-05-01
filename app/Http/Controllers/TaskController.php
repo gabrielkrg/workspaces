@@ -46,7 +46,7 @@ class TaskController extends Controller
         }
 
         $tasks = $query->get();
-        $tags = $workspace->tags()->get();
+        $tags = $workspace->tags()->orderBy('name', 'asc')->get();
 
         return Inertia::render('Task/Index', [
             'tasks' => $tasks,

@@ -428,7 +428,10 @@ watch(
                                             </div>
 
                                             <div v-for="tag in task.tags" :key="tag.index">
-                                                <div class="flex rounded bg-gray-400 px-1 text-xs font-normal text-white capitalize">
+                                                <div
+                                                    class="flex rounded bg-gray-400 px-1 text-xs font-normal text-white capitalize"
+                                                    :style="tag.color ? { backgroundColor: tag.color } : { backgroundColor: '#9ca3af' }"
+                                                >
                                                     {{ tag.name }}
                                                 </div>
                                             </div>
@@ -581,7 +584,6 @@ watch(
                         <p class="text-gray-800 dark:text-gray-100">There are no tasks yet</p>
                     </div>
                 </div>
-                <!-- <PlaceholderPattern /> -->
             </div>
         </div>
     </AppLayout>

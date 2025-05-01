@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->enum('repeat', ['none', 'daily', 'monthly'])->default('none')->after('done');
+            $table->enum('repeat', ['none', 'daily', 'weekly', 'monthly'])->default('none')->after('done');
         });
     }
 

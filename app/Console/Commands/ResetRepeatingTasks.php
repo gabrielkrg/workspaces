@@ -50,6 +50,8 @@ class ResetRepeatingTasks extends Command
                     ->where('repeat', 'monthly')
                     ->update(['done' => false]);
             }
+
+            Log::info("Repeat tasks reset for the workspace {$workspace->id} in {$workspace->time_zone}");
         }
 
         $this->info('Repeat tasks reset according to workspace time zones.');

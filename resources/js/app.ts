@@ -1,3 +1,4 @@
+import 'vue-color/style.css';
 import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/vue3';

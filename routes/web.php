@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::put('tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('tasks/{task}', [TaskController::class, 'delete'])->name('tasks.delete');
+
+    // Tags
+    Route::get('tags', [TagController::class, 'index'])->name('tags.index');
+    Route::post('tags', [TagController::class, 'store'])->name('tags.store');
+    Route::put('tags/{tag}', [TagController::class, 'update'])->name('tags.update');
+    Route::delete('tags/{tag}', [TagController::class, 'delete'])->name('tags.delete');
 
     // Calendar
     Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
