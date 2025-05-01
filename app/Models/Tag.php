@@ -16,4 +16,9 @@ class Tag extends Model
     {
         return $this->belongsToMany(Task::class);
     }
+
+    public function workspace()
+    {
+        return $this->belongsTo(Workspace::class);
+    }
 }

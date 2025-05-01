@@ -46,7 +46,7 @@ class TaskController extends Controller
         }
 
         $tasks = $query->get();
-        $tags = $user->tags()->where('workspace_id', $user->workspace_id)->get();
+        $tags = $workspace->tags()->get();
 
         return Inertia::render('Task/Index', [
             'tasks' => $tasks,
@@ -65,7 +65,7 @@ class TaskController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'repeat' => 'required|string|in:daily,monthly,none',
+            'repeat' => 'required|string|in:daily,weekly,monthly,none',
             'description' => 'nullable|string',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
@@ -109,7 +109,7 @@ class TaskController extends Controller
 
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
-            'repeat' => 'sometimes|string|in:daily,monthly,none',
+            'repeat' => 'sometimes|string|in:daily,weekly,monthly,none',
             'description' => 'nullable|string',
             'done' => 'sometimes|boolean',
             'tags' => 'nullable|array',

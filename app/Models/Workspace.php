@@ -31,4 +31,9 @@ class Workspace extends Model
                     ->withPivot('role')
                     ->withTimestamps();
     }
+
+    public function tags()
+    {
+        return $this->hasMany(Tag::class);
+    }
 }
