@@ -16,9 +16,17 @@ class WorkspacePolicy
     }
 
     public function view(User $user, Workspace $workspace)
-        {
-            return $workspace->users()
-                    ->where('user_id', $user->id)
-                    ->exists();
-        }
+    {
+        return $workspace->users()
+                ->where('user_id', $user->id)
+                ->exists();
+    }
+
+    public function delete(User $user, Workspace $workspace)
+    {
+        return $workspace->users()
+                ->where('user_id', $user->id)
+                ->wherePivotIn('role', ['owner'])
+                ->exists();
+    }
 }

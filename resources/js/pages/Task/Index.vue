@@ -32,11 +32,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const props = defineProps({
-    tasks: Array,
-    tags: Array,
-    filters: Object,
-});
+const props = defineProps<{
+    tasks: any[],
+    tags: { name: string }[],
+    filters: object,
+}>();
 
 const form = useForm({
     title: '',
@@ -458,12 +458,14 @@ watch(
                                     <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow" align="end">
                                         <Sheet>
                                             <SheetTrigger as-child>
-                                                <div
-                                                    @click="selectTask(task)"
-                                                    class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100"
-                                                >
-                                                    Edit
-                                                </div>
+                                                <SheetClose as-child>
+                                                    <div
+                                                        @click="selectTask(task)"
+                                                        class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100"
+                                                    >
+                                                        Edit
+                                                    </div>
+                                                </SheetClose>
                                             </SheetTrigger>
                                             <SheetContent>
                                                 <form @submit.prevent="update(task)">
@@ -559,7 +561,7 @@ watch(
                                                     <DialogHeader class="space-y-3">
                                                         <DialogTitle>Are you sure you want to delete this task?</DialogTitle>
                                                         <DialogDescription>
-                                                            Once your task is deleted, there’s no way to recover it.
+                                                            Once your task is deleted, there's no way to recover it.
                                                         </DialogDescription>
                                                     </DialogHeader>
 
