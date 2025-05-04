@@ -11,6 +11,8 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TaskController as ApiTaskController;
+use App\Http\Controllers\ColumnController;
+use App\Http\Controllers\CardController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -36,6 +38,20 @@ Route::middleware(['auth'])->group(function () {
 
     // Kanban
     Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
+    Route::get('kanban/{kanban}', [KanbanController::class, 'show'])->name('kanban.show');
+    Route::post('kanban', [KanbanController::class, 'store'])->name('kanban.store');
+    Route::put('kanban/{kanban}', [KanbanController::class, 'update'])->name('kanban.update');
+    Route::delete('kanban/{kanban}', [KanbanController::class, 'delete'])->name('kanban.delete');
+
+    // Columns
+    Route::post('kanban/{kanban}/columns', [ColumnController::class, 'store'])->name('kanban.columns.store');
+    Route::put('kanban/{kanban}/columns/{column}', [ColumnController::class, 'update'])->name('kanban.columns.update');
+    Route::delete('kanban/{kanban}/columns/{column}', [ColumnController::class, 'delete'])->name('kanban.columns.delete');
+
+    // Cards
+    Route::post('cards/{kanban}', [CardController::class, 'store'])->name('cards.store');
+    Route::patch('cards/{card}', [CardController::class, 'update'])->name('cards.update');
+    Route::delete('cards/{card}', [CardController::class, 'delete'])->name('cards.delete');
 
     // Events
     Route::get('events', [EventController::class, 'index'])->name('events.index');
@@ -45,7 +61,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('notes', [NoteController::class, 'store'])->name('notes.store');
     Route::put('notes/{note}', [NoteController::class, 'update'])->name('notes.update');
     Route::delete('notes/{note}', [NoteController::class, 'delete'])->name('notes.delete');
-
 
     // Workspaces
     Route::get('workspaces', [WorkspaceController::class, 'index'])->name('workspaces.index');

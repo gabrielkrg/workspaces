@@ -95,7 +95,7 @@ const confirmDelete = () => {
                                     Fill the fields to create a new task. Click save when you're done.
                                 </DialogDescription>
                             </DialogHeader>
-                            <div class="grid gap-4 p-4">
+                            <div class="grid gap-4 py-4">
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="title" class="text-right"> Title </Label>
                                     <Input id="title" v-model="form.title" class="col-span-4" />
@@ -111,7 +111,7 @@ const confirmDelete = () => {
                 </Dialog>
             </div>
 
-            <div class="flex gap-4">
+            <div class="flex gap-4 h-full">
                 <div class="w-[300px]">
                     <Command class="rounded-lg border max-w-[450px]">
                         <CommandInput placeholder="Search notes..." />
@@ -137,11 +137,11 @@ const confirmDelete = () => {
                     <form @submit.prevent="updateNote" class="w-full">
                         <Textarea v-model="currentNote.content"
                             class="w-full h-[calc(100vh-200px)] overflow-y-auto resize-none" />
-                        <Button type="submit" class="mt-4">Salvar</Button>
+                        <Button type="submit" class="mt-4">Salve</Button>
                     </form>
                 </div>
                 <div v-else>
-                    <span>Select a note to see the details...</span>
+                    <span>Select a note or create a new one to see the details...</span>
                 </div>
             </div>
         </div>
