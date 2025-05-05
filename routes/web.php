@@ -44,9 +44,9 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('kanban/{kanban}', [KanbanController::class, 'delete'])->name('kanban.delete');
 
     // Columns
-    Route::post('kanban/{kanban}/columns', [ColumnController::class, 'store'])->name('kanban.columns.store');
-    Route::put('kanban/{kanban}/columns/{column}', [ColumnController::class, 'update'])->name('kanban.columns.update');
-    Route::delete('kanban/{kanban}/columns/{column}', [ColumnController::class, 'delete'])->name('kanban.columns.delete');
+    Route::post('columns/{kanban}', [ColumnController::class, 'store'])->name('columns.store');
+    Route::put('columns/{column}', [ColumnController::class, 'update'])->name('columns.update');
+    Route::delete('columns/{column}', [ColumnController::class, 'delete'])->name('columns.delete');
 
     // Cards
     Route::post('cards/{kanban}', [CardController::class, 'store'])->name('cards.store');

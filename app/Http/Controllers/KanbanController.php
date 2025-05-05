@@ -20,7 +20,8 @@ class KanbanController extends Controller
 
         $this->authorize('view', $workspace);
 
-        $kanbans = Kanban::with('cards')->get();
+        $kanbans = Kanban::with('columns')->get();
+
         return Inertia::render('Kanban/Index', [
             'kanbans' => $kanbans,
         ]);
@@ -95,7 +96,7 @@ class KanbanController extends Controller
             );
         }
         
-        return redirect()->route('kanban.show', $kanban->id)->with('success', 'Kanban updated successfully');
+        return redirect()->route('kanban.index')->with('success', 'Kanban updated successfully');
     }
 
     public function delete(Kanban $kanban)

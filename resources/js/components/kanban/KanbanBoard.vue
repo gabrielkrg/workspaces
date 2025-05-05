@@ -19,6 +19,7 @@ interface Card {
     description: string;
     order: number;
     column_id: number;
+    id: number;
 }
 
 interface Column {
@@ -110,10 +111,12 @@ const handleCardMove = (event: any) => {
 </script>
 
 <template>
-    <div>
-        {{ JSON.stringify(props.kanban?.columns) }}
+    <div class="flex justify-between items-center px-4">
+        <h1 class="text-lg font-bold">
+            {{ kanban?.name }}
+        </h1>
     </div>
-    <div class="flex h-full gap-4 overflow-x-auto p-4">
+    <div class="flex h-full gap-4 overflow-x-auto px-4">
         <KanbanColumn v-for="column in columns" :key="column.id" :name="column.name"
             @add-card="openNewCardModal(column.id)">
             <draggable :list="column.cards" :group="{ name: 'cards' }" item-key="id" class="flex flex-1 flex-col gap-2"
