@@ -56,6 +56,7 @@ const addColumn = (columnName: string) => {
     };
 
     columns.value.push(newColumn);
+
     form.columns = columns.value.map(column => ({
         name: column.name,
         order: column.order,
@@ -77,7 +78,7 @@ const removeColumn = (index: number) => {
 };
 
 const submit = () => {
-    form.post('/kanban', {
+    form.post(route('kanban.store'), {
         onSuccess: () => {
             form.reset();
             columns.value = [];
@@ -87,11 +88,30 @@ const submit = () => {
 
 const formUpdateKanban = useForm({
     name: '',
-    columns: [] as Column[],
+    columns: [] as unknown as Record<string, any>[],
 });
+
+const updateRemoveColumn = (index: number) => {
+    formUpdateKanban.columns.splice(index, 1);
+    formUpdateKanban.columns.forEach((column, i) => {
+        column.order = i + 1;
+    });
+};
+
+const updateAddColumn = (columnName: string) => {
+    if (!columnName.trim()) return;
+
+    formUpdateKanban.columns.push({
+        name: columnName,
+        order: formUpdateKanban.columns.length + 1,
+    });
+
+    newColumnName.value = '';
+};
 
 const startEditing = (kanban: Kanban) => {
     formUpdateKanban.name = kanban.name;
+
     formUpdateKanban.columns = [...kanban.columns].map(column => ({
         name: column.name,
         order: column.order,
@@ -107,7 +127,7 @@ const updateKanban = (kanban: Kanban) => {
 };
 
 const deleteKanban = (kanban: Kanban) => {
-    router.delete(route('kanban.destroy', kanban.id), {
+    router.delete(route('kanban.delete', kanban.id), {
         preserveScroll: true,
     });
 };
@@ -151,7 +171,8 @@ const navigateToKanban = (kanban: Kanban) => {
                                                 <div class="flex-1 bg-gray-100 rounded px-3 py-1">
                                                     {{ column.name }}
                                                 </div>
-                                                <Button variant="ghost" size="icon" @click="removeColumn(index)">
+                                                <Button variant="ghost" type="button" size="icon"
+                                                    @click="removeColumn(index)">
                                                     <Trash2 class="h-4 w-4" />
                                                 </Button>
                                             </div>
@@ -221,8 +242,8 @@ const navigateToKanban = (kanban: Kanban) => {
                                                                 <div class="flex-1 bg-gray-100 rounded px-3 py-1">
                                                                     {{ column.name }}
                                                                 </div>
-                                                                <Button variant="ghost" size="icon"
-                                                                    @click="removeColumn(index)">
+                                                                <Button variant="ghost" type="button" size="icon"
+                                                                    @click="updateRemoveColumn(index)">
                                                                     <Trash2 class="h-4 w-4" />
                                                                 </Button>
                                                             </div>
@@ -230,8 +251,9 @@ const navigateToKanban = (kanban: Kanban) => {
                                                         <div class="mt-2 flex gap-2">
                                                             <Input id="edit-new-column" v-model="newColumnName"
                                                                 placeholder="Add new column..."
-                                                                @keyup.enter="addColumn(newColumnName)" />
-                                                            <Button type="button" @click="addColumn(newColumnName)">
+                                                                @keyup.enter="updateAddColumn(newColumnName)" />
+                                                            <Button type="button"
+                                                                @click="updateAddColumn(newColumnName)">
                                                                 Add
                                                             </Button>
                                                         </div>

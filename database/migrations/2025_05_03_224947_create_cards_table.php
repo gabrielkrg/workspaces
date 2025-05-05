@@ -16,11 +16,10 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->integer('order');
-            $table->foreignId('column_id')->constrained('columns');
-            
-            $table->foreignId('kanban_id')->constrained('kanbans');
-            $table->foreignId('workspace_id')->constrained('workspaces');
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('column_id')->constrained('columns')->onDelete('cascade');
+            $table->foreignId('kanban_id')->constrained('kanbans')->onDelete('cascade');
+            $table->foreignId('workspace_id')->constrained('workspaces')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

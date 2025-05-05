@@ -89,10 +89,24 @@ class KanbanController extends Controller
             'name' => $request->name,
         ]);
 
+        // Get existing column names
+        $existingColumns = $kanban->columns->pluck('name')->toArray();
+        $newColumnNames = collect($request->columns)->pluck('name')->toArray();
+
+        // Find columns to remove (exist in DB but not in request)
+        $columnsToRemove = array_diff($existingColumns, $newColumnNames);
+        if (!empty($columnsToRemove)) {
+            $kanban->columns()->whereIn('name', $columnsToRemove)->delete();
+        }
+
+        // Update or create columns from request
         foreach ($request->columns as $column) {
             $kanban->columns()->updateOrCreate(
                 ['name' => $column['name']],
-                ['order' => $column['order']]
+                [
+                    'order' => $column['order'],
+                    'kanban_id' => $kanban->id
+                ]
             );
         }
         

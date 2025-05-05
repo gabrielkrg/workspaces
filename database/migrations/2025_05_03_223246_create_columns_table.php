@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('columns', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('kanban_id')->constrained('kanbans');
+            $table->foreignId('kanban_id')->constrained('kanbans')->onDelete('cascade');
             $table->integer('order');
             $table->timestamps();
         });

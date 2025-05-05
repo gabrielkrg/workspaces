@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('kanbans', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('workspace_id')->constrained('workspaces');
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('workspace_id')->constrained('workspaces')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
