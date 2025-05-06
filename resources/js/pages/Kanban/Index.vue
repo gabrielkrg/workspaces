@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -10,10 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Label } from '@/components/ui/label';
-import { Pencil, Trash2 } from 'lucide-vue-next';
-import KanbanBoard from '@/components/kanban/KanbanBoard.vue';
+import { Pencil, Trash2, GripVertical } from 'lucide-vue-next';
+import draggable from 'vuedraggable';
 
 interface Column {
+    id?: number;
     name: string;
     order: number;
 }
@@ -95,6 +95,8 @@ const updateRemoveColumn = (index: number) => {
     formUpdateKanban.columns.splice(index, 1);
     formUpdateKanban.columns.forEach((column, i) => {
         column.order = i + 1;
+        column.id = column.id;
+        column.name = column.name;
     });
 };
 
@@ -115,6 +117,7 @@ const startEditing = (kanban: Kanban) => {
     formUpdateKanban.columns = [...kanban.columns].map(column => ({
         name: column.name,
         order: column.order,
+        id: column.id,
     }));
 };
 
@@ -134,6 +137,14 @@ const deleteKanban = (kanban: Kanban) => {
 
 const navigateToKanban = (kanban: Kanban) => {
     router.get(route('kanban.show', kanban.id));
+};
+
+const updateColumnOrder = () => {
+    formUpdateKanban.columns.forEach((column, index) => {
+        column.order = index + 1;
+        column.id = column.id;
+        column.name = column.name;
+    });
 };
 </script>
 
@@ -171,8 +182,7 @@ const navigateToKanban = (kanban: Kanban) => {
                                                 <div class="flex-1 bg-gray-100 rounded px-3 py-1">
                                                     {{ column.name }}
                                                 </div>
-                                                <Button variant="ghost" type="button" size="icon"
-                                                    @click="removeColumn(index)">
+                                                <Button variant="ghost" type="button" @click="removeColumn(index)">
                                                     <Trash2 class="h-4 w-4" />
                                                 </Button>
                                             </div>
@@ -234,20 +244,25 @@ const navigateToKanban = (kanban: Kanban) => {
                                                 <div class="grid grid-cols-4 items-center gap-4">
                                                     <Label for="edit-columns" class="text-right">Columns</Label>
                                                     <div class="col-span-4">
-                                                        <div class="flex flex-col gap-2">
-                                                            <div v-for="(column, index) in formUpdateKanban.columns"
-                                                                :key="index" class="flex items-center gap-2">
-                                                                <span class="text-sm text-muted-foreground">#{{
-                                                                    column.order }}</span>
-                                                                <div class="flex-1 bg-gray-100 rounded px-3 py-1">
-                                                                    {{ column.name }}
+                                                        <draggable v-model="formUpdateKanban.columns" :item-key="'id'"
+                                                            handle=".handle" class="flex flex-col gap-2"
+                                                            @change="updateColumnOrder">
+                                                            <template #item="{ element: column, index }">
+                                                                <div class="flex items-center gap-2">
+                                                                    <div class="cursor-move px-2 handle">
+                                                                        <GripVertical class="h-4 w-4 text-gray-400" />
+                                                                    </div>
+                                                                    <div class="flex-1">
+                                                                        <Input v-model="column.name"
+                                                                            class="bg-gray-100" />
+                                                                    </div>
+                                                                    <Button variant="ghost" type="button" size="icon"
+                                                                        @click="updateRemoveColumn(index)">
+                                                                        <Trash2 class="h-4 w-4" />
+                                                                    </Button>
                                                                 </div>
-                                                                <Button variant="ghost" type="button" size="icon"
-                                                                    @click="updateRemoveColumn(index)">
-                                                                    <Trash2 class="h-4 w-4" />
-                                                                </Button>
-                                                            </div>
-                                                        </div>
+                                                            </template>
+                                                        </draggable>
                                                         <div class="mt-2 flex gap-2">
                                                             <Input id="edit-new-column" v-model="newColumnName"
                                                                 placeholder="Add new column..."

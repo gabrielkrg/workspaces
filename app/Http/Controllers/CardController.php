@@ -62,7 +62,7 @@ class CardController extends Controller
             'column_id' => $request->column_id,
         ]);
 
-        return redirect()->route('kanban.show')->with('success', 'Card updated successfully');
+        return redirect()->route('kanban.show', $card->kanban_id)->with('success', 'Card updated successfully');
     }
 
     public function delete(Kanban $kanban, Card $card)

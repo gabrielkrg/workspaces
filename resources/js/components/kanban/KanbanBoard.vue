@@ -104,8 +104,18 @@ const deleteCard = () => {
 
 const handleCardMove = (event: any) => {
     const { added, removed } = event;
-    if (added || removed) {
-        console.log(added);
+    if (added) {
+        const card = added.element;
+        const newColumnId = columns.value.find(col => col.cards.includes(card))?.id;
+
+        if (newColumnId) {
+            router.patch(route('cards.update', { card: card.id }), {
+                column_id: newColumnId,
+                title: card.title,
+                description: card.description,
+                order: added.newIndex
+            });
+        }
     }
 };
 </script>
