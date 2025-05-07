@@ -1,4 +1,4 @@
-name: Deploy to Server
+name: Deploy Laravel App
 
 on:
   push:
@@ -7,39 +7,37 @@ on:
 
 jobs:
   deploy:
+    name: Deploy on server
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Set up PHP 8.3.6
-        uses: shivammathur/setup-php@v2
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent@v0.5.3
         with:
-          php-version: '8.3.6'  # Versão do PHP que você mencionou
+          ssh-private-key: ${{ secrets.SSH_KEY }}
 
-      - name: Install Composer dependencies
+      - name: Run deployment commands on server
         run: |
-          curl -sS https://getcomposer.org/installer | php
-          php composer.phar install --no-dev --prefer-dist
+          ssh -o StrictHostKeyChecking=no github_actions@${{ secrets.SERVER_IP }} << 'EOF'
+            # Define o repositório como seguro para evitar erros de "dubious ownership"
+            git config --global --add safe.directory ${{ secrets.PATH_PROJECT }}
 
-      - name: Set up Node.js v22.14.0
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22.14.0'  # Versão do Node.js que você mencionou
+            # Acessa o diretório do projeto
+            cd ${{ secrets.PATH_PROJECT }}
 
-      - name: Install Node.js dependencies
-        run: npm install
+            # Atualiza o código
+            git pull origin master
 
-      - name: Run migrations
-        run: php artisan migrate --force
+            # Instala dependências PHP
+            composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Build assets
-        run: npm run build
+            # Executa as migrations forçadas
+            php artisan migrate --force
 
-      - name: Deploy to Server
-        run: |
-          ssh -i ~/.ssh/github_action_rsa deploy_github@${{ secrets.SERVER_IP }} "cd /caminho/para/seu/projeto && git pull && php artisan migrate --force && npm run build"
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_IP: ${{ secrets.SERVER_IP }}
+            # Instala e compila os assets do front-end
+            npm install
+            npm run build
+          EOF
