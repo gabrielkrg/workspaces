@@ -77,6 +77,14 @@ const removeColumn = (index: number) => {
     }));
 };
 
+const columnOrder = () => {
+    form.columns.forEach((column, index) => {
+        column.order = index + 1;
+        column.id = column.id;
+        column.name = column.name;
+    });
+};
+
 const submit = () => {
     form.post(route('kanban.store'), {
         onSuccess: () => {
@@ -173,31 +181,33 @@ const updateColumnOrder = () => {
                                 </div>
 
                                 <div class="grid grid-cols-4 items-center gap-4">
-                                    <Label for="columns" class="text-right">Columns</Label>
+                                    <Label for="edit-columns" class="text-right">Columns</Label>
                                     <div class="col-span-4">
-                                        <div class="flex flex-col gap-2">
-                                            <div v-for="(column, index) in columns" :key="index"
-                                                class="flex items-center gap-2">
-                                                <span class="text-sm text-muted-foreground">#{{ column.order }}</span>
-                                                <div class="flex-1 bg-gray-100 rounded px-3 py-1">
-                                                    {{ column.name }}
+                                        <draggable v-model="form.columns" :item-key="'id'" handle=".handle"
+                                            class="flex flex-col gap-2" @change="columnOrder">
+                                            <template #item="{ element: column, index }">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="cursor-move px-2 handle">
+                                                        <GripVertical class="h-4 w-4 text-gray-400" />
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <Input v-model="column.name" class="bg-gray-100" />
+                                                    </div>
+                                                    <Button variant="ghost" type="button" size="icon"
+                                                        @click="removeColumn(index)">
+                                                        <Trash2 class="h-4 w-4" />
+                                                    </Button>
                                                 </div>
-                                                <Button variant="ghost" type="button" @click="removeColumn(index)">
-                                                    <Trash2 class="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
+                                            </template>
+                                        </draggable>
                                         <div class="mt-2 flex gap-2">
-                                            <Input id="new-column" v-model="newColumnName"
+                                            <Input id="edit-new-column" v-model="newColumnName"
                                                 placeholder="Add new column..."
                                                 @keyup.enter="addColumn(newColumnName)" />
                                             <Button type="button" @click="addColumn(newColumnName)">
                                                 Add
                                             </Button>
                                         </div>
-                                        <p class="text-xs text-muted-foreground mt-1">
-                                            Press enter to add a new column
-                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -222,8 +232,8 @@ const updateColumnOrder = () => {
                                 <!-- Edit Button -->
                                 <Sheet>
                                     <SheetTrigger asChild @click="startEditing(kanban)">
-                                        <Button variant="ghost" size="icon">
-                                            <Pencil class="h-4 w-4" />
+                                        <Button class="cursor-pointer" size="icon" title="Edit">
+                                            <Pencil class="text-white" />
                                         </Button>
                                     </SheetTrigger>
                                     <SheetContent>
@@ -287,7 +297,7 @@ const updateColumnOrder = () => {
                                 <!-- Delete Button -->
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon">
+                                        <Button variant="destructive" size="icon" title="Delete">
                                             <Trash2 class="h-4 w-4" />
                                         </Button>
                                     </AlertDialogTrigger>
@@ -301,9 +311,9 @@ const updateColumnOrder = () => {
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction @click="deleteKanban(kanban)">
+                                            <Button variant="destructive" type="button" @click="deleteKanban(kanban)">
                                                 Delete
-                                            </AlertDialogAction>
+                                            </Button>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>

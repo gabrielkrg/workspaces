@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TaskController as ApiTaskController;
 use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\CardController;
-
+use App\Http\Controllers\TicketController;
 Route::get('/', function () {
     return redirect()->route('dashboard');
 })->middleware(['auth', 'verified'])->name('home');
@@ -35,6 +35,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Calendar
     Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
+
+    // Tickets
+    Route::get('tickets', [TicketController::class, 'index'])->name('tickets.index');
 
     // Kanban
     Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');

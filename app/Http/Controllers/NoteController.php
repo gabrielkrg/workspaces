@@ -14,13 +14,12 @@ class NoteController extends Controller
     use AuthorizesRequests;
     public function index(Request $request) {
         $user = Auth::user();
-
         $workspace = Workspace::findOrFail($user->workspace_id);
 
         $this->authorize('view', $workspace);
 
-        $notes = Note::where('user_id', $user->id)->where('workspace_id', $user->workspace_id)->get();
-        
+        $notes = $user->workspace->notes;
+
         $currentNote = $notes->first();
 
         if ($request->has('note')) {
@@ -36,7 +35,6 @@ class NoteController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-
         $workspace = Workspace::findOrFail($user->workspace_id);
 
         $this->authorize('update', $workspace);
@@ -53,7 +51,7 @@ class NoteController extends Controller
     
         $note = Note::create($request->all());
     
-        return redirect()->route('notes.index', ['note' => $note->id]);
+        return redirect()->route('notes.index', ['note' => $note])->with('success', 'Note created successfully');
     }
 
     public function update(Request $request, Note $note)
@@ -77,12 +75,15 @@ class NoteController extends Controller
     public function delete(Note $note)
     {
         $user = Auth::user();
-
         $workspace = Workspace::findOrFail($user->workspace_id);
 
         $this->authorize('delete', $workspace);
 
         $note->delete();
-        return redirect()->route('notes.index')->with('success', 'Note deleted successfully');
+
+        $notes = $user->workspace->notes;
+        $currentNote = $notes->first();        
+
+        return redirect()->route('notes.index', ['note' => $currentNote])->with('success', 'Note deleted successfully');
     }
 }

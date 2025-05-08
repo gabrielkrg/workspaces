@@ -6,7 +6,7 @@ import Workspace from '@/components/Workspace.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { CalendarFold, LayoutGrid, ListTodo, NotebookText, SquareKanban, Tags } from 'lucide-vue-next';
+import { CalendarFold, LayoutGrid, ListTodo, NotebookText, SquareKanban, Tags, Ticket } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -45,6 +45,11 @@ const mainNavItems: NavItem[] = [
         href: '/notes',
         icon: NotebookText,
     },
+    {
+        title: 'Tickets',
+        href: '/tickets',
+        icon: Ticket,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
@@ -68,7 +73,7 @@ const footerNavItems: NavItem[] = [
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
                         <Link :href="route('dashboard')">
-                            <AppLogo />
+                        <AppLogo />
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
