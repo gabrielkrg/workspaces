@@ -1,4 +1,4 @@
-name: Deploy Laravel App
+name: deploy 
 
 on:
   push:
@@ -22,22 +22,33 @@ jobs:
       - name: Run deployment commands on server
         run: |
           ssh -o StrictHostKeyChecking=no github_actions@${{ secrets.SERVER_IP }} << 'EOF'
+            set -e  # Exit on error
+            echo "Starting deployment process..."
+            
             # Define o repositório como seguro para evitar erros de "dubious ownership"
+            echo "Configuring git safe directory..."
             git config --global --add safe.directory ${{ secrets.PATH_PROJECT }}
 
             # Acessa o diretório do projeto
-            cd ${{ secrets.PATH_PROJECT }}
+            echo "Changing to project directory..."
+            cd ${{ secrets.PATH_PROJECT }} || { echo "Failed to change directory"; exit 1; }
 
             # Atualiza o código
-            git pull origin master
+            echo "Pulling latest changes..."
+            git pull origin master || { echo "Failed to pull changes"; exit 1; }
 
             # Instala dependências PHP
-            composer install --no-interaction --prefer-dist --optimize-autoloader
+            echo "Installing PHP dependencies..."
+            composer install --no-interaction --prefer-dist --optimize-autoloader || { echo "Failed to install PHP dependencies"; exit 1; }
 
             # Executa as migrations forçadas
-            php artisan migrate --force
+            echo "Running database migrations..."
+            php artisan migrate --force || { echo "Failed to run migrations"; exit 1; }
 
             # Instala e compila os assets do front-end
-            npm install
-            npm run build
+            echo "Installing and building frontend assets..."
+            npm install || { echo "Failed to install npm dependencies"; exit 1; }
+            npm run build || { echo "Failed to build frontend assets"; exit 1; }
+
+            echo "Deployment completed successfully!"
           EOF
