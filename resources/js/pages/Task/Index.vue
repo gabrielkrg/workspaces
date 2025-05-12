@@ -128,7 +128,7 @@ const updateTask = (task, updates) => {
     });
 };
 
-const closeModal = () => {};
+const closeModal = () => { };
 const deleteTask = (taskId) => {
     router.delete(route('tasks.delete', taskId), {
         preserveScroll: true,
@@ -176,6 +176,7 @@ watch(
 </script>
 
 <template>
+
     <Head title="Daily Tasks" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -184,12 +185,15 @@ watch(
                 <div class="grid grid-cols-1 gap-4 md:hidden">
                     <Popover>
                         <PopoverTrigger as-child>
-                            <Button variant="outline"> Filters <ChevronDown class="h-5 w-5 text-gray-900 dark:text-white" /> </Button>
+                            <Button variant="outline"> Filters
+                                <ChevronDown class="h-5 w-5 text-gray-900 dark:text-white" />
+                            </Button>
                         </PopoverTrigger>
                         <PopoverContent class="flex w-80 flex-col gap-3">
                             <div class="flex w-full max-w-sm flex-col gap-1.5">
                                 <Label for="search-mobile">Title</Label>
-                                <Input @input="submitFilters" id="search-mobile" type="search" placeholder="Title" v-model="filtersForm.search" />
+                                <Input @input="submitFilters" id="search-mobile" type="search" placeholder="Title"
+                                    v-model="filtersForm.search" />
                             </div>
 
                             <div class="flex w-full max-w-sm flex-col gap-1.5">
@@ -227,7 +231,8 @@ watch(
                 <div class="hidden grid-cols-3 gap-4 md:grid">
                     <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
                         <Label for="search">Title</Label>
-                        <Input @input="submitFilters" id="search" type="search" placeholder="Title" v-model="filtersForm.search" />
+                        <Input @input="submitFilters" id="search" type="search" placeholder="Title"
+                            v-model="filtersForm.search" />
                     </div>
 
                     <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
@@ -268,7 +273,8 @@ watch(
                         <form @submit.prevent="submit">
                             <SheetHeader>
                                 <SheetTitle>Create task</SheetTitle>
-                                <SheetDescription> Fill the fields to create a new task. Click save when you're done. </SheetDescription>
+                                <SheetDescription> Fill the fields to create a new task. Click save when you're done.
+                                </SheetDescription>
                             </SheetHeader>
                             <div class="grid gap-4 p-4">
                                 <div class="grid grid-cols-4 items-center gap-4">
@@ -294,7 +300,8 @@ watch(
                                 <div class="flex flex-col gap-4">
                                     <Label for="title" class="text-right"> Tags </Label>
                                     <div>
-                                        <TagsInput :model-value="form.tags" @update:model-value="(val) => (form.tags = val)">
+                                        <TagsInput :model-value="form.tags"
+                                            @update:model-value="(val) => (form.tags = val)">
                                             <TagsInputItem v-for="tag in form.tags" :key="tag" :value="tag">
                                                 <TagsInputItemText />
                                                 <TagsInputItemDelete />
@@ -343,7 +350,8 @@ watch(
                                             </ComboboxAnchor>
                                         </Combobox> -->
 
-                                        <span class="text-xs text-gray-500"> Use comma <span class="font-bold">( , )</span> to add </span>
+                                        <span class="text-xs text-gray-500"> Use comma <span class="font-bold">( ,
+                                                )</span> to add </span>
                                     </div>
 
                                     <div v-if="form.errors.tags" class="text-sm text-red-500">
@@ -353,25 +361,20 @@ watch(
 
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="description" class="text-right"> Description </Label>
-                                    <Textarea
-                                        id="description"
-                                        v-model="form.description"
-                                        placeholder="Type your description here."
-                                        class="col-span-4"
-                                    />
+                                    <Textarea id="description" v-model="form.description"
+                                        placeholder="Type your description here." class="col-span-4" />
                                 </div>
 
                                 <div class="items-top flex gap-x-2">
                                     <Checkbox id="delete" v-model="form.delete_after" />
                                     <div class="grid gap-1.5 leading-none">
-                                        <label
-                                            for="delete"
-                                            class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                        >
+                                        <label for="delete"
+                                            class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                             Delete after conclusion
                                         </label>
                                         <p class="text-muted-foreground text-sm">
-                                            Be careful, if checked this tasks will be automatically deleted after conclusion.
+                                            Be careful, if checked this tasks will be automatically deleted after
+                                            conclusion.
                                         </p>
                                     </div>
                                 </div>
@@ -392,58 +395,55 @@ watch(
                     <p class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Progress: {{ percent }}%</p>
 
                     <div class="bg-sidebar-accent h-4 w-full overflow-hidden rounded-full shadow-md">
-                        <div class="h-full bg-green-500 transition-all duration-300 ease-in-out" :style="{ width: `${percent}%` }" />
+                        <div class="h-full bg-green-500 transition-all duration-300 ease-in-out"
+                            :style="{ width: `${percent}%` }" />
                     </div>
                 </div>
             </div>
 
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
-                <div class="p-5">
+            <div
+                class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
+                <div class="p-4">
                     <!-- tasks -->
                     <div v-if="tasks.length > 0">
                         <ul class="space-y-2 divide-y">
-                            <li v-for="task in tasks" :key="task.id" class="flex flex-row items-center justify-between gap-4 p-4">
+                            <li v-for="task in tasks" :key="task.id"
+                                class="flex flex-row items-center justify-between gap-4 p-4">
                                 <div class="flex items-start gap-4">
                                     <label class="group mt-2 inline-flex cursor-pointer items-center">
-                                        <input
-                                            type="checkbox"
-                                            :checked="task.done"
-                                            @change="updateTask(task, { done: !task.done })"
-                                            class="peer sr-only"
-                                        />
+                                        <input type="checkbox" :checked="task.done"
+                                            @change="updateTask(task, { done: !task.done })" class="peer sr-only" />
                                         <div
-                                            class="flex h-5 w-5 items-center justify-center rounded border-2 border-gray-300 transition-colors duration-300 peer-checked:border-green-600 peer-checked:bg-green-600"
-                                        >
+                                            class="flex h-5 w-5 items-center justify-center rounded border-2 border-gray-300 transition-colors duration-300 peer-checked:border-green-600 peer-checked:bg-green-600">
                                             <Check v-if="task.done" class="h-4 w-4 text-white" />
                                         </div>
                                     </label>
 
                                     <div>
                                         <div class="flex flex-wrap gap-1">
-                                            <div
-                                                class="flex rounded bg-green-700 px-1 text-xs font-normal text-white capitalize"
-                                                v-if="task.repeat != 'none'"
-                                            >
+                                            <div class="flex rounded bg-green-700 px-1 text-xs font-normal text-white capitalize"
+                                                v-if="task.repeat != 'none'">
                                                 {{ task.repeat }}
                                             </div>
 
                                             <div v-for="tag in task.tags" :key="tag.index">
-                                                <div
-                                                    class="flex rounded bg-gray-400 px-1 text-xs font-normal text-white capitalize"
-                                                    :style="tag.color ? { backgroundColor: tag.color } : { backgroundColor: '#9ca3af' }"
-                                                >
+                                                <div class="flex rounded bg-gray-400 px-1 text-xs font-normal text-white capitalize"
+                                                    :style="tag.color ? { backgroundColor: tag.color } : { backgroundColor: '#9ca3af' }">
                                                     {{ tag.name }}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div :class="['text-gray-700 dark:text-gray-300', { 'line-through': task.done }]">
+                                        <div
+                                            :class="['text-gray-700 dark:text-gray-300', { 'line-through': task.done }]">
                                             <div class="flex flex-wrap gap-3">
-                                                <h2 class="line-clamp inline-flex gap-3 text-lg font-semibold text-gray-900 dark:text-white">
+                                                <h2
+                                                    class="line-clamp inline-flex gap-3 text-lg font-semibold text-gray-900 dark:text-white">
                                                     {{ task.title }}
                                                 </h2>
                                             </div>
-                                            <p class="line-clamp text-gray-700 dark:text-gray-300">{{ task.description }}</p>
+                                            <p class="line-clamp text-gray-700 dark:text-gray-300">{{ task.description
+                                            }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -455,14 +455,14 @@ watch(
                                         </button>
                                     </PopoverTrigger>
 
-                                    <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow" align="end">
+                                    <PopoverContent
+                                        class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
+                                        align="end">
                                         <Sheet>
                                             <SheetTrigger as-child>
                                                 <SheetClose as-child>
-                                                    <div
-                                                        @click="selectTask(task)"
-                                                        class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100"
-                                                    >
+                                                    <div @click="selectTask(task)"
+                                                        class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
                                                         Edit
                                                     </div>
                                                 </SheetClose>
@@ -471,12 +471,14 @@ watch(
                                                 <form @submit.prevent="update(task)">
                                                     <SheetHeader>
                                                         <SheetTitle> Edit task </SheetTitle>
-                                                        <SheetDescription> Click save when you're done. </SheetDescription>
+                                                        <SheetDescription> Click save when you're done.
+                                                        </SheetDescription>
                                                     </SheetHeader>
                                                     <div class="grid gap-4 p-4">
                                                         <div class="grid grid-cols-4 items-center gap-4">
                                                             <Label for="title" class="text-right"> Title </Label>
-                                                            <Input id="title" v-model="updateForm.title" class="col-span-4" />
+                                                            <Input id="title" v-model="updateForm.title"
+                                                                class="col-span-4" />
                                                         </div>
 
                                                         <div class="flex flex-col gap-4">
@@ -497,11 +499,10 @@ watch(
                                                         <div class="flex flex-col gap-4">
                                                             <Label for="title" class="text-right"> Tags </Label>
                                                             <div>
-                                                                <TagsInput
-                                                                    :model-value="updateForm.tags"
-                                                                    @update:model-value="(val) => (updateForm.tags = val)"
-                                                                >
-                                                                    <TagsInputItem v-for="tag in updateForm.tags" :key="tag" :value="tag">
+                                                                <TagsInput :model-value="updateForm.tags"
+                                                                    @update:model-value="(val) => (updateForm.tags = val)">
+                                                                    <TagsInputItem v-for="tag in updateForm.tags"
+                                                                        :key="tag" :value="tag">
                                                                         <TagsInputItemText />
                                                                         <TagsInputItemDelete />
                                                                     </TagsInputItem>
@@ -509,31 +510,34 @@ watch(
                                                                     <TagsInputInput placeholder="Tags..." />
                                                                 </TagsInput>
                                                                 <span class="text-xs text-gray-500">
-                                                                    Use comma <span class="font-bold">( , )</span> to add
+                                                                    Use comma <span class="font-bold">( , )</span> to
+                                                                    add
                                                                 </span>
                                                             </div>
 
-                                                            <div v-if="updateForm.errors.tags" class="text-sm text-red-500">
+                                                            <div v-if="updateForm.errors.tags"
+                                                                class="text-sm text-red-500">
                                                                 {{ updateForm.errors.tags }}
                                                             </div>
                                                         </div>
 
                                                         <div class="grid grid-cols-4 items-center gap-4">
-                                                            <Label for="description" class="text-right"> Description </Label>
-                                                            <Textarea id="description" v-model="updateForm.description" class="col-span-4" />
+                                                            <Label for="description" class="text-right"> Description
+                                                            </Label>
+                                                            <Textarea id="description" v-model="updateForm.description"
+                                                                class="col-span-4" />
                                                         </div>
 
                                                         <div class="items-top flex gap-x-2">
                                                             <Checkbox id="delete2" v-model="updateForm.delete_after" />
                                                             <div class="grid gap-1.5 leading-none">
-                                                                <label
-                                                                    for="delete2"
-                                                                    class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                                                >
+                                                                <label for="delete2"
+                                                                    class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                                                     Delete after conclusion
                                                                 </label>
                                                                 <p class="text-muted-foreground text-sm">
-                                                                    Be careful, if checked this tasks will be automatically deleted after conclusion.
+                                                                    Be careful, if checked this tasks will be
+                                                                    automatically deleted after conclusion.
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -548,10 +552,8 @@ watch(
                                         </Sheet>
                                         <Dialog>
                                             <DialogTrigger as-child>
-                                                <div
-                                                    class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
-                                                    variant="destructive"
-                                                >
+                                                <div class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                                    variant="destructive">
                                                     Delete
                                                 </div>
                                             </DialogTrigger>
@@ -559,7 +561,8 @@ watch(
                                             <DialogContent>
                                                 <form class="space-y-6" @submit.prevent="deleteTask(task.id)">
                                                     <DialogHeader class="space-y-3">
-                                                        <DialogTitle>Are you sure you want to delete this task?</DialogTitle>
+                                                        <DialogTitle>Are you sure you want to delete this task?
+                                                        </DialogTitle>
                                                         <DialogDescription>
                                                             Once your task is deleted, there's no way to recover it.
                                                         </DialogDescription>

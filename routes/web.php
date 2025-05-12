@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\TaskController as ApiTaskController;
 use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\TimeTrackingController;
+
 Route::get('/', function () {
     return redirect()->route('dashboard');
 })->middleware(['auth', 'verified'])->name('home');
@@ -38,6 +40,16 @@ Route::middleware(['auth'])->group(function () {
 
     // Tickets
     Route::get('tickets', [TicketController::class, 'index'])->name('tickets.index');
+    Route::post('tickets', [TicketController::class, 'store'])->name('tickets.store');
+    Route::put('tickets/{ticket}', [TicketController::class, 'update'])->name('tickets.update');
+    Route::delete('tickets/{ticket}', [TicketController::class, 'destroy'])->name('tickets.destroy');
+
+    // Time Tracking
+    Route::get('time-tracking', [TimeTrackingController::class, 'index'])->name('time-tracking.index');
+    Route::post('time-tracking', [TimeTrackingController::class, 'store'])->name('time-tracking.store');
+    Route::put('time-tracking/{timeTracking}', [TimeTrackingController::class, 'update'])->name('time-tracking.update');
+    Route::delete('time-tracking/{timeTracking}', [TimeTrackingController::class, 'destroy'])->name('time-tracking.destroy');
+    
 
     // Kanban
     Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
@@ -75,6 +87,9 @@ Route::middleware(['auth'])->group(function () {
     // Tasks
     Route::get('/tasks/heatmap', [ApiTaskController::class, 'heatmap'])->name('tasks.heatmap');
     Route::get('/tasks/latest', [ApiTaskController::class, 'latestChanges'])->name('tasks.latest');
+
+    // Time Tracking
+    Route::get('time-tracking/trackables', [TimeTrackingController::class, 'trackables'])->name('time-tracking.trackables');
 });
 
 require __DIR__.'/settings.php';

@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tickets', function (Blueprint $table) {
+        Schema::create('time_trackings', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->text('description');
-            $table->string('status')->default('open');
-            $table->string('priority')->default('low');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('workspace_id')->constrained('workspaces')->onDelete('cascade');
+            $table->morphs('trackable');
+            $table->dateTime('start_time');
+            $table->dateTime('end_time');
+            $table->integer('duration');
+            $table->boolean('is_running')->default(false);
             $table->timestamps();
         });
     }
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tickets');
+        Schema::dropIfExists('time_trackings');
     }
 };
