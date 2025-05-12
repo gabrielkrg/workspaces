@@ -25,6 +25,11 @@ jobs:
             set -e  # Exit on error
             echo "Starting deployment process..."
             
+            # Add GitHub to known_hosts
+            echo "Adding GitHub to known_hosts..."
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            
             # Define o repositório como seguro para evitar erros de "dubious ownership"
             echo "Configuring git safe directory..."
             git config --global --add safe.directory ${{ secrets.PATH_PROJECT }}
