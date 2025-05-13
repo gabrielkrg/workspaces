@@ -122,7 +122,7 @@ const handleCardMove = (event: any) => {
 
 <template>
     <div class="flex justify-between items-center px-4">
-        <h1 class="text-lg font-bold">
+        <h1 class="text-lg font-bold text-black dark:text-white">
             {{ kanban?.name }}
         </h1>
     </div>

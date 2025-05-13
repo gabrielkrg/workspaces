@@ -6,9 +6,9 @@ defineProps<{
 </script>
 
 <template>
-    <div class="cursor-pointer rounded-lg bg-white p-3 shadow-sm hover:shadow-md transition-shadow"
+    <div class="cursor-pointer rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow bg-sidebar dark:text-white text-black"
         @click="$emit('click')">
         <h4 class="font-medium">{{ title }}</h4>
-        <p class="text-sm text-gray-500">{{ description }}</p>
+        <p class="text-sm text-sidebar-accent-foreground">{{ description }}</p>
     </div>
 </template>

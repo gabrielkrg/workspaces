@@ -233,7 +233,7 @@ const updateColumnOrder = () => {
                                 <Sheet>
                                     <SheetTrigger asChild @click="startEditing(kanban)">
                                         <Button class="cursor-pointer" size="icon" title="Edit">
-                                            <Pencil class="text-white" />
+                                            <Pencil class="text-white dark:text-black" />
                                         </Button>
                                     </SheetTrigger>
                                     <SheetContent>

@@ -13,24 +13,27 @@ class TimeTracking extends Model
         'trackable_type',
         'start_time',
         'end_time',
-        'duration',
         'is_running',
     ];
 
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
-        'is_running' => 'boolean',
-        'duration' => 'integer',
     ];
 
     protected $appends = [
-        'duration_formatted',
+        'formatted_start_time',
+        'formatted_end_time',
     ];
 
-    public function getDurationFormattedAttribute()
+    public function getFormattedStartTimeAttribute()
     {
-        return gmdate('H:i:s', $this->duration);
+        return $this->start_time->format('Y-m-d H:i:s');
+    }
+
+    public function getFormattedEndTimeAttribute()
+    {
+        return $this->end_time->format('Y-m-d H:i:s');
     }
 
     public function trackable()

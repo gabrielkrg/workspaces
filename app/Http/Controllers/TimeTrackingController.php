@@ -56,10 +56,7 @@ class TimeTrackingController extends Controller
             'trackable_id' => 'required|integer',
             'trackable_type' => 'required|string|max:255',
             'start_time' => 'required|date',
-            'end_time' => 'required|date',
-            'duration' => 'required|integer',
-            'is_running' => 'required|boolean',
-
+            'end_time' => 'nullable|date',
         ]);
 
         $request->merge([
@@ -67,7 +64,7 @@ class TimeTrackingController extends Controller
             'workspace_id' => $user->workspace->id,
         ]);
 
-        $timeTracking = TimeTracking::create($request->all());
+        TimeTracking::create($request->all());
 
         return redirect()->route('time-tracking.index')->with('success', 'Time tracking created successfully');
     }
@@ -106,7 +103,7 @@ class TimeTrackingController extends Controller
         return redirect()->route('time-tracking.index')->with('success', 'Time tracking deleted successfully');
     }
 
-    public function trackables(Request $request): JsonResponse
+    public function trackables(Request $request)
     {
         $user = Auth::user();
 
@@ -115,9 +112,21 @@ class TimeTrackingController extends Controller
         $this->authorize('view', $workspace);
 
         $trackableType = $request->input('trackable_type');
-        dd($trackableType);
 
-        $trackables = $workspace->trackables()->where('type', $trackableType)->get();
+        switch ($trackableType) {
+            case 'App\Models\Ticket':
+                $trackables = $workspace->tickets()->get();
+                break;
+            case 'App\Models\Task':
+                $trackables = $workspace->tasks()->get();
+                break;
+            case 'App\Models\Card':
+                $trackables = $workspace->cards()->get();
+                break;
+            default:
+                $trackables = [];
+                break;
+        }
 
         return response()->json($trackables);
     }

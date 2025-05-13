@@ -20,11 +20,6 @@ class Workspace extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function tasks()
-    {
-        return $this->hasMany(Task::class);
-    }
-
     public function users()
     {
         return $this->belongsToMany(User::class)
@@ -32,13 +27,31 @@ class Workspace extends Model
                     ->withTimestamps();
     }
 
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
+    
+
+    public function cards()
+    {
+        return $this->hasMany(Card::class);
+    }
+
+  public function notes()
+    {
+        return $this->hasMany(Note::class);
+    }
+
     public function tags()
     {
         return $this->hasMany(Tag::class);
     }
 
-    public function notes()
-    {
-        return $this->hasMany(Note::class);
-    }
+  
 }

@@ -142,7 +142,8 @@ const deleteNote = (noteId: number) => {
                                 <CommandItem v-for="note in notes" :key="note.id" :value="note.id ?? ''"
                                     class="flex items-center justify-between">
 
-                                    <span class="cursor-pointer font-medium" @click="selectNote(note)">
+                                    <span class="cursor-pointer font-medium text-black dark:text-white"
+                                        @click="selectNote(note)">
                                         {{ note.title }}
                                     </span>
 
@@ -152,7 +153,7 @@ const deleteNote = (noteId: number) => {
                                                 <SheetClose as-child>
                                                     <Button class="cursor-pointer" size="icon" @click="selectNote(note)"
                                                         title="Edit">
-                                                        <Pencil class="text-white" />
+                                                        <Pencil class="text-white dark:text-black" />
                                                     </Button>
                                                 </SheetClose>
                                             </SheetTrigger>

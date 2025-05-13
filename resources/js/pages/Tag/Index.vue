@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Table, TableBody, TableCell, TableEmpty, TableHeader, TableRow } from '@/components/ui/table';
+import TableHead from '@/components/ui/table/TableHead.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -84,7 +86,7 @@ const update = (tagId) => {
     });
 };
 
-const closeModal = () => {};
+const closeModal = () => { };
 const deleteTag = (tagId) => {
     router.delete(route('tags.delete', tagId), {
         preserveScroll: true,
@@ -111,6 +113,7 @@ onUnmounted(() => {
 </script>
 
 <template>
+
     <Head title="Daily Tasks" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -124,7 +127,8 @@ onUnmounted(() => {
                         <form @submit.prevent="submit">
                             <SheetHeader>
                                 <SheetTitle>Create tag</SheetTitle>
-                                <SheetDescription> Fill the fields to create a new tag. Click save when you're done. </SheetDescription>
+                                <SheetDescription> Fill the fields to create a new tag. Click save when you're done.
+                                </SheetDescription>
                             </SheetHeader>
                             <div class="grid gap-4 p-4">
                                 <div class="grid grid-cols-4 items-center gap-4">
@@ -133,7 +137,6 @@ onUnmounted(() => {
                                 </div>
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="color" class="text-right"> Color </Label>
-
                                     <ChromePicker v-model="form.color" class="col-span-4" />
                                 </div>
                             </div>
@@ -147,101 +150,121 @@ onUnmounted(() => {
                 </Sheet>
             </div>
 
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
+            <div
+                class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
                 <div class="p-5">
                     <!-- tags -->
                     <div v-if="tags.length > 0">
-                        <ul class="space-y-2 divide-y">
-                            <li v-for="tag in tags" :key="tag.id" class="flex flex-row items-center justify-between gap-4 p-4">
-                                <div class="flex items-start gap-4">
-                                    <div class="flex flex-wrap gap-3">
-                                        <h2 class="line-clamp inline-flex gap-3 text-lg font-semibold text-gray-900 dark:text-white">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Color</TableHead>
+                                    <TableHead class="w-[100px]">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                <TableRow v-for="tag in tags" :key="tag.id">
+                                    <TableCell>
+                                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                                             {{ tag.name }}
                                         </h2>
-                                    </div>
-                                </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div class="h-6 w-6 rounded-full" :style="{ backgroundColor: tag.color }"></div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Popover class="relative">
+                                            <PopoverTrigger as-child>
+                                                <button class="cursor-pointer p-2">
+                                                    <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
+                                                </button>
+                                            </PopoverTrigger>
 
-                                <Popover class="relative">
-                                    <PopoverTrigger as-child>
-                                        <button class="cursor-pointer p-2">
-                                            <EllipsisVertical class="m-5 h-5 w-5 text-gray-900 dark:text-white" />
-                                        </button>
-                                    </PopoverTrigger>
-
-                                    <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow" align="end">
-                                        <Sheet>
-                                            <SheetTrigger as-child>
-                                                <div
-                                                    @click="selectTag(tag)"
-                                                    class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100"
-                                                >
-                                                    Edit
-                                                </div>
-                                            </SheetTrigger>
-                                            <SheetContent>
-                                                <form @submit.prevent="update(tag)">
-                                                    <SheetHeader>
-                                                        <SheetTitle> Edit tag </SheetTitle>
-                                                        <SheetDescription> Click save when you're done. </SheetDescription>
-                                                    </SheetHeader>
-                                                    <div class="grid gap-4 p-4">
-                                                        <div class="grid grid-cols-4 items-center gap-4">
-                                                            <Label for="name" class="text-right"> Name </Label>
-                                                            <Input id="name" v-model="updateForm.name" class="col-span-4" />
+                                            <PopoverContent
+                                                class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
+                                                align="end">
+                                                <Sheet>
+                                                    <SheetTrigger as-child>
+                                                        <div @click="selectTag(tag)"
+                                                            class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
+                                                            Edit
                                                         </div>
+                                                    </SheetTrigger>
+                                                    <SheetContent>
+                                                        <form @submit.prevent="update(tag)">
+                                                            <SheetHeader>
+                                                                <SheetTitle> Edit tag </SheetTitle>
+                                                                <SheetDescription> Click save when you're done.
+                                                                </SheetDescription>
+                                                            </SheetHeader>
+                                                            <div class="grid gap-4 p-4">
+                                                                <div class="grid grid-cols-4 items-center gap-4">
+                                                                    <Label for="name" class="text-right"> Name </Label>
+                                                                    <Input id="name" v-model="updateForm.name"
+                                                                        class="col-span-4" />
+                                                                </div>
 
-                                                        <div class="grid grid-cols-4 items-center gap-4">
-                                                            <Label for="color" class="text-right"> Color </Label>
-
-                                                            <ChromePicker v-model="updateForm.color" class="col-span-4" />
+                                                                <div class="grid grid-cols-4 items-center gap-4">
+                                                                    <Label for="color" class="text-right"> Color
+                                                                    </Label>
+                                                                    <ChromePicker v-model="updateForm.color"
+                                                                        class="col-span-4" />
+                                                                </div>
+                                                            </div>
+                                                            <SheetFooter>
+                                                                <SheetClose as-child>
+                                                                    <Button type="submit"> Save changes </Button>
+                                                                </SheetClose>
+                                                            </SheetFooter>
+                                                        </form>
+                                                    </SheetContent>
+                                                </Sheet>
+                                                <Dialog>
+                                                    <DialogTrigger as-child>
+                                                        <div class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                                            variant="destructive">
+                                                            Delete
                                                         </div>
-                                                    </div>
-                                                    <SheetFooter>
-                                                        <SheetClose as-child>
-                                                            <Button type="submit"> Save changes </Button>
-                                                        </SheetClose>
-                                                    </SheetFooter>
-                                                </form>
-                                            </SheetContent>
-                                        </Sheet>
-                                        <Dialog>
-                                            <DialogTrigger as-child>
-                                                <div
-                                                    class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
-                                                    variant="destructive"
-                                                >
-                                                    Delete
-                                                </div>
-                                            </DialogTrigger>
+                                                    </DialogTrigger>
 
-                                            <DialogContent>
-                                                <form class="space-y-6" @submit.prevent="deleteTag(tag.id)">
-                                                    <DialogHeader class="space-y-3">
-                                                        <DialogTitle>Are you sure you want to delete this tag?</DialogTitle>
-                                                        <DialogDescription>
-                                                            Once your tag is deleted, there’s no way to recover it.
-                                                        </DialogDescription>
-                                                    </DialogHeader>
+                                                    <DialogContent>
+                                                        <form class="space-y-6" @submit.prevent="deleteTag(tag.id)">
+                                                            <DialogHeader class="space-y-3">
+                                                                <DialogTitle>Are you sure you want to delete this tag?
+                                                                </DialogTitle>
+                                                                <DialogDescription>
+                                                                    Once your tag is deleted, there's no way to recover
+                                                                    it.
+                                                                </DialogDescription>
+                                                            </DialogHeader>
 
-                                                    <DialogFooter class="gap-2">
-                                                        <DialogClose as-child>
-                                                            <Button variant="secondary">Cancel</Button>
-                                                        </DialogClose>
+                                                            <DialogFooter class="gap-2">
+                                                                <DialogClose as-child>
+                                                                    <Button variant="secondary">Cancel</Button>
+                                                                </DialogClose>
 
-                                                        <Button variant="destructive" :disabled="form.processing">
-                                                            <button type="submit">Delete tag</button>
-                                                        </Button>
-                                                    </DialogFooter>
-                                                </form>
-                                            </DialogContent>
-                                        </Dialog>
-                                    </PopoverContent>
-                                </Popover>
-                            </li>
-                        </ul>
+                                                                <Button variant="destructive"
+                                                                    :disabled="form.processing">
+                                                                    <button type="submit">Delete tag</button>
+                                                                </Button>
+                                                            </DialogFooter>
+                                                        </form>
+                                                    </DialogContent>
+                                                </Dialog>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
                     </div>
                     <div v-else>
-                        <p class="text-gray-800 dark:text-gray-100">There are no tasks yet</p>
+                        <Table>
+                            <TableEmpty colspan="3">
+                                <p class="text-gray-800 dark:text-gray-100">There are no tags yet</p>
+                            </TableEmpty>
+                        </Table>
                     </div>
                 </div>
             </div>

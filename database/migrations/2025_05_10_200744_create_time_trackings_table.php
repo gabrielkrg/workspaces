@@ -18,8 +18,6 @@ return new class extends Migration
             $table->morphs('trackable');
             $table->dateTime('start_time');
             $table->dateTime('end_time');
-            $table->integer('duration');
-            $table->boolean('is_running')->default(false);
             $table->timestamps();
         });
     }
