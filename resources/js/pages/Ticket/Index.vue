@@ -151,7 +151,6 @@ const closeTicketSheet = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>ID</TableHead>
                                 <TableHead>Title</TableHead>
                                 <TableHead>Description</TableHead>
                                 <TableHead>Status</TableHead>
@@ -161,9 +160,7 @@ const closeTicketSheet = () => {
                         </TableHeader>
                         <TableBody>
                             <TableRow v-for="ticket in tickets" :key="ticket.id">
-                                <TableCell>
-                                    <span class="font-mono text-sm text-muted-foreground">#{{ ticket.id }}</span>
-                                </TableCell>
+
                                 <TableCell>
                                     <h3 class="font-medium">{{ ticket.title }}</h3>
                                 </TableCell>

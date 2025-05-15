@@ -32,6 +32,20 @@ class NoteController extends Controller
         ]);
     }
 
+    public function show(Note $note)
+    {
+        $user = Auth::user();
+        $workspace = Workspace::findOrFail($user->workspace_id);
+
+        $this->authorize('view', $workspace);
+
+        $note->load(['workspace', 'user']);
+
+        return Inertia::render('Note/Show', [
+            'note' => $note,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $user = Auth::user();

@@ -16,13 +16,11 @@ class KanbanController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $workspace = Workspace::findOrFail($user->workspace_id)->first();
+        $workspace = Workspace::where('id', $user->workspace_id)->first();
 
         $this->authorize('view', $workspace);
 
-        $kanbans = Kanban::with(['columns' => function($query) {
-            $query->orderBy('order');
-        }])->get();
+        $kanbans = Kanban::where('workspace_id', $workspace->id)->get();
 
         return Inertia::render('Kanban/Index', [
             'kanbans' => $kanbans,
@@ -32,7 +30,7 @@ class KanbanController extends Controller
     public function show(Kanban $kanban)
     {
         $user = Auth::user();
-        $workspace = Workspace::findOrFail($user->workspace_id)->first();
+        $workspace = Workspace::where($user->workspace_id)->first();
 
         $this->authorize('view', $workspace);
 
@@ -48,7 +46,7 @@ class KanbanController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        $workspace = Workspace::findOrFail($user->workspace_id)->first();
+        $workspace = Workspace::where('id', $user->workspace_id)->first();
 
         $this->authorize('update', $workspace);
 
@@ -78,7 +76,7 @@ class KanbanController extends Controller
     public function update(Request $request, Kanban $kanban)
     {
         $user = Auth::user();
-        $workspace = Workspace::findOrFail($user->workspace_id)->first();
+        $workspace = Workspace::where('id', $user->workspace_id)->first();
 
         $this->authorize('update', $workspace);
 
@@ -120,7 +118,7 @@ class KanbanController extends Controller
     public function delete(Kanban $kanban)
     {
         $user = Auth::user();
-        $workspace = Workspace::findOrFail($user->workspace_id)->first();
+        $workspace = Workspace::where('id', $user->workspace_id)->first();
 
         $this->authorize('delete', $workspace);
 
@@ -132,7 +130,7 @@ class KanbanController extends Controller
     public function moveCard(Request $request)
     {
         $user = Auth::user();
-        $workspace = Workspace::findOrFail($user->workspace_id)->first();
+        $workspace = Workspace::where('id', $user->workspace_id)->first();
 
         $this->authorize('update', $workspace);
 
