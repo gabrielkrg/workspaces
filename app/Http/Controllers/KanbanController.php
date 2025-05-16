@@ -20,7 +20,9 @@ class KanbanController extends Controller
 
         $this->authorize('view', $workspace);
 
-        $kanbans = Kanban::where('workspace_id', $workspace->id)->get();
+        $kanbans = Kanban::where('workspace_id', $workspace->id)->with(['columns' => function($query) {
+            $query->orderBy('order');
+        }])->get();
 
         return Inertia::render('Kanban/Index', [
             'kanbans' => $kanbans,
@@ -30,13 +32,14 @@ class KanbanController extends Controller
     public function show(Kanban $kanban)
     {
         $user = Auth::user();
-        $workspace = Workspace::where($user->workspace_id)->first();
+        $workspace = Workspace::where('id', $user->workspace_id)->first();
 
         $this->authorize('view', $workspace);
 
         $kanban->load(['columns' => function($query) {
             $query->orderBy('order');
         }, 'columns.cards']);
+
 
         return Inertia::render('Kanban/Show', [
             'kanban' => $kanban,
@@ -49,14 +52,14 @@ class KanbanController extends Controller
         $workspace = Workspace::where('id', $user->workspace_id)->first();
 
         $this->authorize('update', $workspace);
-
+        
         $request->validate([
             'name' => 'required|string|max:255',
             'columns' => 'required|array',
             'columns.*.name' => 'required|string|max:255',
             'columns.*.order' => 'required|integer',
         ]);
-        
+
         $kanban = Kanban::create([
             'name' => $request->name,
             'workspace_id' => $workspace->id,
@@ -92,8 +95,16 @@ class KanbanController extends Controller
             'name' => $request->name,
         ]);
 
-        // dd($request->columns);
+        // Get all column IDs from the request
+        $requestColumnIds = collect($request->columns)
+            ->pluck('id')
+            ->filter()
+            ->toArray();
 
+        // Delete columns that are not in the request
+        $kanban->columns()
+            ->whereNotIn('id', $requestColumnIds)
+            ->delete();
 
         foreach ($request->columns as $column) {
             if (isset($column['id'])) {

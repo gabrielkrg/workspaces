@@ -222,7 +222,7 @@ const updateColumnOrder = () => {
             </div>
 
             <!-- Kanbans List -->
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3" v-if="kanbans.length > 0">
                 <Card v-for="kanban in kanbans" :key="kanban.id" class="cursor-pointer"
                     @click="navigateToKanban(kanban)">
                     <CardHeader>
@@ -321,6 +321,11 @@ const updateColumnOrder = () => {
                         </CardTitle>
                     </CardHeader>
                 </Card>
+            </div>
+            <div v-else>
+                <div class="flex h-full items-center justify-center">
+                    <p class="text-sm text-gray-500">No kanbans found. Create one to get started.</p>
+                </div>
             </div>
         </div>
     </AppLayout>
