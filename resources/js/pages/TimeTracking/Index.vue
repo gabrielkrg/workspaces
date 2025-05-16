@@ -14,7 +14,6 @@ import SelectItem from '@/components/ui/select/SelectItem.vue';
 import axios from 'axios';
 import { ref, watch, computed } from 'vue';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Table, TableHeader, TableBody, TableCell, TableRow, TableEmpty, TableHead } from '@/components/ui/table';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ChevronDown, EllipsisVertical } from 'lucide-vue-next';
 
@@ -231,93 +230,80 @@ const percent = computed(() => (total.value ? Math.round((completed.value / tota
             <div
                 class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4">
                 <div v-if="timeTrackings.length > 0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead class="w-[50px]">Status</TableHead>
-                                <TableHead>Start Time</TableHead>
-                                <TableHead>End Time</TableHead>
-                                <TableHead class="w-[100px]">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            <TableRow v-for="timeTracking in timeTrackings" :key="timeTracking.id">
-                                <TableCell>
-                                    <div class="flex items-center gap-2">
-                                        <div class="h-2 w-2 rounded-full"
-                                            :class="timeTracking.is_running ? 'bg-green-500' : 'bg-gray-500'"></div>
-                                        <span class="font-medium">{{ timeTracking.is_running ? 'Running' : 'Completed'
-                                            }}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div class="text-gray-700 dark:text-gray-300">
-                                        {{ new Date(timeTracking.start_time).toLocaleString() }}
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div class="text-gray-700 dark:text-gray-300">
-                                        {{ timeTracking.end_time ? new Date(timeTracking.end_time).toLocaleString() :
-                                            'Ongoing' }}
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Popover class="relative">
-                                        <PopoverTrigger as-child>
-                                            <button class="cursor-pointer p-2">
-                                                <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
-                                            </button>
-                                        </PopoverTrigger>
+                    <div v-for="timeTracking in timeTrackings" :key="timeTracking.id"
+                        class="group flex items-start gap-4 border-b p-4">
+                        <!-- Status -->
+                        <div class="flex items-start pt-1">
+                            <div class="flex items-center gap-2">
+                                <div class="h-2 w-2 rounded-full"
+                                    :class="timeTracking.is_running ? 'bg-green-500' : 'bg-gray-500'"></div>
+                                <span class="font-medium">{{ timeTracking.is_running ? 'Running' : 'Completed' }}</span>
+                            </div>
+                        </div>
 
-                                        <PopoverContent
-                                            class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
-                                            align="end">
-                                            <Sheet>
-                                                <SheetTrigger as-child>
-                                                    <SheetClose as-child>
-                                                        <div @click="openTimeTrackingSheet(timeTracking)"
-                                                            class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
-                                                            Edit
-                                                        </div>
-                                                    </SheetClose>
-                                                </SheetTrigger>
-                                            </Sheet>
-                                            <AlertDialog v-model:open="showDeleteDialog">
-                                                <AlertDialogTrigger as-child>
-                                                    <div
-                                                        class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900">
-                                                        Delete
-                                                    </div>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            This action cannot be undone. This will permanently delete
-                                                            the
-                                                            time tracking entry.
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <Button variant="destructive"
-                                                            @click="deleteTimeTracking">Delete</Button>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </PopoverContent>
-                                    </Popover>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
+                        <!-- Time Details -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <div class="text-gray-700 dark:text-gray-300">
+                                    Start: {{ new Date(timeTracking.start_time).toLocaleString() }}
+                                </div>
+                                <div class="text-gray-700 dark:text-gray-300">
+                                    End: {{ timeTracking.end_time ? new Date(timeTracking.end_time).toLocaleString() :
+                                        'Ongoing' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-start justify-end">
+                            <Popover class="relative">
+                                <PopoverTrigger as-child>
+                                    <button class="cursor-pointer p-2">
+                                        <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
+                                    </button>
+                                </PopoverTrigger>
+
+                                <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
+                                    align="end">
+                                    <Sheet>
+                                        <SheetTrigger as-child>
+                                            <SheetClose as-child>
+                                                <div @click="openTimeTrackingSheet(timeTracking)"
+                                                    class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
+                                                    Edit
+                                                </div>
+                                            </SheetClose>
+                                        </SheetTrigger>
+                                    </Sheet>
+                                    <AlertDialog v-model:open="showDeleteDialog">
+                                        <AlertDialogTrigger as-child>
+                                            <div
+                                                class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900">
+                                                Delete
+                                            </div>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This action cannot be undone. This will permanently delete the time
+                                                    tracking entry.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <Button variant="destructive"
+                                                    @click="deleteTimeTracking">Delete</Button>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    </div>
                 </div>
-                <div v-else>
-                    <Table>
-                        <TableEmpty colspan="3">
-                            <p class="text-gray-800 dark:text-gray-100">There are no time tracking entries yet</p>
-                        </TableEmpty>
-                    </Table>
+                <div v-else class="flex h-32 items-center justify-center rounded-lg border">
+                    <p class="text-gray-800 dark:text-gray-100">There are no time tracking entries yet</p>
                 </div>
             </div>
 

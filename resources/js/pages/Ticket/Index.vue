@@ -7,13 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import Badge from '@/components/ui/badge.vue';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Table, TableBody, TableCell, TableEmpty, TableHeader, TableRow } from '@/components/ui/table';
-import TableHead from '@/components/ui/table/TableHead.vue';
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { EllipsisVertical } from 'lucide-vue-next';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
@@ -148,157 +145,143 @@ const closeTicketSheet = () => {
             <div
                 class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4">
                 <div v-if="tickets.length > 0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Title</TableHead>
-                                <TableHead>Description</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Created At</TableHead>
-                                <TableHead class="w-[100px]">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            <TableRow v-for="ticket in tickets" :key="ticket.id">
+                    <div v-for="ticket in tickets" :key="ticket.id" class="group flex items-start gap-4 border-b p-4">
 
-                                <TableCell>
-                                    <h3 class="font-medium">{{ ticket.title }}</h3>
-                                </TableCell>
-                                <TableCell>
-                                    <p class="text-sm text-muted-foreground line-clamp-2">{{ ticket.description }}</p>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge :class="getStatusColor(ticket.status)" class="text-white">
-                                        {{ ticket.status }}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <span class="text-sm text-muted-foreground">
-                                        {{ new Date(ticket.created_at).toLocaleDateString() }}
-                                    </span>
-                                </TableCell>
-                                <TableCell>
-                                    <Popover>
-                                        <PopoverTrigger as-child>
-                                            <button class="cursor-pointer p-2">
-                                                <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
-                                            </button>
-                                        </PopoverTrigger>
-                                        <PopoverContent
-                                            class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
-                                            align="end">
-                                            <Sheet>
-                                                <SheetTrigger as-child>
-                                                    <div @click="openTicketSheet(ticket)"
-                                                        class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
-                                                        Edit
+
+                        <!-- Title, Description, Status, Created At -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {{ ticket.title }}
+                                </h2>
+                                <div class="flex items-center gap-1 flex-wrap">
+                                    <div class="flex items-start pt-1">
+                                        <Badge :class="getStatusColor(ticket.status)" class="text-white">
+                                            {{ ticket.status }}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="mt-1 text-gray-700 dark:text-gray-300 break-words">{{ ticket.description }}
+                            </p>
+                            <span class="text-sm text-muted-foreground">
+                                {{ new Date(ticket.created_at).toLocaleDateString() }}
+                            </span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-start justify-end">
+                            <Popover>
+                                <PopoverTrigger as-child>
+                                    <button class="cursor-pointer p-2">
+                                        <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
+                                    </button>
+                                </PopoverTrigger>
+                                <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
+                                    align="end">
+                                    <Sheet>
+                                        <SheetTrigger as-child>
+                                            <div @click="openTicketSheet(ticket)"
+                                                class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
+                                                Edit
+                                            </div>
+                                        </SheetTrigger>
+                                        <SheetContent side="right" class="sm:max-w-[500px]">
+                                            <SheetHeader>
+                                                <SheetTitle>Edit Ticket</SheetTitle>
+                                                <SheetDescription>Update ticket details</SheetDescription>
+                                            </SheetHeader>
+                                            <form v-if="selectedTicket" @submit.prevent="updateTicket"
+                                                class="space-y-4 mt-4 p-4">
+                                                <div class="grid gap-4">
+                                                    <div class="grid grid-cols-4 items-center gap-4">
+                                                        <Label for="update-title" class="text-right">Title</Label>
+                                                        <Input id="update-title" v-model="updateForm.title"
+                                                            class="col-span-3" />
                                                     </div>
-                                                </SheetTrigger>
-                                                <SheetContent side="right" class="sm:max-w-[500px]">
-                                                    <SheetHeader>
-                                                        <SheetTitle>Edit Ticket</SheetTitle>
-                                                        <SheetDescription>Update ticket details</SheetDescription>
-                                                    </SheetHeader>
-                                                    <form v-if="selectedTicket" @submit.prevent="updateTicket"
-                                                        class="space-y-4 mt-4 p-4">
-                                                        <div class="grid gap-4">
-                                                            <div class="grid grid-cols-4 items-center gap-4">
-                                                                <Label for="update-title"
-                                                                    class="text-right">Title</Label>
-                                                                <Input id="update-title" v-model="updateForm.title"
-                                                                    class="col-span-3" />
-                                                            </div>
 
-                                                            <div class="grid grid-cols-4 items-center gap-4">
-                                                                <Label for="update-description"
-                                                                    class="text-right">Description</Label>
-                                                                <Textarea id="update-description"
-                                                                    v-model="updateForm.description"
-                                                                    class="col-span-3" />
-                                                            </div>
-
-                                                            <div class="grid grid-cols-4 items-center gap-4">
-                                                                <Label for="update-status"
-                                                                    class="text-right">Status</Label>
-                                                                <select id="update-status" v-model="updateForm.status"
-                                                                    class="col-span-3 rounded-md border border-input bg-background px-3 py-2">
-                                                                    <option value="open">Open</option>
-                                                                    <option value="in_progress">In Progress</option>
-                                                                    <option value="closed">Closed</option>
-                                                                    <option value="pending">Pending</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="flex justify-between items-center mt-6">
-                                                            <AlertDialog v-model:open="showDeleteDialog">
-                                                                <AlertDialogTrigger as-child>
-                                                                    <Button variant="destructive">Delete Ticket</Button>
-                                                                </AlertDialogTrigger>
-                                                                <AlertDialogContent>
-                                                                    <AlertDialogHeader>
-                                                                        <AlertDialogTitle>Are you sure?
-                                                                        </AlertDialogTitle>
-                                                                        <AlertDialogDescription>
-                                                                            This action cannot be undone. This will
-                                                                            permanently delete the
-                                                                            ticket.
-                                                                        </AlertDialogDescription>
-                                                                    </AlertDialogHeader>
-                                                                    <AlertDialogFooter>
-                                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                        <Button variant="destructive"
-                                                                            @click="deleteTicket">Delete</Button>
-                                                                    </AlertDialogFooter>
-                                                                </AlertDialogContent>
-                                                            </AlertDialog>
-
-                                                            <div class="flex gap-2">
-                                                                <SheetClose asChild>
-                                                                    <Button variant="outline">Cancel</Button>
-                                                                </SheetClose>
-                                                                <Button type="submit">Save Changes</Button>
-                                                            </div>
-                                                        </div>
-                                                    </form>
-                                                </SheetContent>
-                                            </Sheet>
-                                            <AlertDialog v-model:open="showDeleteDialog">
-                                                <AlertDialogTrigger as-child>
-                                                    <div
-                                                        class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900">
-                                                        Delete
+                                                    <div class="grid grid-cols-4 items-center gap-4">
+                                                        <Label for="update-description"
+                                                            class="text-right">Description</Label>
+                                                        <Textarea id="update-description"
+                                                            v-model="updateForm.description" class="col-span-3" />
                                                     </div>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            This action cannot be undone. This will permanently delete
-                                                            the
-                                                            ticket.
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <Button variant="destructive"
-                                                            @click="deleteTicket">Delete</Button>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </PopoverContent>
-                                    </Popover>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
+
+                                                    <div class="grid grid-cols-4 items-center gap-4">
+                                                        <Label for="update-status" class="text-right">Status</Label>
+                                                        <select id="update-status" v-model="updateForm.status"
+                                                            class="col-span-3 rounded-md border border-input bg-background px-3 py-2">
+                                                            <option value="open">Open</option>
+                                                            <option value="in_progress">In Progress</option>
+                                                            <option value="closed">Closed</option>
+                                                            <option value="pending">Pending</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex justify-between items-center mt-6">
+                                                    <AlertDialog v-model:open="showDeleteDialog">
+                                                        <AlertDialogTrigger as-child>
+                                                            <Button variant="destructive">Delete Ticket</Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you sure?
+                                                                </AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This action cannot be undone. This will
+                                                                    permanently delete the
+                                                                    ticket.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <Button variant="destructive"
+                                                                    @click="deleteTicket">Delete</Button>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+
+                                                    <div class="flex gap-2">
+                                                        <SheetClose asChild>
+                                                            <Button variant="outline">Cancel</Button>
+                                                        </SheetClose>
+                                                        <Button type="submit">Save Changes</Button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </SheetContent>
+                                    </Sheet>
+                                    <AlertDialog v-model:open="showDeleteDialog">
+                                        <AlertDialogTrigger as-child>
+                                            <div
+                                                class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900">
+                                                Delete
+                                            </div>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This action cannot be undone. This will permanently delete
+                                                    the
+                                                    ticket.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <Button variant="destructive" @click="deleteTicket">Delete</Button>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    </div>
                 </div>
-                <div v-else>
-                    <Table>
-                        <TableEmpty colspan="6">
-                            <p class="text-gray-800 dark:text-gray-100">There are no tickets yet</p>
-                        </TableEmpty>
-                    </Table>
+                <div v-else class="flex h-32 items-center justify-center rounded-lg border">
+                    <p class="text-gray-800 dark:text-gray-100">There are no tickets yet</p>
                 </div>
             </div>
         </div>
