@@ -13,6 +13,7 @@ class Ticket extends Model
         'priority',
         'user_id',
         'workspace_id',
+        'client_id',
     ];
 
     protected $casts = [
@@ -34,5 +35,10 @@ class Ticket extends Model
     public function workspace()
     {
         return $this->belongsTo(Workspace::class);
+    }
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
     }
 }

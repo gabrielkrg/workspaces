@@ -6,7 +6,7 @@ import Workspace from '@/components/Workspace.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { CalendarFold, Clock, LayoutGrid, ListTodo, NotebookText, SquareKanban, Tags, Ticket } from 'lucide-vue-next';
+import { CalendarFold, Clock, LayoutGrid, ListTodo, NotebookText, SquareKanban, Tags, Ticket, User } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -49,6 +49,11 @@ const mainNavItems: NavItem[] = [
         title: 'Tickets',
         href: '/tickets',
         icon: Ticket,
+    },
+    {
+        title: 'Clients',
+        href: '/clients',
+        icon: User,
     },
     {
         title: 'Time Tracking',

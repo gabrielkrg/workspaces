@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Ticket;
 use App\Models\Workspace;
+use App\Models\Client;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
-
 
 class TicketController extends Controller
 {
@@ -23,9 +23,11 @@ class TicketController extends Controller
         $this->authorize('view', $workspace);
 
         $tickets = Ticket::where('workspace_id', $user->workspace_id)->get();
+        $clients = Client::where('workspace_id', $user->workspace_id)->get();
 
         return Inertia::render('Ticket/Index', [
             'tickets' => $tickets,
+            'clients' => $clients,
         ]);
     }
 
@@ -40,13 +42,13 @@ class TicketController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'client_id' => 'nullable|exists:clients,id',
         ]);
 
         $request->merge([
             'user_id' => $user->id,
             'workspace_id' => $workspace->id,
         ]);
-
 
         $ticket = Ticket::create($request->all());
 

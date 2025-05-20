@@ -13,6 +13,11 @@ import Badge from '@/components/ui/badge.vue';
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { EllipsisVertical } from 'lucide-vue-next';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import Select from '@/components/ui/select/Select.vue';
+import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
+import SelectValue from '@/components/ui/select/SelectValue.vue';
+import SelectContent from '@/components/ui/select/SelectContent.vue';
+import SelectItem from '@/components/ui/select/SelectItem.vue';
 
 interface Ticket {
     id: number;
@@ -22,6 +27,15 @@ interface Ticket {
     created_at: string;
     workspace_id: number;
     user_id: number;
+    client_id: number;
+}
+
+interface Client {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -33,17 +47,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const props = defineProps<{
     tickets: Ticket[];
+    clients: Client[];
 }>();
 
 const form = useForm({
     title: '',
     description: '',
+    client_id: null,
 });
 
 const updateForm = useForm({
     title: '',
     description: '',
     status: '',
+    client_id: null,
 });
 
 const selectedTicket = ref<Ticket | null>(null);
@@ -94,6 +111,7 @@ const openTicketSheet = (ticket: Ticket) => {
     updateForm.title = ticket.title;
     updateForm.description = ticket.description;
     updateForm.status = ticket.status;
+    updateForm.client_id = ticket.client_id;
     showSheet.value = true;
 };
 const closeTicketSheet = () => {
@@ -124,6 +142,21 @@ const closeTicketSheet = () => {
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="title" class="text-right"> Title </Label>
                                     <Input id="title" v-model="form.title" class="col-span-4" />
+                                </div>
+
+                                <div class="flex flex-col gap-4">
+                                    <Label for="client_id" class="text-right"> Client
+                                    </Label>
+                                    <Select v-model="form.client_id" class="">
+                                        <SelectTrigger id="client_id" class="w-full">
+                                            <SelectValue placeholder="Select" />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            <SelectItem v-for="client in clients" :key="client.id" :value="client.id">
+                                                {{ client.name }}
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <div class="grid grid-cols-4 items-center gap-4">
@@ -198,26 +231,46 @@ const closeTicketSheet = () => {
                                                     <div class="grid grid-cols-4 items-center gap-4">
                                                         <Label for="update-title" class="text-right">Title</Label>
                                                         <Input id="update-title" v-model="updateForm.title"
-                                                            class="col-span-3" />
+                                                            class="col-span-4" />
+                                                    </div>
+
+                                                    <div class="flex flex-col gap-4">
+                                                        <Label for="update-client_id" class="text-right">Client</Label>
+                                                        <Select v-model="updateForm.client_id" class="">
+                                                            <SelectTrigger id="client_id" class="w-full">
+                                                                <SelectValue placeholder="Select" />
+                                                            </SelectTrigger>
+                                                            <SelectContent position="popper">
+                                                                <SelectItem v-for="client in clients" :key="client.id"
+                                                                    :value="client.id">
+                                                                    {{ client.name }}
+                                                                </SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+
+                                                    <div class="flex flex-col gap-4">
+                                                        <Label for="update-status" class="text-right">Status</Label>
+                                                        <Select v-model="updateForm.status" class="">
+                                                            <SelectTrigger id="status" class="w-full">
+                                                                <SelectValue placeholder="Select" />
+                                                            </SelectTrigger>
+                                                            <SelectContent position="popper">
+                                                                <SelectItem value="open">Open</SelectItem>
+                                                                <SelectItem value="in_progress">In Progress</SelectItem>
+                                                                <SelectItem value="closed">Closed</SelectItem>
+                                                                <SelectItem value="pending">Pending</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
                                                     </div>
 
                                                     <div class="grid grid-cols-4 items-center gap-4">
                                                         <Label for="update-description"
                                                             class="text-right">Description</Label>
                                                         <Textarea id="update-description"
-                                                            v-model="updateForm.description" class="col-span-3" />
+                                                            v-model="updateForm.description" class="col-span-4" />
                                                     </div>
 
-                                                    <div class="grid grid-cols-4 items-center gap-4">
-                                                        <Label for="update-status" class="text-right">Status</Label>
-                                                        <select id="update-status" v-model="updateForm.status"
-                                                            class="col-span-3 rounded-md border border-input bg-background px-3 py-2">
-                                                            <option value="open">Open</option>
-                                                            <option value="in_progress">In Progress</option>
-                                                            <option value="closed">Closed</option>
-                                                            <option value="pending">Pending</option>
-                                                        </select>
-                                                    </div>
                                                 </div>
 
                                                 <div class="flex justify-between items-center mt-6">
@@ -247,7 +300,9 @@ const closeTicketSheet = () => {
                                                         <SheetClose asChild>
                                                             <Button variant="outline">Cancel</Button>
                                                         </SheetClose>
-                                                        <Button type="submit">Save Changes</Button>
+                                                        <SheetClose asChild>
+                                                            <Button type="submit">Save Changes</Button>
+                                                        </SheetClose>
                                                     </div>
                                                 </div>
                                             </form>

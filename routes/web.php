@@ -15,6 +15,7 @@ use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TimeTrackingController;
+use App\Http\Controllers\ClientController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -44,12 +45,17 @@ Route::middleware(['auth'])->group(function () {
     Route::put('tickets/{ticket}', [TicketController::class, 'update'])->name('tickets.update');
     Route::delete('tickets/{ticket}', [TicketController::class, 'destroy'])->name('tickets.destroy');
 
+    // Clients
+    Route::get('clients', [ClientController::class, 'index'])->name('clients.index');
+    Route::post('clients', [ClientController::class, 'store'])->name('clients.store');
+    Route::put('clients/{client}', [ClientController::class, 'update'])->name('clients.update');
+    Route::delete('clients/{client}', [ClientController::class, 'delete'])->name('clients.delete');
+
     // Time Tracking
     Route::get('time-tracking', [TimeTrackingController::class, 'index'])->name('time-tracking.index');
     Route::post('time-tracking', [TimeTrackingController::class, 'store'])->name('time-tracking.store');
     Route::put('time-tracking/{timeTracking}', [TimeTrackingController::class, 'update'])->name('time-tracking.update');
     Route::delete('time-tracking/{timeTracking}', [TimeTrackingController::class, 'destroy'])->name('time-tracking.destroy');
-    
 
     // Kanban
     Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
