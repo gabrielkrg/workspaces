@@ -1,23 +1,62 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Head, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { EllipsisVertical } from 'lucide-vue-next';
+
+// UI Components
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ref } from 'vue';
-import { useForm } from '@inertiajs/vue3';
 import Badge from '@/components/ui/badge.vue';
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { EllipsisVertical } from 'lucide-vue-next';
+
+// Sheet Components
+import {
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger
+} from '@/components/ui/sheet';
+
+// Alert Dialog Components
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
+
+// Popover Components
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
+// Select Components
 import Select from '@/components/ui/select/Select.vue';
 import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
 import SelectValue from '@/components/ui/select/SelectValue.vue';
 import SelectContent from '@/components/ui/select/SelectContent.vue';
 import SelectItem from '@/components/ui/select/SelectItem.vue';
+
+// Dialog Components
+import {
+    Dialog,
+    DialogTrigger,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+    DialogClose
+} from '@/components/ui/dialog';
 
 interface Ticket {
     id: number;
@@ -53,19 +92,17 @@ const props = defineProps<{
 const form = useForm({
     title: '',
     description: '',
-    client_id: null,
+    client_id: null as number | null,
 });
 
 const updateForm = useForm({
     title: '',
     description: '',
-    status: '',
-    client_id: null,
+    status: '' as 'open' | 'in_progress' | 'closed' | 'pending',
+    client_id: null as number | null,
 });
 
 const selectedTicket = ref<Ticket | null>(null);
-const showSheet = ref(false);
-const showDeleteDialog = ref(false);
 
 const submit = () => {
     form.post(route('tickets.store'), {
@@ -73,14 +110,13 @@ const submit = () => {
     });
 };
 
-const getStatusColor = (status: Ticket['status']): string => {
-    const colors: Record<Ticket['status'], string> = {
-        'open': 'bg-green-500',
-        'in_progress': 'bg-yellow-500',
-        'closed': 'bg-gray-500',
-        'pending': 'bg-blue-500'
-    };
-    return colors[status] || 'bg-gray-500';
+const selectTicket = (ticket: Ticket) => {
+    selectedTicket.value = ticket;
+
+    updateForm.title = ticket.title;
+    updateForm.description = ticket.description;
+    updateForm.status = ticket.status;
+    updateForm.client_id = ticket.client_id;
 };
 
 const updateTicket = () => {
@@ -88,35 +124,17 @@ const updateTicket = () => {
 
     updateForm.put(route('tickets.update', selectedTicket.value.id), {
         onSuccess: () => {
-            showSheet.value = false;
             selectedTicket.value = null;
         },
     });
 };
 
-const deleteTicket = () => {
-    if (!selectedTicket.value) return;
-
-    updateForm.delete(route('tickets.destroy', selectedTicket.value.id), {
+const deleteTicket = (id: number) => {
+    updateForm.delete(route('tickets.destroy', id), {
         onSuccess: () => {
-            showSheet.value = false;
             selectedTicket.value = null;
-            showDeleteDialog.value = false;
         },
     });
-};
-
-const openTicketSheet = (ticket: Ticket) => {
-    selectedTicket.value = ticket;
-    updateForm.title = ticket.title;
-    updateForm.description = ticket.description;
-    updateForm.status = ticket.status;
-    updateForm.client_id = ticket.client_id;
-    showSheet.value = true;
-};
-const closeTicketSheet = () => {
-    showSheet.value = false;
-    selectedTicket.value = null;
 };
 </script>
 
@@ -189,7 +207,7 @@ const closeTicketSheet = () => {
                                 </h2>
                                 <div class="flex items-center gap-1 flex-wrap">
                                     <div class="flex items-start pt-1">
-                                        <Badge :class="getStatusColor(ticket.status)" class="text-white">
+                                        <Badge :class="ticket.status" class="text-white">
                                             {{ ticket.status }}
                                         </Badge>
                                     </div>
@@ -215,7 +233,7 @@ const closeTicketSheet = () => {
                                     align="end">
                                     <Sheet>
                                         <SheetTrigger as-child>
-                                            <div @click="openTicketSheet(ticket)"
+                                            <div @click="selectTicket(ticket)"
                                                 class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
                                                 Edit
                                             </div>
@@ -273,63 +291,46 @@ const closeTicketSheet = () => {
 
                                                 </div>
 
-                                                <div class="flex justify-between items-center mt-6">
-                                                    <AlertDialog v-model:open="showDeleteDialog">
-                                                        <AlertDialogTrigger as-child>
-                                                            <Button variant="destructive">Delete Ticket</Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Are you sure?
-                                                                </AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    This action cannot be undone. This will
-                                                                    permanently delete the
-                                                                    ticket.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <Button variant="destructive"
-                                                                    @click="deleteTicket">Delete</Button>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-
-                                                    <div class="flex gap-2">
-                                                        <SheetClose asChild>
-                                                            <Button variant="outline">Cancel</Button>
-                                                        </SheetClose>
-                                                        <SheetClose asChild>
-                                                            <Button type="submit">Save Changes</Button>
-                                                        </SheetClose>
-                                                    </div>
+                                                <div class="flex justify-end gap-2">
+                                                    <SheetClose asChild>
+                                                        <Button variant="outline">Cancel</Button>
+                                                    </SheetClose>
+                                                    <SheetClose asChild>
+                                                        <Button type="submit">Save Changes</Button>
+                                                    </SheetClose>
                                                 </div>
                                             </form>
                                         </SheetContent>
                                     </Sheet>
-                                    <AlertDialog v-model:open="showDeleteDialog">
-                                        <AlertDialogTrigger as-child>
-                                            <div
-                                                class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900">
+
+                                    <Dialog>
+                                        <DialogTrigger as-child>
+                                            <div class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                                variant="destructive">
                                                 Delete
                                             </div>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    This action cannot be undone. This will permanently delete
-                                                    the
-                                                    ticket.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <Button variant="destructive" @click="deleteTicket">Delete</Button>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
+                                        </DialogTrigger>
+
+                                        <DialogContent class="space-y-6">
+                                            <DialogHeader class="space-y-3">
+                                                <DialogTitle>Are you sure you want to delete this ticket?
+                                                </DialogTitle>
+                                                <DialogDescription>
+                                                    Once your ticket is deleted, there's no way to recover it.
+                                                </DialogDescription>
+                                            </DialogHeader>
+
+                                            <DialogFooter class="gap-2">
+                                                <DialogClose as-child>
+                                                    <Button variant="secondary">Cancel</Button>
+                                                </DialogClose>
+
+                                                <Button variant="destructive" @click="deleteTicket(ticket.id)">
+                                                    Delete ticket
+                                                </Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>
                                 </PopoverContent>
                             </Popover>
                         </div>
@@ -342,12 +343,3 @@ const closeTicketSheet = () => {
         </div>
     </AppLayout>
 </template>
-
-<style scoped>
-.line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-</style>

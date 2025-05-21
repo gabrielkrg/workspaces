@@ -26,6 +26,21 @@ class TimeTracking extends Model
         'formatted_end_time',
     ];
 
+    public static $types = [
+        [
+        'label' => 'Ticket',
+        'model' => 'App\\Models\\Ticket',
+        ],
+        [
+            'label' => 'Task',
+            'model' => 'App\\Models\\Task',
+        ],
+        [
+            'label' => 'Card',
+            'model' => 'App\\Models\\Card',
+        ],
+    ];
+
     public function getFormattedStartTimeAttribute()
     {
         return $this->start_time->format('Y-m-d H:i:s');

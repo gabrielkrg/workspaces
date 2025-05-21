@@ -23,24 +23,9 @@ class TimeTrackingController extends Controller
 
         $timeTrackings = TimeTracking::where('workspace_id', $workspace->id)->get();
 
-        $types = [
-            [
-                'label' => 'Ticket',
-                'model' => 'App\\Models\\Ticket',
-            ],
-            [
-                'label' => 'Task',
-                'model' => 'App\\Models\\Task',
-            ],
-            [
-                'label' => 'Card',
-                'model' => 'App\\Models\\Card',
-            ],
-        ];
-
         return Inertia::render('TimeTracking/Index', [
             'timeTrackings' => $timeTrackings,
-            'types' => $types,
+            'types' => TimeTracking::$types,
         ]);
     }
 

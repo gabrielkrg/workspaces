@@ -57,19 +57,21 @@ class WorkspaceController extends Controller
             'time_zone' => $validated['time_zone'],
         ]);
 
-        $currentUserIds = $workspace->users->pluck('id')->toArray();
+        if (isset($validated['users'])) {
+            $currentUserIds = $workspace->users->pluck('id')->toArray();
 
-        $newUserIds = collect($validated['users'])->pluck('id')->toArray();
-
-        $usersToRemove = array_diff($currentUserIds, $newUserIds);
-        foreach ($usersToRemove as $userId) {
-            $workspace->users()->detach($userId);
-        }
-
-        foreach ($validated['users'] as $user) {
-            $workspace->users()->updateExistingPivot($user['id'], [
-                'role' => $user['pivot']['role'],
-            ]);
+            $newUserIds = collect($validated['users'])->pluck('id')->toArray();
+            
+            $usersToRemove = array_diff($currentUserIds, $newUserIds);
+            foreach ($usersToRemove as $userId) {
+                $workspace->users()->detach($userId);
+            }
+            
+            foreach ($validated['users'] as $user) {
+                $workspace->users()->updateExistingPivot($user['id'], [
+                    'role' => $user['pivot']['role'],
+                ]);
+            }
         }
 
         return redirect()->route('workspace.edit')->with('success', 'Workspace updated successfully!');
