@@ -148,19 +148,6 @@ const deleteTimeTracking = (id: number) => {
     });
 };
 
-const formatDuration = (startTime: string, endTime: string | null) => {
-    if (!endTime) return 'Ongoing';
-
-    const start = parseISO(startTime);
-    const end = parseISO(endTime);
-    const seconds = differenceInSeconds(end, start);
-
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
-    return `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m`;
-};
-
 watch(trackableType, async () => {
     form.trackable_type = trackableType.value;
     const response = await axios.get(route('time-tracking.trackables'), {
@@ -270,7 +257,7 @@ watch(trackableType, async () => {
                                     Start: {{ timeTracking.formatted_start_time }}
                                 </div>
                                 <div class="text-gray-700 dark:text-gray-300">
-                                    En d: {{ timeTracking.formatted_end_time }}
+                                    End: {{ timeTracking.formatted_end_time }}
                                 </div>
                             </div>
 
