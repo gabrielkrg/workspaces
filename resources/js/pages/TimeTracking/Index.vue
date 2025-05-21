@@ -268,10 +268,10 @@ watch(trackableType, async () => {
                             <!-- Time Details -->
                             <div class="flex flex-col items-center flex-wrap">
                                 <div class="text-gray-700 dark:text-gray-300">
-                                    Start: {{ format(parseISO(timeTracking.start_time), 'PPpp') }}
+                                    Start: {{ timeTracking.formatted_start_time }}
                                 </div>
                                 <div class="text-gray-700 dark:text-gray-300">
-                                    End: {{ format(parseISO(timeTracking.end_time), 'PPpp') }}
+                                    End: {{ timeTracking.formatted_end_time }}
                                 </div>
                             </div>
 
