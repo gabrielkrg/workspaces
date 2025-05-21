@@ -3,7 +3,6 @@
 import { ref, watch } from 'vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { type BreadcrumbItem } from '@/types';
-import { format, parseISO, differenceInSeconds } from 'date-fns';
 
 // UI Components - Layout
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -268,10 +267,10 @@ watch(trackableType, async () => {
                             <!-- Time Details -->
                             <div class="flex flex-col items-center flex-wrap">
                                 <div class="text-gray-700 dark:text-gray-300">
-                                    Start: {{ format(parseISO(timeTracking.start_time), 'PPpp') }}
+                                    Start: {{ timeTracking.formatted_start_time }}
                                 </div>
                                 <div class="text-gray-700 dark:text-gray-300">
-                                    End: {{ format(parseISO(timeTracking.end_time), 'PPpp') }}
+                                    En d: {{ timeTracking.formatted_end_time }}
                                 </div>
                             </div>
 

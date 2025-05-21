@@ -43,12 +43,12 @@ class TimeTracking extends Model
 
     public function getFormattedStartTimeAttribute()
     {
-        return $this->start_time->format('Y-m-d H:i:s');
+        return $this->start_time->format('d/m/Y - H:i');
     }
 
     public function getFormattedEndTimeAttribute()
     {
-        return $this->end_time->format('Y-m-d H:i:s');
+        return $this->end_time->format('d/m/Y - H:i');
     }
 
     public function trackable()
