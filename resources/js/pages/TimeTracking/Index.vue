@@ -270,7 +270,7 @@ watch(trackableType, async () => {
                                     Start: {{ timeTracking.formatted_start_time }}
                                 </div>
                                 <div class="text-gray-700 dark:text-gray-300">
-                                    En d: {{ timeTracking.formatted_end_time }}
+                                    End: {{ timeTracking.formatted_end_time }}
                                 </div>
                             </div>
 
