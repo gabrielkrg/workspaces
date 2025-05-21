@@ -3,6 +3,7 @@
 import { ref, watch } from 'vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { type BreadcrumbItem } from '@/types';
+import { format, parseISO, differenceInSeconds } from 'date-fns';
 
 // UI Components - Layout
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -79,6 +80,7 @@ interface TimeTracking {
     trackable_type: string;
     formatted_start_time: string;
     formatted_end_time: string;
+    trackable: Trackable;
 }
 
 interface Trackable {
@@ -94,8 +96,8 @@ const props = defineProps<{
 const form = useForm({
     trackable_id: '',
     trackable_type: '',
-    start_time: new Date().toISOString().slice(0, 16),
-    end_time: new Date().toISOString().slice(0, 16),
+    start_time: '',
+    end_time: '',
 });
 
 
@@ -120,10 +122,13 @@ const selectedTimeTracking = ref<TimeTracking | null>(null);
 
 const selectTimeTracking = (timeTracking: TimeTracking) => {
     selectedTimeTracking.value = timeTracking;
+    trackableType.value = timeTracking.trackable_type;
+
     updateForm.start_time = timeTracking.formatted_start_time;
     updateForm.end_time = timeTracking.formatted_end_time;
     updateForm.trackable_id = timeTracking.trackable_id || null;
     updateForm.trackable_type = timeTracking.trackable_type;
+
 };
 
 const updateTimeTracking = () => {
@@ -142,6 +147,19 @@ const deleteTimeTracking = (id: number) => {
             selectedTimeTracking.value = null;
         },
     });
+};
+
+const formatDuration = (startTime: string, endTime: string | null) => {
+    if (!endTime) return 'Ongoing';
+
+    const start = parseISO(startTime);
+    const end = parseISO(endTime);
+    const seconds = differenceInSeconds(end, start);
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    return `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m`;
 };
 
 watch(trackableType, async () => {
@@ -232,26 +250,34 @@ watch(trackableType, async () => {
                 class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4">
                 <div v-if="timeTrackings.length > 0">
                     <div v-for="timeTracking in timeTrackings" :key="timeTracking.id"
-                        class="group flex items-start gap-4 border-b p-4">
-                        <!-- Status -->
-                        <div class="flex items-start pt-1">
-                            <div class="flex items-center gap-2">
-                                <div class="h-2 w-2 rounded-full"
-                                    :class="timeTracking.is_running ? 'bg-green-500' : 'bg-gray-500'"></div>
-                                <span class="font-medium">{{ timeTracking.is_running ? 'Running' : 'Completed' }}</span>
+                        class="group flex justify-between items-center gap-4 border-b p-4">
+                        <div>
+                            <!-- Status -->
+                            <div class="flex">
+                                <span class="font-semibold text-sm">
+                                    {{ timeTracking.is_running ? 'Running' : 'Completed' }}
+                                </span>
                             </div>
-                        </div>
 
-                        <!-- Time Details -->
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 flex-wrap">
+                            <div class="flex items-center gap-2">
+                                <p class="text-gray-700 dark:text-gray-300">
+                                    {{ timeTracking.trackable.title }}
+                                </p>
+                            </div>
+
+                            <!-- Time Details -->
+                            <div class="flex flex-col items-center flex-wrap">
                                 <div class="text-gray-700 dark:text-gray-300">
-                                    Start: {{ new Date(timeTracking.start_time).toLocaleString() }}
+                                    Start: {{ format(parseISO(timeTracking.start_time), 'PPpp') }}
                                 </div>
                                 <div class="text-gray-700 dark:text-gray-300">
-                                    End: {{ timeTracking.end_time ? new Date(timeTracking.end_time).toLocaleString() :
-                                        'Ongoing' }}
+                                    End: {{ format(parseISO(timeTracking.end_time), 'PPpp') }}
                                 </div>
+                            </div>
+
+                            <!-- Total Time -->
+                            <div class="text-gray-700 dark:text-gray-300">
+                                Total: {{ formatDuration(timeTracking.start_time, timeTracking.end_time) }}
                             </div>
                         </div>
 
@@ -281,12 +307,14 @@ watch(trackableType, async () => {
                                             <form v-if="selectedTimeTracking" @submit.prevent="updateTimeTracking"
                                                 class="space-y-4 mt-4 p-4">
                                                 <div class="grid gap-4">
+
                                                     <div class="flex flex-col gap-4">
-                                                        <Label for="update-trackable_type"
+                                                        <Label for="update-trackable-type"
                                                             class="text-right">Type</Label>
-                                                        <Select id="update-trackable_type"
-                                                            v-model="updateForm.trackable_type" class="">
-                                                            <SelectTrigger id="role" class="w-full">
+                                                        <Select v-model="updateForm.trackable_type" class=""
+                                                            id="update-trackable-type">
+                                                            <SelectTrigger id="update-trackable-type-trigger"
+                                                                class="w-full">
                                                                 <SelectValue placeholder="Select" />
                                                             </SelectTrigger>
                                                             <SelectContent position="popper">
@@ -299,11 +327,12 @@ watch(trackableType, async () => {
                                                     </div>
 
                                                     <div class="flex flex-col gap-4" v-if="updateForm.trackable_type">
-                                                        <Label for="update-trackable_id" class="text-right">Item</Label>
-                                                        <Select id="update-trackable_id"
-                                                            v-model="updateForm.trackable_id" class=""
-                                                            :disabled="!updateForm.trackable_type">
-                                                            <SelectTrigger id="role" class="w-full">
+                                                        <Label for="update-trackable-id" class="text-right">Item</Label>
+                                                        <Select v-model="updateForm.trackable_id" class=""
+                                                            :disabled="!updateForm.trackable_type"
+                                                            id="update-trackable-id">
+                                                            <SelectTrigger id="update-trackable-id-trigger"
+                                                                class="w-full">
                                                                 <SelectValue placeholder="Select" />
                                                             </SelectTrigger>
                                                             <SelectContent position="popper">
@@ -319,14 +348,13 @@ watch(trackableType, async () => {
                                                         <Label for="update-start_time" class="text-right">Start
                                                             Time</Label>
                                                         <Input id="update-start_time" v-model="updateForm.start_time"
-                                                            class="col-span-4" />
+                                                            class="col-span-4" type="datetime-local" />
                                                     </div>
-
 
                                                     <div class="grid grid-cols-4 items-center gap-4">
                                                         <Label for="update-end_time" class="text-right">End Time</Label>
                                                         <Input id="update-end_time" v-model="updateForm.end_time"
-                                                            class="col-span-4" />
+                                                            class="col-span-4" type="datetime-local" />
                                                     </div>
                                                 </div>
 
@@ -381,37 +409,6 @@ watch(trackableType, async () => {
                     <p class="text-gray-800 dark:text-gray-100">There are no time tracking entries yet</p>
                 </div>
             </div>
-
-            <Sheet>
-                <SheetContent side="right" class="sm:max-w-[500px]">
-                    <SheetHeader v-if="selectedTimeTracking">
-                        <SheetTitle>Edit Time Tracking</SheetTitle>
-                        <SheetDescription>Update time tracking details</SheetDescription>
-                    </SheetHeader>
-                    <form v-if="selectedTimeTracking" @submit.prevent="updateTimeTracking" class="space-y-4 mt-4 p-4">
-                        <div class="grid gap-4">
-                            <div class="grid grid-cols-4 items-center gap-4">
-                                <Label for="update-start-time" class="text-right">Start Time</Label>
-                                <Input id="update-start-time" v-model="updateForm.start_time" type="datetime-local"
-                                    class="col-span-3" />
-                            </div>
-
-                            <div class="grid grid-cols-4 items-center gap-4">
-                                <Label for="update-end-time" class="text-right">End Time</Label>
-                                <Input id="update-end-time" v-model="updateForm.end_time" type="datetime-local"
-                                    class="col-span-3" />
-                            </div>
-                        </div>
-
-                        <div class="flex justify-end gap-2 mt-6">
-                            <SheetClose as-child>
-                                <Button variant="outline">Cancel</Button>
-                            </SheetClose>
-                            <Button type="submit">Save Changes</Button>
-                        </div>
-                    </form>
-                </SheetContent>
-            </Sheet>
         </div>
     </AppLayout>
 </template>

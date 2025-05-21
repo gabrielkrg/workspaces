@@ -21,7 +21,7 @@ class TimeTrackingController extends Controller
 
         $this->authorize('view', $workspace);
 
-        $timeTrackings = TimeTracking::where('workspace_id', $workspace->id)->get();
+        $timeTrackings = TimeTracking::where('workspace_id', $workspace->id)->with('trackable')->get();
 
         return Inertia::render('TimeTracking/Index', [
             'timeTrackings' => $timeTrackings,
@@ -67,7 +67,7 @@ class TimeTrackingController extends Controller
             'trackable_type' => 'required|string|max:255',
             'start_time' => 'required|date',
             'end_time' => 'required|date',
-            'duration' => 'required|integer',
+            'duration' => 'nullable|integer',
         ]);
 
         $timeTracking->update($request->all());
