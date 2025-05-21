@@ -3,6 +3,7 @@
 import { ref, watch } from 'vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { type BreadcrumbItem } from '@/types';
+import { parseISO, differenceInSeconds } from 'date-fns';
 
 // UI Components - Layout
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -29,17 +30,6 @@ import DialogDescription from '@/components/ui/dialog/DialogDescription.vue';
 import DialogFooter from '@/components/ui/dialog/DialogFooter.vue';
 import DialogClose from '@/components/ui/dialog/DialogClose.vue';
 
-// UI Components - Alert Dialog
-import {
-    AlertDialog,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger
-} from '@/components/ui/alert-dialog';
 
 // UI Components - Basic Elements
 import { Button } from '@/components/ui/button';
@@ -146,6 +136,19 @@ const deleteTimeTracking = (id: number) => {
             selectedTimeTracking.value = null;
         },
     });
+};
+
+const formatDuration = (startTime: string, endTime: string | null) => {
+    if (!endTime) return 'Ongoing';
+
+    const start = parseISO(startTime);
+    const end = parseISO(endTime);
+    const seconds = differenceInSeconds(end, start);
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    return `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m`;
 };
 
 watch(trackableType, async () => {
@@ -257,7 +260,7 @@ watch(trackableType, async () => {
                                     Start: {{ timeTracking.formatted_start_time }}
                                 </div>
                                 <div class="text-gray-700 dark:text-gray-300">
-                                    End: {{ timeTracking.formatted_end_time }}
+                                    En d: {{ timeTracking.formatted_end_time }}
                                 </div>
                             </div>
 
