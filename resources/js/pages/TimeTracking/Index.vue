@@ -242,27 +242,28 @@ watch(trackableType, async () => {
 
             <div
                 class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4">
-                <ul v-if="timeTrackings.length > 0" role="list" class="divide-y divide-gray-100">
-                    <li class="relative flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6 lg:px-8"
+                <ul v-if="timeTrackings.length > 0" role="list"
+                    class="divide-y divide-sidebar-border/70 dark:divide-sidebar-border">
+                    <li class="relative flex justify-between gap-x-6 px-4 py-5 hover:bg-sidebar sm:px-6 lg:px-8 dark:text-white text-black"
                         v-for="timeTracking in timeTrackings" :key="timeTracking.id">
                         <div class="flex min-w-0 gap-x-4">
                             <div class="min-w-0 flex-auto">
-                                <p class="mt-1 flex text-xs/5 text-gray-500">
+                                <p class="mt-1 flex text-xs/5">
                                     {{types.find(type => type.model === timeTracking.trackable_type)?.label}}
                                 </p>
-                                <p class="text-md font-semibold text-gray-900">
+                                <p class="text-md font-semibold">
                                     {{ timeTracking.trackable.title }}
                                 </p>
                             </div>
                         </div>
                         <div class="flex shrink-0 gap-x-4">
                             <div class="hidden sm:flex sm:flex-col sm:items-end">
-                                <p class="mt-1 text-xs dark:text-gray-400">
+                                <p class="mt-1 text-xs">
                                     Start: {{ timeTracking.formatted_start_time }}
                                 </p>
-                                <p class="mt-1 text-xs text-gray-500">End: {{ timeTracking.formatted_end_time }}</p>
+                                <p class="mt-1 text-xs">End: {{ timeTracking.formatted_end_time }}</p>
 
-                                <p class="text-sm text-gray-900">
+                                <p class="text-sm">
                                     Total: {{ formatDuration(timeTracking.start_time, timeTracking.end_time) }}
                                 </p>
                             </div>
