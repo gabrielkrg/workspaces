@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Vue and Inertia core imports
 import { ref, watch } from 'vue';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { type BreadcrumbItem } from '@/types';
 import { parseISO, differenceInSeconds } from 'date-fns';
 
@@ -76,7 +76,6 @@ interface Trackable {
     id: number;
     title: string;
 }
-
 const props = defineProps<{
     timeTrackings: TimeTracking[];
     types: { label: string, model: string }[];
@@ -113,8 +112,9 @@ const selectTimeTracking = (timeTracking: TimeTracking) => {
     selectedTimeTracking.value = timeTracking;
     trackableType.value = timeTracking.trackable_type;
 
-    updateForm.start_time = timeTracking.formatted_start_time;
-    updateForm.end_time = timeTracking.formatted_end_time;
+    updateForm.start_time = formatDateForInput(timeTracking.start_time);
+    updateForm.end_time = formatDateForInput(timeTracking.end_time);
+
     updateForm.trackable_id = timeTracking.trackable_id || null;
     updateForm.trackable_type = timeTracking.trackable_type;
 
@@ -151,6 +151,12 @@ const formatDuration = (startTime: string, endTime: string | null) => {
     return `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m`;
 };
 
+const formatDateForInput = (dateString: string | null) => {
+    if (!dateString) return '';
+    const date = parseISO(dateString);
+    return date.toISOString().slice(0, 16);
+};
+
 watch(trackableType, async () => {
     form.trackable_type = trackableType.value;
     const response = await axios.get(route('time-tracking.trackables'), {
@@ -168,7 +174,6 @@ watch(trackableType, async () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div class="flex flex-wrap items-end justify-between gap-4">
-
                 <Sheet>
                     <SheetTrigger as-child>
                         <Button variant="default" class="cursor-pointer">Create</Button>
@@ -237,163 +242,161 @@ watch(trackableType, async () => {
 
             <div
                 class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4">
-                <div v-if="timeTrackings.length > 0">
-                    <div v-for="timeTracking in timeTrackings" :key="timeTracking.id"
-                        class="group flex justify-between items-center gap-4 border-b p-4">
-                        <div>
-                            <!-- Status -->
-                            <div class="flex">
-                                <span class="font-semibold text-sm">
-                                    {{ timeTracking.is_running ? 'Running' : 'Completed' }}
-                                </span>
-                            </div>
-
-                            <div class="flex items-center gap-2">
-                                <p class="text-gray-700 dark:text-gray-300">
+                <ul v-if="timeTrackings.length > 0" role="list" class="divide-y divide-gray-100">
+                    <li class="relative flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6 lg:px-8"
+                        v-for="timeTracking in timeTrackings" :key="timeTracking.id">
+                        <div class="flex min-w-0 gap-x-4">
+                            <div class="min-w-0 flex-auto">
+                                <p class="mt-1 flex text-xs/5 text-gray-500">
+                                    {{types.find(type => type.model === timeTracking.trackable_type)?.label}}
+                                </p>
+                                <p class="text-md font-semibold text-gray-900">
                                     {{ timeTracking.trackable.title }}
                                 </p>
                             </div>
-
-                            <!-- Time Details -->
-                            <div class="flex flex-col items-center flex-wrap">
-                                <div class="text-gray-700 dark:text-gray-300">
+                        </div>
+                        <div class="flex shrink-0 gap-x-4">
+                            <div class="hidden sm:flex sm:flex-col sm:items-end">
+                                <p class="mt-1 text-xs dark:text-gray-400">
                                     Start: {{ timeTracking.formatted_start_time }}
-                                </div>
-                                <div class="text-gray-700 dark:text-gray-300">
-                                    En d: {{ timeTracking.formatted_end_time }}
-                                </div>
+                                </p>
+                                <p class="mt-1 text-xs text-gray-500">End: {{ timeTracking.formatted_end_time }}</p>
+
+                                <p class="text-sm text-gray-900">
+                                    Total: {{ formatDuration(timeTracking.start_time, timeTracking.end_time) }}
+                                </p>
                             </div>
 
-                            <!-- Total Time -->
-                            <div class="text-gray-700 dark:text-gray-300">
-                                Total: {{ formatDuration(timeTracking.start_time, timeTracking.end_time) }}
+                            <!-- Actions -->
+                            <div class="flex items-start justify-end size-5 flex-none text-gray-400 z-40">
+                                <Popover>
+                                    <PopoverTrigger as-child>
+                                        <button class="cursor-pointer p-2">
+                                            <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
+                                        </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                        class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
+                                        align="end">
+                                        <Sheet>
+                                            <SheetTrigger as-child>
+                                                <div @click="selectTimeTracking(timeTracking)"
+                                                    class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
+                                                    Edit
+                                                </div>
+                                            </SheetTrigger>
+                                            <SheetContent side="right" class="sm:max-w-[500px]">
+                                                <SheetHeader>
+                                                    <SheetTitle>Edit Time Tracking</SheetTitle>
+                                                    <SheetDescription>Update time tracking details</SheetDescription>
+                                                </SheetHeader>
+
+                                                <form v-if="selectedTimeTracking" @submit.prevent="updateTimeTracking"
+                                                    class="space-y-4 mt-4 p-4">
+                                                    <div class="grid gap-4">
+
+                                                        <div class="flex flex-col gap-4">
+                                                            <Label for="update-trackable-type"
+                                                                class="text-right">Type</Label>
+                                                            <Select v-model="updateForm.trackable_type" class=""
+                                                                id="update-trackable-type">
+                                                                <SelectTrigger id="update-trackable-type-trigger"
+                                                                    class="w-full">
+                                                                    <SelectValue placeholder="Select" />
+                                                                </SelectTrigger>
+                                                                <SelectContent position="popper">
+                                                                    <SelectItem v-for="type in types" :key="type.label"
+                                                                        :value="type.model">
+                                                                        {{ type.label }}
+                                                                    </SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+
+                                                        <div class="flex flex-col gap-4"
+                                                            v-if="updateForm.trackable_type">
+                                                            <Label for="update-trackable-id"
+                                                                class="text-right">Item</Label>
+                                                            <Select v-model="updateForm.trackable_id" class=""
+                                                                :disabled="!updateForm.trackable_type"
+                                                                id="update-trackable-id">
+                                                                <SelectTrigger id="update-trackable-id-trigger"
+                                                                    class="w-full">
+                                                                    <SelectValue placeholder="Select" />
+                                                                </SelectTrigger>
+                                                                <SelectContent position="popper">
+                                                                    <SelectItem v-for="trackable in trackables"
+                                                                        :key="trackable.id" :value="trackable.id">
+                                                                        {{ trackable.title }}
+                                                                    </SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+
+                                                        <div class="grid grid-cols-4 items-center gap-4">
+                                                            <Label for="update-start_time" class="text-right">Start
+                                                                Time</Label>
+                                                            <Input id="update-start_time"
+                                                                v-model="updateForm.start_time" class="col-span-4"
+                                                                type="datetime-local" />
+                                                        </div>
+
+                                                        <div class="grid grid-cols-4 items-center gap-4">
+                                                            <Label for="update-end_time" class="text-right">End
+                                                                Time</Label>
+                                                            <Input id="update-end_time" v-model="updateForm.end_time"
+                                                                class="col-span-4" type="datetime-local" />
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="flex justify-end gap-2">
+                                                        <SheetClose asChild>
+                                                            <Button variant="outline">Cancel</Button>
+                                                        </SheetClose>
+                                                        <SheetClose asChild>
+                                                            <Button type="submit">Save Changes</Button>
+                                                        </SheetClose>
+                                                    </div>
+                                                </form>
+                                            </SheetContent>
+                                        </Sheet>
+
+                                        <Dialog>
+                                            <DialogTrigger as-child>
+                                                <div class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                                    variant="destructive">
+                                                    Delete
+                                                </div>
+                                            </DialogTrigger>
+
+                                            <DialogContent class="space-y-6">
+                                                <DialogHeader class="space-y-3">
+                                                    <DialogTitle>Are you sure you want to delete this time tracking?
+                                                    </DialogTitle>
+                                                    <DialogDescription>
+                                                        Once your time tracking is deleted, there's no way to recover
+                                                        it.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+
+                                                <DialogFooter class="gap-2">
+                                                    <DialogClose as-child>
+                                                        <Button variant="secondary">Cancel</Button>
+                                                    </DialogClose>
+
+                                                    <Button variant="destructive"
+                                                        @click="deleteTimeTracking(timeTracking.id)">
+                                                        Delete time tracking
+                                                    </Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </PopoverContent>
+                                </Popover>
                             </div>
                         </div>
-
-                        <!-- Actions -->
-                        <div class="flex items-start justify-end">
-                            <Popover>
-                                <PopoverTrigger as-child>
-                                    <button class="cursor-pointer p-2">
-                                        <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
-                                    </button>
-                                </PopoverTrigger>
-                                <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
-                                    align="end">
-                                    <Sheet>
-                                        <SheetTrigger as-child>
-                                            <div @click="selectTimeTracking(timeTracking)"
-                                                class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
-                                                Edit
-                                            </div>
-                                        </SheetTrigger>
-                                        <SheetContent side="right" class="sm:max-w-[500px]">
-                                            <SheetHeader>
-                                                <SheetTitle>Edit Time Tracking</SheetTitle>
-                                                <SheetDescription>Update time tracking details</SheetDescription>
-                                            </SheetHeader>
-
-                                            <form v-if="selectedTimeTracking" @submit.prevent="updateTimeTracking"
-                                                class="space-y-4 mt-4 p-4">
-                                                <div class="grid gap-4">
-
-                                                    <div class="flex flex-col gap-4">
-                                                        <Label for="update-trackable-type"
-                                                            class="text-right">Type</Label>
-                                                        <Select v-model="updateForm.trackable_type" class=""
-                                                            id="update-trackable-type">
-                                                            <SelectTrigger id="update-trackable-type-trigger"
-                                                                class="w-full">
-                                                                <SelectValue placeholder="Select" />
-                                                            </SelectTrigger>
-                                                            <SelectContent position="popper">
-                                                                <SelectItem v-for="type in types" :key="type.label"
-                                                                    :value="type.model">
-                                                                    {{ type.label }}
-                                                                </SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-
-                                                    <div class="flex flex-col gap-4" v-if="updateForm.trackable_type">
-                                                        <Label for="update-trackable-id" class="text-right">Item</Label>
-                                                        <Select v-model="updateForm.trackable_id" class=""
-                                                            :disabled="!updateForm.trackable_type"
-                                                            id="update-trackable-id">
-                                                            <SelectTrigger id="update-trackable-id-trigger"
-                                                                class="w-full">
-                                                                <SelectValue placeholder="Select" />
-                                                            </SelectTrigger>
-                                                            <SelectContent position="popper">
-                                                                <SelectItem v-for="trackable in trackables"
-                                                                    :key="trackable.id" :value="trackable.id">
-                                                                    {{ trackable.title }}
-                                                                </SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-
-                                                    <div class="grid grid-cols-4 items-center gap-4">
-                                                        <Label for="update-start_time" class="text-right">Start
-                                                            Time</Label>
-                                                        <Input id="update-start_time" v-model="updateForm.start_time"
-                                                            class="col-span-4" type="datetime-local" />
-                                                    </div>
-
-                                                    <div class="grid grid-cols-4 items-center gap-4">
-                                                        <Label for="update-end_time" class="text-right">End Time</Label>
-                                                        <Input id="update-end_time" v-model="updateForm.end_time"
-                                                            class="col-span-4" type="datetime-local" />
-                                                    </div>
-                                                </div>
-
-                                                <div class="flex justify-end gap-2">
-                                                    <SheetClose asChild>
-                                                        <Button variant="outline">Cancel</Button>
-                                                    </SheetClose>
-                                                    <SheetClose asChild>
-                                                        <Button type="submit">Save Changes</Button>
-                                                    </SheetClose>
-                                                </div>
-                                            </form>
-                                        </SheetContent>
-                                    </Sheet>
-
-                                    <Dialog>
-                                        <DialogTrigger as-child>
-                                            <div class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
-                                                variant="destructive">
-                                                Delete
-                                            </div>
-                                        </DialogTrigger>
-
-                                        <DialogContent class="space-y-6">
-                                            <DialogHeader class="space-y-3">
-                                                <DialogTitle>Are you sure you want to delete this time tracking?
-                                                </DialogTitle>
-                                                <DialogDescription>
-                                                    Once your time tracking is deleted, there's no way to recover
-                                                    it.
-                                                </DialogDescription>
-                                            </DialogHeader>
-
-                                            <DialogFooter class="gap-2">
-                                                <DialogClose as-child>
-                                                    <Button variant="secondary">Cancel</Button>
-                                                </DialogClose>
-
-                                                <Button variant="destructive"
-                                                    @click="deleteTimeTracking(timeTracking.id)">
-                                                    Delete time tracking
-                                                </Button>
-                                            </DialogFooter>
-                                        </DialogContent>
-                                    </Dialog>
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                    </div>
-                </div>
+                    </li>
+                </ul>
                 <div v-else class="flex h-32 items-center justify-center rounded-lg border">
                     <p class="text-gray-800 dark:text-gray-100">There are no time tracking entries yet</p>
                 </div>

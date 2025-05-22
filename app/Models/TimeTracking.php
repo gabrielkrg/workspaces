@@ -28,16 +28,16 @@ class TimeTracking extends Model
 
     public static $types = [
         [
-        'label' => 'Ticket',
-        'model' => 'App\\Models\\Ticket',
+            'label' => 'Card',
+            'model' => 'App\\Models\\Card',
         ],
         [
             'label' => 'Task',
             'model' => 'App\\Models\\Task',
         ],
         [
-            'label' => 'Card',
-            'model' => 'App\\Models\\Card',
+            'label' => 'Ticket',
+            'model' => 'App\\Models\\Ticket',
         ],
     ];
 
@@ -52,6 +52,11 @@ class TimeTracking extends Model
     }
 
     public function trackable()
+    {
+        return $this->morphTo();
+    }
+
+    public function client()
     {
         return $this->morphTo();
     }
