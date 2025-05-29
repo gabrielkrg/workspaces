@@ -37,6 +37,10 @@ class WorkspaceController extends Controller
 
         $workspace->users()->attach($user->id, ['role' => 'owner']);
 
+        $user->update([
+            'workspace_id' => $workspace->id,
+        ]);
+
         return redirect()->route('workspace.edit')->with('success', 'Workspace created successfully!');
     }
 
