@@ -83,10 +83,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('notes', [NoteController::class, 'store'])->name('notes.store');
     Route::put('notes/{note}', [NoteController::class, 'update'])->name('notes.update');
     Route::delete('notes/{note}', [NoteController::class, 'delete'])->name('notes.delete');
-
-    // Workspaces
-    Route::get('workspaces', [WorkspaceController::class, 'index'])->name('workspaces.index');
-    Route::post('workspaces', [WorkspaceController::class, 'store'])->name('workspaces.store');
 });
 
 // API
