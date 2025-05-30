@@ -22,10 +22,17 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { Check, ChevronDown, EllipsisVertical } from 'lucide-vue-next';
-import { useFilter } from 'reka-ui';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { Table, TableBody, TableCell, TableEmpty, TableHeader, TableRow } from '@/components/ui/table';
-import TableHead from '@/components/ui/table/TableHead.vue';
+import { computed, ref, watch } from 'vue';
+import { useFilter } from 'reka-ui'
+import {
+    Combobox,
+    ComboboxAnchor,
+    ComboboxInput,
+    ComboboxList,
+    ComboboxEmpty,
+    ComboboxGroup,
+    ComboboxItem,
+} from '@/components/ui/combobox';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -36,7 +43,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const props = defineProps<{
     tasks: any[],
-    tags: { name: string }[],
+    tags: { name: string, color: string }[],
     filters: object,
 }>();
 
@@ -48,35 +55,12 @@ const form = useForm({
     delete_after: false,
 });
 
-const tagsList = props.tags?.map((tag) => ({
-    value: tag.name,
-    label: tag.name,
-}));
-
-const open = ref(false);
-const searchTag = ref('');
-
-const { contains } = useFilter({ sensitivity: 'base' });
-const filteredTags = computed(() => {
-    const options = tagsList.filter((i) => !form.tags.includes(i.label));
-    return searchTag.value ? options.filter((option) => contains(option.label, searchTag.value)) : options;
-});
-
 const submit = () => {
     form.post(route('tasks.store'), {
         onSuccess: () => {
             form.reset();
         },
     });
-};
-
-const activeMenu = ref(null);
-const menuRef = ref(null);
-
-const handleClickOutside = (event) => {
-    if (menuRef.value && !menuRef.value.contains(event.target)) {
-        activeMenu.value = null;
-    }
 };
 
 const selectedTask = ref(null);
@@ -143,30 +127,34 @@ const deleteTask = (taskId) => {
 
 const filtersForm = useForm({
     search: props.filters?.search || '',
-    tag: props.filters?.tag || '',
+    tags: props.filters?.tags || [],
     done: props.filters?.done || '',
 });
 
 const submitFilters = () => {
+    console.log(filtersForm.tags)
     filtersForm.get(route('tasks.index'), {
         preserveState: true,
         replace: true,
     });
 };
 
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside);
-});
+const open = ref(false)
+const searchTerm = ref('')
 
-onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
-});
+const { contains } = useFilter({ sensitivity: 'base' })
+
+const filteredTags = computed(() => {
+    const options = props.tags.filter(i => !form.tags.includes(i.name))
+    return searchTerm.value ? options.filter(option => contains(option.name, searchTerm.value)) : options
+})
 
 watch(
-    () => filtersForm.tag,
+    () => filtersForm.tags,
     () => {
         submitFilters();
     },
+    { deep: true }
 );
 
 watch(
@@ -211,6 +199,7 @@ watch(
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
+
                             </div>
 
                             <div class="flex w-full max-w-sm flex-col gap-1.5">
@@ -239,17 +228,47 @@ watch(
 
                     <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
                         <Label for="tag">Tag</Label>
-                        <Select v-model="filtersForm.tag">
-                            <SelectTrigger id="tag" class="w-full">
-                                <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                            <SelectContent position="popper">
-                                <SelectItem :value="null"> All </SelectItem>
-                                <SelectItem v-for="tag in tags" :key="tag.name" :value="tag.name">
-                                    {{ tag.name }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Combobox v-model="filtersForm.tags" v-model:open="open" :ignore-filter="true">
+                            <ComboboxAnchor as-child>
+                                <TagsInput :model-value="filtersForm.tags" @update:model-value="(val) => {
+                                    filtersForm.tags = [...val]
+                                    submitFilters()
+                                }" class="px-2 gap-2 w-full">
+
+                                    <div class="flex gap-2 flex-wrap items-center">
+                                        <TagsInputItem v-for="tag in filtersForm.tags" :key="tag" :value="tag">
+                                            <TagsInputItemText />
+                                            <TagsInputItemDelete />
+                                        </TagsInputItem>
+                                    </div>
+
+                                    <ComboboxInput v-model="searchTerm" as-child>
+                                        <TagsInputInput placeholder="Select tags..."
+                                            class="min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto"
+                                            @keydown.enter.prevent />
+                                    </ComboboxInput>
+                                </TagsInput>
+
+                                <ComboboxList class="w-[--reka-popper-anchor-width]">
+                                    <ComboboxEmpty />
+                                    <ComboboxGroup>
+                                        <ComboboxItem v-for="tag in tags" :key="tag.name" :value="tag.name"
+                                            @select.prevent="(ev) => {
+                                                if (typeof ev.detail.value === 'string') {
+                                                    searchTerm = ''
+                                                    filtersForm.tags = [...filtersForm.tags, ev.detail.value]
+                                                }
+
+                                                if (filteredTags.length === 0) {
+                                                    open = false
+                                                }
+                                            }">
+                                            {{ tag.name }}
+                                        </ComboboxItem>
+                                    </ComboboxGroup>
+                                </ComboboxList>
+                            </ComboboxAnchor>
+                        </Combobox>
                     </div>
 
                     <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
@@ -302,55 +321,46 @@ watch(
                                 <div class="flex flex-col gap-4">
                                     <Label for="title" class="text-right"> Tags </Label>
                                     <div>
-                                        <TagsInput :model-value="form.tags"
-                                            @update:model-value="(val) => (form.tags = val)">
-                                            <TagsInputItem v-for="tag in form.tags" :key="tag" :value="tag">
-                                                <TagsInputItemText />
-                                                <TagsInputItemDelete />
-                                            </TagsInputItem>
-
-                                            <TagsInputInput placeholder="Tags..." />
-                                        </TagsInput>
-
-                                        <!-- <Combobox v-model="form.tags" v-model:open="open" :ignore-filter="true">
+                                        <Combobox v-model="form.tags" v-model:open="open" :ignore-filter="true">
                                             <ComboboxAnchor as-child>
-                                                <TagsInput v-model="form.tags">
-                                                    <TagsInputItem v-for="item in form.tags" :key="item" :value="item">
-                                                        <TagsInputItemText />
-                                                        <TagsInputItemDelete />
-                                                    </TagsInputItem>
+                                                <TagsInput :model-value="form.tags"
+                                                    @update:model-value="(val) => (form.tags = val)"
+                                                    class="px-2 gap-2 w-full">
 
-                                                    <ComboboxInput v-model="searchTag" as-child>
-                                                        <TagsInputInput placeholder="Tags..." @keydown.enter.prevent />
+                                                    <div class="flex gap-2 flex-wrap items-center">
+                                                        <TagsInputItem v-for="tag in form.tags" :key="tag" :value="tag">
+                                                            <TagsInputItemText />
+                                                            <TagsInputItemDelete />
+                                                        </TagsInputItem>
+                                                    </div>
+
+                                                    <ComboboxInput v-model="searchTerm" as-child>
+                                                        <TagsInputInput placeholder="Tags..."
+                                                            class="min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto"
+                                                            @keydown.enter.prevent />
                                                     </ComboboxInput>
                                                 </TagsInput>
 
-                                                <ComboboxList>
+                                                <ComboboxList class="w-[--reka-popper-anchor-width]">
                                                     <ComboboxEmpty />
                                                     <ComboboxGroup>
-                                                        <ComboboxItem
-                                                            v-for="tag in filteredTags"
-                                                            :key="tag.value"
-                                                            :value="tag.label"
-                                                            @select.prevent="
-                                                                (ev) => {
-                                                                    if (typeof ev.detail.value === 'string') {
-                                                                        searchTag = '';
-                                                                        form.tags.push(ev.detail.value);
-                                                                    }
-
-                                                                    if (filteredTags.length === 0) {
-                                                                        open = false;
-                                                                    }
+                                                        <ComboboxItem v-for="tag in filteredTags" :key="tag.name"
+                                                            :value="tag.name" @select.prevent="(ev) => {
+                                                                if (typeof ev.detail.value === 'string') {
+                                                                    searchTerm = ''
+                                                                    form.tags.push(ev.detail.value)
                                                                 }
-                                                            "
-                                                        >
-                                                            {{ tag.label }}
+
+                                                                if (filteredTags.length === 0) {
+                                                                    open = false
+                                                                }
+                                                            }">
+                                                            {{ tag.name }}
                                                         </ComboboxItem>
                                                     </ComboboxGroup>
                                                 </ComboboxList>
                                             </ComboboxAnchor>
-                                        </Combobox> -->
+                                        </Combobox>
 
                                         <span class="text-xs text-gray-500"> Use comma <span class="font-bold">( ,
                                                 )</span> to add </span>
@@ -502,16 +512,52 @@ watch(
                                                     <div class="flex flex-col gap-4">
                                                         <Label for="title" class="text-right"> Tags </Label>
                                                         <div>
-                                                            <TagsInput :model-value="updateForm.tags"
-                                                                @update:model-value="(val) => (updateForm.tags = val)">
-                                                                <TagsInputItem v-for="tag in updateForm.tags" :key="tag"
-                                                                    :value="tag">
-                                                                    <TagsInputItemText />
-                                                                    <TagsInputItemDelete />
-                                                                </TagsInputItem>
+                                                            <Combobox v-model="updateForm.tags" v-model:open="open"
+                                                                :ignore-filter="true">
+                                                                <ComboboxAnchor as-child>
+                                                                    <TagsInput :model-value="updateForm.tags"
+                                                                        @update:model-value="(val) => (updateForm.tags = val)"
+                                                                        class="px-2 gap-2 w-full">
 
-                                                                <TagsInputInput placeholder="Tags..." />
-                                                            </TagsInput>
+                                                                        <div class="flex gap-2 flex-wrap items-center">
+                                                                            <TagsInputItem
+                                                                                v-for="tag in updateForm.tags"
+                                                                                :key="tag" :value="tag">
+                                                                                <TagsInputItemText />
+                                                                                <TagsInputItemDelete />
+                                                                            </TagsInputItem>
+                                                                        </div>
+
+                                                                        <ComboboxInput v-model="searchTerm" as-child>
+                                                                            <TagsInputInput placeholder="Tags..."
+                                                                                class="min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto"
+                                                                                @keydown.enter.prevent />
+                                                                        </ComboboxInput>
+                                                                    </TagsInput>
+
+                                                                    <ComboboxList
+                                                                        class="w-[--reka-popper-anchor-width]">
+                                                                        <ComboboxEmpty />
+                                                                        <ComboboxGroup>
+                                                                            <ComboboxItem v-for="tag in filteredTags"
+                                                                                :key="tag.name" :value="tag.name"
+                                                                                @select.prevent="(ev) => {
+                                                                                    if (typeof ev.detail.value === 'string') {
+                                                                                        searchTerm = ''
+                                                                                        updateForm.tags.push(ev.detail.value)
+                                                                                    }
+
+                                                                                    if (filteredTags.length === 0) {
+                                                                                        open = false
+                                                                                    }
+                                                                                }">
+                                                                                {{ tag.name }}
+                                                                            </ComboboxItem>
+                                                                        </ComboboxGroup>
+                                                                    </ComboboxList>
+                                                                </ComboboxAnchor>
+                                                            </Combobox>
+
                                                             <span class="text-xs text-gray-500">
                                                                 Use comma <span class="font-bold">( ,
                                                                     )</span> to
