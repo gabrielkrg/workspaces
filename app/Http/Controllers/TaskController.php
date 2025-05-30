@@ -16,7 +16,6 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
-
         $user = Auth::user();
 
         $workspace = Workspace::findOrFail($user->workspace_id);
@@ -28,21 +27,22 @@ class TaskController extends Controller
             ->orderBy('done', 'asc')
             ->orderBy('created_at', 'desc');
 
-        if ($request->filled('tag')) {
-            $query->whereHas('tags', function ($q) use ($request) {
-                $q->where('name', $request->tag);
-            });
-        }
-
-        // ✅ Filtro por done (true ou false)
-        if ($request->filled('done')) {
-            $done = filter_var($request->done, FILTER_VALIDATE_BOOLEAN); // converte 'true'/'false' em boolean
-            $query->where('done', $done);
-        }
-
-        // 🔠 Filtro por título (search)
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('tags')) {
+            $tags = is_array($request->tags) ? $request->tags : [$request->tags];
+            foreach ($tags as $tag) {
+                $query->whereHas('tags', function ($q) use ($tag) {
+                    $q->where('name', $tag);
+                });
+            }
+        }
+
+        if ($request->filled('done')) {
+            $done = filter_var($request->done, FILTER_VALIDATE_BOOLEAN);
+            $query->where('done', $done);
         }
 
         $tasks = $query->get();
@@ -51,7 +51,7 @@ class TaskController extends Controller
         return Inertia::render('Task/Index', [
             'tasks' => $tasks,
             'tags' => $tags,
-            'filters' => $request->only(['tag', 'done', 'search']),
+            'filters' => $request->only(['search', 'tags', 'done']),
         ]);
     }
 
@@ -131,8 +131,7 @@ class TaskController extends Controller
             $task->tags()->sync($tagIds);
         }
 
-        if($task->delete_after && $task->done)
-        {
+        if ($task->delete_after && $task->done) {
             $this->delete($task);
             return redirect()->back()->with('success', 'Task concluded and deleted successfully!');
         }
