@@ -139,7 +139,7 @@ const submitFilters = () => {
     });
 };
 
-const open = ref(false)
+const openSearchTerm = ref(false)
 const searchTerm = ref('')
 
 const { contains } = useFilter({ sensitivity: 'base' })
@@ -147,6 +147,15 @@ const { contains } = useFilter({ sensitivity: 'base' })
 const filteredTags = computed(() => {
     const options = props.tags.filter(i => !form.tags.includes(i.name))
     return searchTerm.value ? options.filter(option => contains(option.name, searchTerm.value)) : options
+})
+
+const openSearchTermFilter = ref(false)
+const openSearchTermFilterMobile = ref(false)
+const searchTermFilter = ref('')
+
+const filteredTagsFilter = computed(() => {
+    const options = props.tags.filter(i => !filtersForm.tags.includes(i.name))
+    return searchTermFilter.value ? options.filter(option => contains(option.name, searchTermFilter.value)) : options
 })
 
 watch(
@@ -188,18 +197,48 @@ watch(
 
                             <div class="flex w-full max-w-sm flex-col gap-1.5">
                                 <Label for="tag-mobile">Tag</Label>
-                                <Select v-model="filtersForm.tag">
-                                    <SelectTrigger id="tag-mobile" class="w-full">
-                                        <SelectValue placeholder="Select" />
-                                    </SelectTrigger>
-                                    <SelectContent position="popper">
-                                        <SelectItem :value="null"> All </SelectItem>
-                                        <SelectItem v-for="tag in tags" :key="tag.name" :value="tag.name">
-                                            {{ tag.name }}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <Combobox v-model="filtersForm.tags" v-model:open="openSearchTermFilterMobile"
+                                    :ignore-filter="true">
+                                    <ComboboxAnchor as-child>
+                                        <TagsInput :model-value="filtersForm.tags" @update:model-value="(val) => {
+                                            filtersForm.tags = [...val]
+                                            submitFilters()
+                                        }" class="px-2 gap-2 w-full">
 
+                                            <div class="flex gap-2 flex-wrap items-center">
+                                                <TagsInputItem v-for="tag in filtersForm.tags" :key="tag" :value="tag">
+                                                    <TagsInputItemText />
+                                                    <TagsInputItemDelete />
+                                                </TagsInputItem>
+                                            </div>
+
+                                            <ComboboxInput v-model="searchTermFilter" as-child>
+                                                <TagsInputInput placeholder="Select tags..."
+                                                    class="min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto"
+                                                    @keydown.enter.prevent />
+                                            </ComboboxInput>
+                                        </TagsInput>
+
+                                        <ComboboxList class="w-[--reka-popper-anchor-width]">
+                                            <ComboboxEmpty />
+                                            <ComboboxGroup>
+                                                <ComboboxItem v-for="tag in filteredTagsFilter" :key="tag.name"
+                                                    :value="tag.name" @select.prevent="(ev) => {
+                                                        if (typeof ev.detail.value === 'string') {
+                                                            searchTermFilter = ''
+                                                            filtersForm.tags.push(ev.detail.value)
+                                                        }
+
+                                                        if (filteredTagsFilter.length === 0) {
+                                                            openSearchTermFilterMobile = false
+                                                        }
+                                                    }">
+                                                    {{ tag.name }}
+                                                </ComboboxItem>
+                                            </ComboboxGroup>
+                                        </ComboboxList>
+                                    </ComboboxAnchor>
+                                </Combobox>
                             </div>
 
                             <div class="flex w-full max-w-sm flex-col gap-1.5">
@@ -228,7 +267,7 @@ watch(
 
                     <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
                         <Label for="tag">Tag</Label>
-                        <Combobox v-model="filtersForm.tags" v-model:open="open" :ignore-filter="true">
+                        <Combobox v-model="filtersForm.tags" v-model:open="openSearchTermFilter" :ignore-filter="true">
                             <ComboboxAnchor as-child>
                                 <TagsInput :model-value="filtersForm.tags" @update:model-value="(val) => {
                                     filtersForm.tags = [...val]
@@ -242,7 +281,7 @@ watch(
                                         </TagsInputItem>
                                     </div>
 
-                                    <ComboboxInput v-model="searchTerm" as-child>
+                                    <ComboboxInput v-model="searchTermFilter" as-child>
                                         <TagsInputInput placeholder="Select tags..."
                                             class="min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto"
                                             @keydown.enter.prevent />
@@ -252,15 +291,15 @@ watch(
                                 <ComboboxList class="w-[--reka-popper-anchor-width]">
                                     <ComboboxEmpty />
                                     <ComboboxGroup>
-                                        <ComboboxItem v-for="tag in tags" :key="tag.name" :value="tag.name"
-                                            @select.prevent="(ev) => {
+                                        <ComboboxItem v-for="tag in filteredTagsFilter" :key="tag.name"
+                                            :value="tag.name" @select.prevent="(ev) => {
                                                 if (typeof ev.detail.value === 'string') {
-                                                    searchTerm = ''
-                                                    filtersForm.tags = [...filtersForm.tags, ev.detail.value]
+                                                    searchTermFilter = ''
+                                                    filtersForm.tags.push(ev.detail.value)
                                                 }
 
-                                                if (filteredTags.length === 0) {
-                                                    open = false
+                                                if (filteredTagsFilter.length === 0) {
+                                                    openSearchTermFilter = false
                                                 }
                                             }">
                                             {{ tag.name }}
@@ -321,7 +360,8 @@ watch(
                                 <div class="flex flex-col gap-4">
                                     <Label for="title" class="text-right"> Tags </Label>
                                     <div>
-                                        <Combobox v-model="form.tags" v-model:open="open" :ignore-filter="true">
+                                        <Combobox v-model="form.tags" v-model:open="openSearchTerm"
+                                            :ignore-filter="true">
                                             <ComboboxAnchor as-child>
                                                 <TagsInput :model-value="form.tags"
                                                     @update:model-value="(val) => (form.tags = val)"
@@ -349,7 +389,11 @@ watch(
                                                                 if (typeof ev.detail.value === 'string') {
                                                                     searchTerm = ''
                                                                     form.tags.push(ev.detail.value)
+                                                                }
 
+                                                                if (filteredTags.length === 0) {
+                                                                    openSearchTerm = false
+                                                                }
                                                             }">
                                                             {{ tag.name }}
                                                         </ComboboxItem>
@@ -508,8 +552,8 @@ watch(
                                                     <div class="flex flex-col gap-4">
                                                         <Label for="title" class="text-right"> Tags </Label>
                                                         <div>
-                                                            <Combobox v-model="updateForm.tags" v-model:open="open"
-                                                                :ignore-filter="true">
+                                                            <Combobox v-model="updateForm.tags"
+                                                                v-model:open="openSearchTerm" :ignore-filter="true">
                                                                 <ComboboxAnchor as-child>
                                                                     <TagsInput :model-value="updateForm.tags"
                                                                         @update:model-value="(val) => (updateForm.tags = val)"
@@ -544,7 +588,7 @@ watch(
                                                                                     }
 
                                                                                     if (filteredTags.length === 0) {
-                                                                                        open = false
+                                                                                        openSearchTerm = false
                                                                                     }
                                                                                 }">
                                                                                 {{ tag.name }}
