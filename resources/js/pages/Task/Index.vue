@@ -349,11 +349,7 @@ watch(
                                                                 if (typeof ev.detail.value === 'string') {
                                                                     searchTerm = ''
                                                                     form.tags.push(ev.detail.value)
-                                                                }
 
-                                                                if (filteredTags.length === 0) {
-                                                                    open = false
-                                                                }
                                                             }">
                                                             {{ tag.name }}
                                                         </ComboboxItem>
