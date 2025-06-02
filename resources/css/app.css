@@ -73,6 +73,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -83,6 +84,7 @@
 }
 
 @layer utilities {
+
   body,
   html {
     --font-sans:
@@ -168,13 +170,13 @@
 }
 
 @layer base {
-    * {
-        @apply border-border;
-    }
+  * {
+    @apply border-border;
+  }
 
-    body {
-        @apply bg-background text-foreground;
-    }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 /*
@@ -185,7 +187,20 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.highlighter {
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 50%, rgba(0, 201, 80, 0.6) 0);
+  background-size: 200%;
+  background-position: 0;
+  transition: background-position .8s;
+  font-weight: 700;
+}
+
+.highlight {
+  background-position: -100%;
 }

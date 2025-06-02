@@ -115,7 +115,9 @@ class TaskController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
             'delete_after' => 'sometimes|boolean',
+            'highlight' => 'sometimes|boolean',
         ]);
+
 
         $task->update($validated);
 

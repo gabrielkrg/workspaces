@@ -9,13 +9,14 @@ class Task extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'repeat', 'done', 'delete_after', 'user_id', 'workspace_id'];
+    protected $fillable = ['title', 'description', 'repeat', 'highlight', 'done', 'delete_after', 'user_id', 'workspace_id'];
 
     protected $guarded = [];
 
     protected $casts = [
         'done' => 'boolean',
         'delete_after' => 'boolean',
+        'highlight' => 'boolean',
     ];
 
     public function user()

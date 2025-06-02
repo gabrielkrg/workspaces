@@ -21,7 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { Check, ChevronDown, EllipsisVertical } from 'lucide-vue-next';
+import { Check, ChevronDown, EllipsisVertical, Highlighter } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { useFilter } from 'reka-ui'
 import {
@@ -133,7 +133,6 @@ const filtersForm = useForm({
 });
 
 const submitFilters = () => {
-    console.log(filtersForm.tags)
     filtersForm.get(route('tasks.index'), {
         preserveState: true,
         replace: true,
@@ -479,7 +478,8 @@ watch(
                         <!-- Title, Tags, Description -->
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
-                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white"
+                                    :class="{ 'highlighter highlight': task.highlight }">
                                     {{ task.title }}
                                 </h2>
                                 <div class="flex items-center gap-1 flex-wrap">
@@ -495,15 +495,25 @@ watch(
                                     </div>
                                 </div>
                             </div>
-                            <p class="mt-1 text-gray-700 dark:text-gray-300 break-words">{{ task.description }}</p>
+                            <p class="mt-1 text-gray-700 dark:text-gray-300 break-words inline-block"
+                                :class="{ 'highlighter highlight': task.highlight }">
+                                {{ task.description }}
+                            </p>
                         </div>
 
                         <!-- Actions -->
                         <div class="flex items-start justify-end">
-                            <Popover class="relative">
+                            <button type="button"
+                                :class="{ 'bg-accent hover:bg-accent/90 hover:text-accent-foreground dark:hover:bg-accent/50': task.highlight }"
+                                class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md"
+                                @click="updateTask(task, { highlight: !task.highlight })">
+                                <Highlighter class="text-gray-900 dark:text-white" />
+                            </button>
+                            <Popover class=" relative">
                                 <PopoverTrigger as-child>
-                                    <button class="cursor-pointer p-2">
-                                        <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
+                                    <button type="button"
+                                        class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md">
+                                        <EllipsisVertical class="text-gray-900 dark:text-white" />
                                     </button>
                                 </PopoverTrigger>
 
