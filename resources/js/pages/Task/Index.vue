@@ -33,6 +33,7 @@ import {
     ComboboxGroup,
     ComboboxItem,
 } from '@/components/ui/combobox';
+import { cn } from '@/lib/utils';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -203,9 +204,10 @@ watch(
                                         <TagsInput :model-value="filtersForm.tags" @update:model-value="(val) => {
                                             filtersForm.tags = [...val]
                                             submitFilters()
-                                        }" class="px-2 gap-2 w-full">
+                                        }" :class="cn('p-0 gap-0 w-full bg-input/30')">
 
-                                            <div class="flex gap-2 flex-wrap items-center">
+                                            <div
+                                                :class="['flex gap-2 flex-wrap items-center', filtersForm.tags.length > 0 ? 'p-2' : '']">
                                                 <TagsInputItem v-for="tag in filtersForm.tags" :key="tag" :value="tag">
                                                     <TagsInputItemText />
                                                     <TagsInputItemDelete />
@@ -214,7 +216,7 @@ watch(
 
                                             <ComboboxInput v-model="searchTermFilter" as-child>
                                                 <TagsInputInput placeholder="Select tags..."
-                                                    class="min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto"
+                                                    :class="cn('min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto')"
                                                     @keydown.enter.prevent />
                                             </ComboboxInput>
                                         </TagsInput>
@@ -268,13 +270,14 @@ watch(
                     <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
                         <Label for="tag">Tag</Label>
                         <Combobox v-model="filtersForm.tags" v-model:open="openSearchTermFilter" :ignore-filter="true">
-                            <ComboboxAnchor as-child>
+                            <ComboboxAnchor as-child :class="cn('dark:bg-input/30')">
                                 <TagsInput :model-value="filtersForm.tags" @update:model-value="(val) => {
                                     filtersForm.tags = [...val]
                                     submitFilters()
-                                }" class="px-2 gap-2 w-full">
+                                }" :class="cn('p-0 gap-0 w-full')">
 
-                                    <div class="flex gap-2 flex-wrap items-center">
+                                    <div
+                                        :class="['flex gap-2 flex-wrap items-center', filtersForm.tags.length > 0 ? 'p-2' : '']">
                                         <TagsInputItem v-for="tag in filtersForm.tags" :key="tag" :value="tag">
                                             <TagsInputItemText />
                                             <TagsInputItemDelete />
@@ -283,7 +286,7 @@ watch(
 
                                     <ComboboxInput v-model="searchTermFilter" as-child>
                                         <TagsInputInput placeholder="Select tags..."
-                                            class="min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto"
+                                            :class="cn('min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto')"
                                             @keydown.enter.prevent />
                                     </ComboboxInput>
                                 </TagsInput>
@@ -329,7 +332,7 @@ watch(
                     <SheetTrigger as-child>
                         <Button variant="default" class="cursor-pointer"> Create </Button>
                     </SheetTrigger>
-                    <SheetContent>
+                    <SheetContent :class="cn('overflow-y-auto')">
                         <form @submit.prevent="submit">
                             <SheetHeader>
                                 <SheetTitle>Create task</SheetTitle>
@@ -362,12 +365,13 @@ watch(
                                     <div>
                                         <Combobox v-model="form.tags" v-model:open="openSearchTerm"
                                             :ignore-filter="true">
-                                            <ComboboxAnchor as-child>
+                                            <ComboboxAnchor as-child :class="cn('dark:bg-input/30')">
                                                 <TagsInput :model-value="form.tags"
                                                     @update:model-value="(val) => (form.tags = val)"
-                                                    class="px-2 gap-2 w-full">
+                                                    :class="cn('p-0 gap-0 w-full bg-input/30')">
 
-                                                    <div class="flex gap-2 flex-wrap items-center">
+                                                    <div
+                                                        :class="['flex gap-2 flex-wrap items-center', form.tags.length > 0 ? 'p-2' : '']">
                                                         <TagsInputItem v-for="tag in form.tags" :key="tag" :value="tag">
                                                             <TagsInputItemText />
                                                             <TagsInputItemDelete />
@@ -376,7 +380,7 @@ watch(
 
                                                     <ComboboxInput v-model="searchTerm" as-child>
                                                         <TagsInputInput placeholder="Tags..."
-                                                            class="min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto"
+                                                            :class="cn('min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto')"
                                                             @keydown.enter.prevent />
                                                     </ComboboxInput>
                                                 </TagsInput>
@@ -514,7 +518,7 @@ watch(
                                                 </div>
                                             </SheetClose>
                                         </SheetTrigger>
-                                        <SheetContent>
+                                        <SheetContent :class="cn('overflow-y-auto')">
                                             <form @submit.prevent="update(task)">
                                                 <SheetHeader>
                                                     <SheetTitle> Edit task </SheetTitle>
@@ -557,9 +561,10 @@ watch(
                                                                 <ComboboxAnchor as-child>
                                                                     <TagsInput :model-value="updateForm.tags"
                                                                         @update:model-value="(val) => (updateForm.tags = val)"
-                                                                        class="px-2 gap-2 w-full">
+                                                                        :class="cn('p-0 gap-0 w-full bg-input/30')">
 
-                                                                        <div class="flex gap-2 flex-wrap items-center">
+                                                                        <div
+                                                                            :class="['flex gap-2 flex-wrap items-center', updateForm.tags.length > 0 ? 'p-2' : '']">
                                                                             <TagsInputItem
                                                                                 v-for="tag in updateForm.tags"
                                                                                 :key="tag" :value="tag">
@@ -570,7 +575,7 @@ watch(
 
                                                                         <ComboboxInput v-model="searchTerm" as-child>
                                                                             <TagsInputInput placeholder="Tags..."
-                                                                                class="min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto"
+                                                                                :class="cn('min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto')"
                                                                                 @keydown.enter.prevent />
                                                                         </ComboboxInput>
                                                                     </TagsInput>
