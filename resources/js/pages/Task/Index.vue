@@ -130,6 +130,7 @@ const filtersForm = useForm({
     search: props.filters?.search || '',
     tags: props.filters?.tags || [],
     done: props.filters?.done || '',
+    order: props.filters?.order || '',
 });
 
 const submitFilters = () => {
@@ -171,6 +172,14 @@ watch(
     () => {
         submitFilters();
     },
+);
+
+watch(
+    () => filtersForm.order,
+    () => {
+        submitFilters();
+    },
+    { deep: true }
 );
 </script>
 
@@ -255,21 +264,36 @@ watch(
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            <div class="flex w-full max-w-sm flex-col gap-1.5">
+                                <Label for="status-mobile">Order by</Label>
+                                <Select v-model="filtersForm.order">
+                                    <SelectTrigger id="status-mobile" class="w-full">
+                                        <SelectValue placeholder="Select" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectItem value="recent"> Recent </SelectItem>
+                                        <SelectItem value="oldest"> Oldest </SelectItem>
+                                        <SelectItem value="title"> Title </SelectItem>
+                                        <SelectItem value="highlight"> Highlight </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </PopoverContent>
                     </Popover>
                 </div>
 
-                <div class="hidden grid-cols-3 gap-4 md:grid">
+                <div class="hidden grid-cols-4 gap-4 md:grid">
                     <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
                         <Label for="search">Title</Label>
                         <Input @input="submitFilters" id="search" type="search" placeholder="Title"
                             v-model="filtersForm.search" />
                     </div>
 
-                    <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
+                    <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1 relative">
                         <Label for="tag">Tag</Label>
                         <Combobox v-model="filtersForm.tags" v-model:open="openSearchTermFilter" :ignore-filter="true">
-                            <ComboboxAnchor as-child :class="cn('dark:bg-input/30')">
+                            <ComboboxAnchor as-child :class="cn('dark:bg-input/30 relative')">
                                 <TagsInput :model-value="filtersForm.tags" @update:model-value="(val) => {
                                     filtersForm.tags = [...val]
                                     submitFilters()
@@ -290,7 +314,7 @@ watch(
                                     </ComboboxInput>
                                 </TagsInput>
 
-                                <ComboboxList class="w-[--reka-popper-anchor-width]">
+                                <ComboboxList :class="cn('w-[--reka-popper-anchor-width]')">
                                     <ComboboxEmpty />
                                     <ComboboxGroup>
                                         <ComboboxItem v-for="tag in filteredTagsFilter" :key="tag.name"
@@ -322,6 +346,21 @@ watch(
                                 <SelectItem :value="null"> All </SelectItem>
                                 <SelectItem value="false"> To do </SelectItem>
                                 <SelectItem value="true"> Done </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
+                        <Label for="status-mobile">Order by</Label>
+                        <Select v-model="filtersForm.order">
+                            <SelectTrigger id="status-mobile" class="w-full">
+                                <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent position="popper">
+                                <SelectItem value="recent"> Recent </SelectItem>
+                                <SelectItem value="oldest"> Oldest </SelectItem>
+                                <SelectItem value="title"> Title </SelectItem>
+                                <SelectItem value="highlight"> Highlight </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

@@ -23,9 +23,7 @@ class TaskController extends Controller
         $this->authorize('view', $workspace);
 
         $query = Task::with('tags')
-            ->where('workspace_id', $user->workspace_id)
-            ->orderBy('done', 'asc')
-            ->orderBy('created_at', 'desc');
+            ->where('workspace_id', $user->workspace_id);
 
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
@@ -43,6 +41,29 @@ class TaskController extends Controller
         if ($request->filled('done')) {
             $done = filter_var($request->done, FILTER_VALIDATE_BOOLEAN);
             $query->where('done', $done);
+        }
+
+        if ($request->filled('order')) {
+            switch ($request->order) {
+                case 'recent':
+                    $query->orderBy('created_at', 'desc');
+                    break;
+                case 'oldest':
+                    $query->orderBy('created_at', 'asc');
+                    break;
+                case 'title':
+                    $query->orderBy('title', 'asc');
+                    break;
+                case 'highlight':
+                    $query->orderBy('highlight', 'desc');
+                    break;
+                default:
+                    $query->orderBy('done', 'asc')
+                        ->orderBy('created_at', 'desc');
+            }
+        } else {
+            $query->orderBy('done', 'asc')
+                ->orderBy('created_at', 'desc');
         }
 
         $tasks = $query->get();
@@ -118,7 +139,6 @@ class TaskController extends Controller
             'highlight' => 'sometimes|boolean',
         ]);
 
-
         $task->update($validated);
 
         if (!empty($validated['tags'])) {
@@ -131,6 +151,8 @@ class TaskController extends Controller
             });
 
             $task->tags()->sync($tagIds);
+        } else {
+            $task->tags()->detach();
         }
 
         if ($task->delete_after && $task->done) {
