@@ -211,7 +211,7 @@ const filteredTags = computed(() => {
                                     <Input id="name" v-model="form.name" class="col-span-4" />
                                 </div>
 
-                                <div class="flex flex-col gap-4">
+                                <!-- <div class="flex flex-col gap-4">
                                     <Label for="title" class="text-right"> Tags </Label>
                                     <div>
                                         <Combobox v-model="form.tags" v-model:open="openSearchTerm"
@@ -264,7 +264,7 @@ const filteredTags = computed(() => {
                                     <div v-if="form.errors.tags" class="text-sm text-red-500">
                                         {{ form.errors.tags }}
                                     </div>
-                                </div>
+                                </div> -->
 
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="edit-columns" class="text-right">Columns</Label>

@@ -33,4 +33,15 @@ class Task extends Model
     {
         return $this->belongsToMany(Tag::class);
     }
+
+    public function modelables()
+    {
+        return $this->morphedByMany(
+            Model::class,
+            'model',
+            'model_task',
+            'task_id',
+            'model_id'
+        );
+    }
 }

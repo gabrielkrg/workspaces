@@ -42,7 +42,7 @@ class KanbanController extends Controller
 
         $kanban->load(['columns' => function ($query) {
             $query->orderBy('order');
-        }, 'columns.cards']);
+        }, 'columns.cards.tasks']);
 
 
         return Inertia::render('Kanban/Show', [

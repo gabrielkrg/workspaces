@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Card;
-use App\Models\Column;
+use App\Models\Task;
 use App\Models\Kanban;
 use App\Models\Workspace;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -75,5 +75,29 @@ class CardController extends Controller
         $card->delete();
 
         return redirect()->back()->with('success', 'Card deleted successfully');
+    }
+
+    public function attachTask(Request $request, Card $card)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $user = Auth::user();
+        $workspace = Workspace::findOrFail($user->workspace_id);
+
+        $this->authorize('update', $workspace);
+
+        $task = Task::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'user_id' => $user->id,
+            'workspace_id' => $workspace->id,
+        ]);
+
+        $card->tasks()->attach($task->id);
+
+        return redirect()->back()->with('success', 'Task added successfully');
     }
 }

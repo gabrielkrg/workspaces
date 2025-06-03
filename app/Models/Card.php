@@ -16,6 +16,10 @@ class Card extends Model
         'order',
     ];
 
+    protected $casts = [
+        'tasks' => 'array',
+    ];
+
     public function kanban()
     {
         return $this->belongsTo(Kanban::class);
@@ -29,5 +33,10 @@ class Card extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function tasks()
+    {
+        return $this->morphToMany(Task::class, 'model', 'model_task');
     }
 }

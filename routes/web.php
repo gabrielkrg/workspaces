@@ -73,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('cards/{kanban}', [CardController::class, 'store'])->name('cards.store');
     Route::put('cards/{card}', [CardController::class, 'update'])->name('cards.update');
     Route::delete('cards/{card}', [CardController::class, 'delete'])->name('cards.delete');
+    Route::post('cards/{card}/tasks', [CardController::class, 'attachTask'])->name('cards.attach.task');
 
     // Events
     Route::get('events', [EventController::class, 'index'])->name('events.index');
