@@ -28,7 +28,7 @@ class CardController extends Controller
 
         $this->authorize('update', $workspace);
 
-        $card = Card::create([
+        Card::create([
             'title' => $request->title,
             'description' => $request->description,
             'column_id' => $request->column_id,
@@ -40,7 +40,7 @@ class CardController extends Controller
 
         return redirect()->route('kanban.show', $kanban->id)->with('success', 'Card created successfully');
     }
-    
+
     public function update(Request $request, Card $card)
     {
         $request->validate([
@@ -76,7 +76,4 @@ class CardController extends Controller
 
         return redirect()->back()->with('success', 'Card deleted successfully');
     }
-
-
-
 }

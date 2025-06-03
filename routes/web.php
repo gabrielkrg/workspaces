@@ -71,7 +71,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Cards
     Route::post('cards/{kanban}', [CardController::class, 'store'])->name('cards.store');
-    Route::patch('cards/{card}', [CardController::class, 'update'])->name('cards.update');
+    Route::put('cards/{card}', [CardController::class, 'update'])->name('cards.update');
     Route::delete('cards/{card}', [CardController::class, 'delete'])->name('cards.delete');
 
     // Events
@@ -95,5 +95,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('time-tracking/trackables', [TimeTrackingController::class, 'trackables'])->name('time-tracking.trackables');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';

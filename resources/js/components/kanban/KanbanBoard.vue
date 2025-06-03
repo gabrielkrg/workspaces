@@ -15,11 +15,11 @@ import AlertDialogTitle from '../ui/alert-dialog/AlertDialogTitle.vue';
 import Button from '../ui/button/Button.vue';
 
 interface Card {
+    id: number;
     title: string;
     description: string;
     order: number;
     column_id: number;
-    id: number;
 }
 
 interface Column {
@@ -28,94 +28,128 @@ interface Column {
     cards: Card[];
 }
 
-const props = defineProps({
-    kanban: Object,
-});
+interface CardFormData {
+    title: string;
+    description: string;
+    column_id: number | null;
+    order: number;
+    [key: string]: string | number | null;
+}
 
-const columns = ref<Column[]>(props.kanban?.columns);
+interface InertiaResponse {
+    props: {
+        card: Card;
+    };
+}
 
-const activeColumn = ref<number | null>(null);
-const isNewCardModalOpen = ref(false);
+const props = defineProps<{
+    kanban: {
+        id: number;
+        name: string;
+        columns: Column[];
+    };
+}>();
 
-const openNewCardModal = (columnId: number) => {
-    activeColumn.value = columnId;
-    isNewCardModalOpen.value = true;
+const columns = ref<Column[]>(props.kanban.columns);
 
-    formCard.column_id = columnId;
-};
-
-const formCard = useForm({
-    title: '',
-    description: '',
-    column_id: activeColumn.value,
-    order: 0,
-});
-
-const createCard = () => {
-    if (!activeColumn.value) return;
-
-    formCard.post(route('cards.store', { kanban: props.kanban?.id }), {
-        onSuccess: () => {
-            isNewCardModalOpen.value = false;
-            formCard.reset();
-        }
-    });
-};
-
+// Card management state
 const isCardModalOpen = ref(false);
+const isNewCard = ref(false);
 const selectedCard = ref<Card | null>(null);
 
-const openCardDetails = (card: Card) => {
-    selectedCard.value = card;
-    isCardModalOpen.value = true;
-
-    formUpdateCard.title = card.title;
-    formUpdateCard.description = card.description;
-    formUpdateCard.order = card.order;
-    formUpdateCard.column_id = card.column_id;
-};
-
-const formUpdateCard = useForm({
+// Unified form for both new and edit card
+const cardForm = useForm<CardFormData>({
     title: '',
     description: '',
+    column_id: null,
     order: 0,
-    column_id: activeColumn.value,
 });
 
-const updateCard = () => {
-    if (!selectedCard.value) return;
-
-    formUpdateCard.patch(route('cards.update', { card: selectedCard?.value?.id }), {
-        onSuccess: () => {
-            isCardModalOpen.value = false;
-        }
-    });
+// Open modal for new card
+const openNewCardModal = (columnId: number) => {
+    isNewCard.value = true;
+    selectedCard.value = null;
+    cardForm.reset();
+    cardForm.column_id = columnId;
+    isCardModalOpen.value = true;
 };
 
+// Open modal for editing card
+const openCardDetails = (card: Card) => {
+    isNewCard.value = false;
+    selectedCard.value = card;
+    cardForm.reset();
+    cardForm.title = card.title;
+    cardForm.description = card.description;
+    cardForm.column_id = card.column_id;
+    cardForm.order = card.order;
+    isCardModalOpen.value = true;
+};
+
+// Handle card creation/update
+const handleCardSubmit = () => {
+    if (!cardForm.column_id) return;
+
+    if (isNewCard.value) {
+        cardForm.post(route('cards.store', { kanban: props.kanban.id }), {
+            onSuccess: (response: InertiaResponse) => {
+                // Add the new card to the appropriate column
+                const column = columns.value.find(col => col.id === cardForm.column_id);
+                if (column && response.props.card) {
+                    column.cards.push(response.props.card);
+                }
+                isCardModalOpen.value = false;
+                cardForm.reset();
+            }
+        });
+    } else if (selectedCard.value) {
+        cardForm.patch(route('cards.update', { card: selectedCard.value.id }), {
+            onSuccess: (response: InertiaResponse) => {
+                // Update the card in the appropriate column
+                const column = columns.value.find(col => col.id === cardForm.column_id);
+                if (column && response.props.card) {
+                    const cardIndex = column.cards.findIndex(card => card.id === selectedCard.value?.id);
+                    if (cardIndex !== -1) {
+                        column.cards[cardIndex] = response.props.card;
+                    }
+                }
+                isCardModalOpen.value = false;
+            }
+        });
+    }
+};
+
+// Handle card deletion
 const deleteCard = () => {
     if (!selectedCard.value) return;
 
-    router.delete(route('cards.delete', { card: selectedCard?.value?.id }), {
+    router.delete(route('cards.delete', { card: selectedCard.value.id }), {
         onSuccess: () => {
+            // Remove the card from the appropriate column
+            const column = columns.value.find(col => col.id === selectedCard.value?.column_id);
+            if (column) {
+                column.cards = column.cards.filter(card => card.id !== selectedCard.value?.id);
+            }
             isCardModalOpen.value = false;
         }
     });
 };
 
-const handleCardMove = (event: any) => {
-    const { added, removed } = event;
-    if (added) {
-        const card = added.element;
-        const newColumnId = columns.value.find(col => col.cards.includes(card))?.id;
+// Handle card drag and drop
+const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) => {
+    const { added } = event;
+    if (!added) return;
 
-        if (newColumnId) {
-            router.patch(route('cards.update', { card: card.id }), {
-                column_id: newColumnId,
-                title: card.title,
-                description: card.description,
-                order: added.newIndex
-            });
-        }
+    const card = added.element;
+    const newColumnId = columns.value.find(col => col.cards.includes(card))?.id;
+
+    if (newColumnId) {
+        router.patch(route('cards.update', { card: card.id }), {
+            column_id: newColumnId,
+            title: card.title,
+            description: card.description,
+            order: added.newIndex
+        });
     }
 };
 </script>
@@ -123,7 +157,7 @@ const handleCardMove = (event: any) => {
 <template>
     <div class="flex justify-between items-center px-4">
         <h1 class="text-lg font-bold text-black dark:text-white">
-            {{ kanban?.name }}
+            {{ kanban.name }}
         </h1>
     </div>
     <div class="flex h-full gap-4 overflow-x-auto px-4">
@@ -138,66 +172,30 @@ const handleCardMove = (event: any) => {
             </draggable>
         </KanbanColumn>
 
-        <!-- New Card Modal -->
-        <Sheet v-model:open="isNewCardModalOpen">
-            <SheetContent class="sm:max-w-[425px]">
-                <SheetHeader>
-                    <SheetTitle>Add New Card</SheetTitle>
-                    <SheetDescription>
-                        Create a new card for your kanban board. Fill in the details below.
-                    </SheetDescription>
-                </SheetHeader>
-                <form @submit.prevent="createCard" class="px-4">
-                    <div class="grid gap-4 py-4">
-                        <div class="grid gap-2">
-                            <label for="title" class="text-sm font-medium">Title</label>
-                            <input id="title" v-model="formCard.title" class="rounded-md border px-3 py-2"
-                                placeholder="Enter card title" />
-                        </div>
-                        <div class="grid gap-2">
-                            <label for="description" class="text-sm font-medium">Description</label>
-                            <textarea id="description" v-model="formCard.description"
-                                class="rounded-md border px-3 py-2" placeholder="Enter card description" rows="4" />
-                        </div>
-                    </div>
-                    <div class="mt-4 flex justify-end gap-3">
-                        <button @click="isNewCardModalOpen = false" type="button"
-                            class="rounded-md px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90">
-                            Create
-                        </button>
-                    </div>
-                </form>
-            </SheetContent>
-        </Sheet>
-
-        <!-- Card Details Modal -->
+        <!-- Card Modal (New/Edit) -->
         <Sheet v-model:open="isCardModalOpen">
             <SheetContent class="sm:max-w-[425px]">
                 <SheetHeader>
-                    <SheetTitle>{{ selectedCard?.title }}</SheetTitle>
+                    <SheetTitle>{{ isNewCard ? 'Add New Card' : 'Edit Card' }}</SheetTitle>
                     <SheetDescription>
-                        Edit the details of the card.
+                        {{ isNewCard ? 'Create a new card for your kanban board.' : 'Edit the details of the card.' }}
                     </SheetDescription>
                 </SheetHeader>
-                <form @submit.prevent="updateCard" class="px-4">
+                <form @submit.prevent="handleCardSubmit" class="px-4">
                     <div class="grid gap-4 py-4">
                         <div class="grid gap-2">
                             <label for="title" class="text-sm font-medium">Title</label>
-                            <input id="title" v-model="formUpdateCard.title" class="rounded-md border px-3 py-2"
+                            <input id="title" v-model="cardForm.title" class="rounded-md border px-3 py-2"
                                 placeholder="Enter card title" />
                         </div>
                         <div class="grid gap-2">
                             <label for="description" class="text-sm font-medium">Description</label>
-                            <textarea id="description" v-model="formUpdateCard.description"
+                            <textarea id="description" v-model="cardForm.description"
                                 class="rounded-md border px-3 py-2" placeholder="Enter card description" rows="4" />
                         </div>
                     </div>
                     <div class="mt-4 flex justify-between gap-3">
-                        <AlertDialog>
+                        <AlertDialog v-if="!isNewCard">
                             <AlertDialogTrigger>
                                 <Button variant="destructive" type="button">
                                     Delete
@@ -217,7 +215,6 @@ const handleCardMove = (event: any) => {
                                     <Button variant="destructive" type="button" @click="deleteCard">
                                         Delete
                                     </Button>
-
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -227,7 +224,7 @@ const handleCardMove = (event: any) => {
                                 Cancel
                             </Button>
                             <Button type="submit" variant="default">
-                                Update
+                                {{ isNewCard ? 'Create' : 'Update' }}
                             </Button>
                         </div>
                     </div>

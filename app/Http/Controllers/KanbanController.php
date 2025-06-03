@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Kanban;
 use App\Models\Workspace;
+use App\Models\Tag;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -20,12 +21,15 @@ class KanbanController extends Controller
 
         $this->authorize('view', $workspace);
 
-        $kanbans = Kanban::where('workspace_id', $workspace->id)->with(['columns' => function($query) {
+        $kanbans = Kanban::where('workspace_id', $workspace->id)->with(['columns' => function ($query) {
             $query->orderBy('order');
         }])->get();
 
+        $tags = $workspace->tags()->orderBy('name', 'asc')->get();
+
         return Inertia::render('Kanban/Index', [
             'kanbans' => $kanbans,
+            'tags' => $tags,
         ]);
     }
 
@@ -36,7 +40,7 @@ class KanbanController extends Controller
 
         $this->authorize('view', $workspace);
 
-        $kanban->load(['columns' => function($query) {
+        $kanban->load(['columns' => function ($query) {
             $query->orderBy('order');
         }, 'columns.cards']);
 
@@ -52,12 +56,14 @@ class KanbanController extends Controller
         $workspace = Workspace::where('id', $user->workspace_id)->first();
 
         $this->authorize('update', $workspace);
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'columns' => 'required|array',
             'columns.*.name' => 'required|string|max:255',
             'columns.*.order' => 'required|integer',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:50',
         ]);
 
         $kanban = Kanban::create([
@@ -72,7 +78,7 @@ class KanbanController extends Controller
                 'order' => $column['order'],
             ]);
         }
-        
+
         return redirect()->route('kanban.index')->with('success', 'Kanban created successfully');
     }
 
@@ -122,7 +128,7 @@ class KanbanController extends Controller
                 ]);
             }
         }
-        
+
         return redirect()->route('kanban.index')->with('success', 'Kanban updated successfully');
     }
 
@@ -136,26 +142,5 @@ class KanbanController extends Controller
         $kanban->delete();
 
         return redirect()->route('kanban.index')->with('success', 'Kanban deleted successfully');
-    }
-
-    public function moveCard(Request $request)
-    {
-        $user = Auth::user();
-        $workspace = Workspace::where('id', $user->workspace_id)->first();
-
-        $this->authorize('update', $workspace);
-
-        $request->validate([
-            'card_id' => 'required|exists:cards,id',
-            'column_id' => 'required|exists:columns,id',
-            'order' => 'required|integer',
-        ]); 
-        
-        $card = Card::findOrFail($request->card_id);
-        $card->column_id = $request->column_id;
-        $card->order = $request->order;
-        $card->save();
-
-        return redirect()->route('kanban.show', $card->kanban_id)->with('success', 'Card moved successfully'); 
     }
 }
