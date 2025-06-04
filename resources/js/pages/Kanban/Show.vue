@@ -48,6 +48,7 @@ interface Card {
   order: number;
   column_id: number;
   tasks: Task[];
+  column: Column;
 }
 
 interface Task {
@@ -78,30 +79,19 @@ const card = useForm({
   order: 0,
 });
 
-const createCard = (columnId: number) => {
-  card.column_id = columnId;
+const createCard = (column: Column) => {
+  card.column_id = column.id;
 
   card.post(route('cards.store', { kanban: props.kanban.id }), {
-    onSuccess: () => {
-      // Find the column and push a new card
-      const column = columns.value.find(col => col.id === columnId);
-      if (column) {
-        // Create a new card object (you may want to get the real ID from the server)
-        const newCard = {
-          id: Date.now(), // Temporary ID, ideally get from server
-          title: card.title,
-          description: card.description,
-          order: column.cards.length,
-          column_id: columnId,
-          tasks: [] // Add empty tasks array
-        };
-        column.cards.push(newCard);
-      }
+    onSuccess: (response) => {
+      updateColumnCards(column);
       card.reset();
+    },
+    onError: (errors) => {
+      console.log('Error creating card:', errors);
     }
   });
 }
-
 
 const selectedCard = ref<Card | null>(null);
 
@@ -123,30 +113,20 @@ const selectCard = (card: Card) => {
   updateCardForm.column_id = card.column_id;
   updateCardForm.order = card.order;
 
-  updateCardTasks(card.id);
+  updateCardTasks(card);
 };
 
-const updateCard = (cardId: number) => {
+const updateCard = (card: Card) => {
   if (selectedCard.value == null) return;
 
-  updateCardForm.put(route('cards.update', cardId), {
+  updateCardForm.put(route('cards.update', card.id), {
     preserveScroll: true,
-    onSuccess: () => {
-      // Update the card in the columns array
-      columns.value = columns.value.map(column => ({
-        ...column,
-        cards: column.cards.map(card => {
-          if (card.id === cardId) {
-            return {
-              ...card,
-              title: updateCardForm.title,
-              description: updateCardForm.description,
-            };
-          }
-          return card;
-        })
-      }));
-
+    onSuccess: (response) => {
+      // Update the column's cards after successful update
+      const column = columns.value.find(col => col.id === card.column_id);
+      if (column) {
+        updateColumnCards(column);
+      }
       updateCardForm.reset();
       selectedCard.value = null;
       editModalOpen.value = false;
@@ -169,7 +149,7 @@ const attachTask = () => {
   taskForm.post(route('cards.attach.task', { card: selectedCard.value?.id }), {
     onSuccess: () => {
 
-      updateCardTasks(selectedCard.value!.id);
+      updateCardTasks(selectedCard.value!);
 
       taskForm.reset();
     },
@@ -184,7 +164,7 @@ const updateTask = (task: Task, updates: Partial<Task>) => {
 
   router.put(route('tasks.update', task.id), { ...updates }, {
     onSuccess: () => {
-      updateCardTasks(selectedCard.value!.id);
+      updateCardTasks(selectedCard.value!);
     }
   });
 };
@@ -194,7 +174,7 @@ const deleteTask = (taskId: number) => {
 
   router.delete(route('tasks.delete', taskId), {
     onSuccess: () => {
-      updateCardTasks(selectedCard.value!.id);
+      updateCardTasks(selectedCard.value!);
     }
   });
 }
@@ -202,18 +182,42 @@ const deleteTask = (taskId: number) => {
 const deleteCard = (cardId: number) => {
   if (selectedCard.value == null) return;
 
-  updateCardForm.delete(route('cards.delete', cardId), {
+  router.delete(route('cards.delete', { kanban: props.kanban.id, card: cardId }), {
     onSuccess: () => {
-      console.log('Card deleted');
+      // Update the column's cards after successful deletion
+      if (selectedCard.value) {
+        const column = columns.value.find(col => col.id === selectedCard.value?.column_id);
+        if (column) {
+          updateColumnCards(column);
+        }
+      }
+      selectedCard.value = null;
+      editModalOpen.value = false;
+    },
+    onError: (errors) => {
+      console.error('Error deleting card:', errors);
     }
   });
 };
 
-const updateCardTasks = async (cardId: number) => {
-  if (selectedCard.value == null) return;
-  const response = await axios.get(route('cards.get.tasks', { card: cardId }));
-  selectedCard.value.tasks = response.data.tasks;
+const updateCardTasks = async (card: Card) => {
+  const response = await axios.get(route('cards.get.tasks', { card: card.id }));
+  card.tasks = response.data.tasks;
 }
+
+const updateColumnCards = async (column: Column) => {
+  try {
+    const response = await axios.get(route('columns.get.cards', { column: column.id }));
+    // Find the column in the reactive columns array and update its cards
+    const columnIndex = columns.value.findIndex(col => col.id === column.id);
+    if (columnIndex !== -1) {
+      // Create a new array to trigger reactivity
+      columns.value[columnIndex].cards = [...response.data];
+    }
+  } catch (error) {
+    console.error('Error updating column cards:', error);
+  }
+};
 
 const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) => {
   const { added } = event;
@@ -228,6 +232,14 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
       title: card.title,
       description: card.description,
       order: added.newIndex
+    }, {
+      onSuccess: () => {
+        // Update both the source and destination columns
+        const sourceColumn = columns.value.find(col => col.id === card.column_id);
+        const destColumn = columns.value.find(col => col.id === newColumnId);
+        if (sourceColumn) updateColumnCards(sourceColumn);
+        if (destColumn) updateColumnCards(destColumn);
+      }
     });
   }
 };
@@ -265,7 +277,7 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
                   </SheetDescription>
                 </SheetHeader>
 
-                <form @submit.prevent="createCard(column.id)" class="px-4">
+                <form @submit.prevent="createCard(column)" class="px-4">
                   <div class="grid gap-4 py-4">
                     <div class="grid gap-2">
                       <Label for="title" class="text-sm font-medium">Title</Label>
@@ -311,7 +323,7 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
           </SheetDescription>
         </SheetHeader>
 
-        <form @submit.prevent="selectedCard && updateCard(selectedCard.id)" class="px-4">
+        <form @submit.prevent="selectedCard && updateCard(selectedCard)" class="px-4">
           <div class="grid gap-4 py-4">
             <div class="grid gap-2">
               <Label for="title" class="text-sm font-medium">Title</Label>

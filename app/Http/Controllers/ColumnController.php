@@ -8,6 +8,7 @@ use App\Models\Workspace;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 
 class ColumnController extends Controller
 {
@@ -64,25 +65,10 @@ class ColumnController extends Controller
         return redirect()->back()->with('success', 'Column deleted successfully');
     }
 
-    public function reorder(Request $request, Kanban $kanban)
+    public function getCards(Column $column): JsonResponse
     {
-        $request->validate([
-            'columns' => 'required|array',
-            'columns.*.id' => 'required|exists:columns,id',
-            'columns.*.order' => 'required|integer',
-        ]);
+        $cards = $column->cards()->get();
 
-        $user = Auth::user();
-        $workspace = Workspace::findOrFail($user->workspace_id);
-
-        $this->authorize('update', $workspace);
-
-        foreach ($request->columns as $columnData) {
-            Column::where('id', $columnData['id'])
-                ->where('kanban_id', $kanban->id)
-                ->update(['order' => $columnData['order']]);
-        }
-
-        return response()->json(['success' => true]);
+        return response()->json($cards);
     }
 }
