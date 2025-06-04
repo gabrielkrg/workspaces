@@ -6,7 +6,7 @@ import KanbanCard from '@/components/kanban/KanbanCard.vue';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetFooter, SheetClose } from '@/components/ui/sheet';
 import draggable from 'vuedraggable';
 import { router, useForm } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Plus, Trash2, Check } from 'lucide-vue-next';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import axios from 'axios';
 
 interface Kanban {
   id: number;
@@ -92,6 +93,7 @@ const createCard = (columnId: number) => {
           description: card.description,
           order: column.cards.length,
           column_id: columnId,
+          tasks: [] // Add empty tasks array
         };
         column.cards.push(newCard);
       }
@@ -120,7 +122,8 @@ const selectCard = (card: Card) => {
   updateCardForm.description = card.description;
   updateCardForm.column_id = card.column_id;
   updateCardForm.order = card.order;
-  updateCardForm.tasks = card.tasks;
+
+  updateCardTasks(card.id);
 };
 
 const updateCard = (cardId: number) => {
@@ -161,8 +164,13 @@ const taskForm = useForm({
 });
 
 const attachTask = () => {
+  if (selectedCard.value == null) return;
+
   taskForm.post(route('cards.attach.task', { card: selectedCard.value?.id }), {
     onSuccess: () => {
+
+      updateCardTasks(selectedCard.value!.id);
+
       taskForm.reset();
     },
     onError: (errors) => {
@@ -171,16 +179,22 @@ const attachTask = () => {
   });
 }
 
-const updateTask = (task: Task, updates: Task) => {
-  router.put(route('tasks.update', task.id), {
-    ...updates
+const updateTask = (task: Task, updates: Partial<Task>) => {
+  if (selectedCard.value == null) return;
+
+  router.put(route('tasks.update', task.id), { ...updates }, {
+    onSuccess: () => {
+      updateCardTasks(selectedCard.value!.id);
+    }
   });
 };
 
 const deleteTask = (taskId: number) => {
+  if (selectedCard.value == null) return;
+
   router.delete(route('tasks.delete', taskId), {
     onSuccess: () => {
-      console.log('Task deleted successfully');
+      updateCardTasks(selectedCard.value!.id);
     }
   });
 }
@@ -190,19 +204,17 @@ const deleteCard = (cardId: number) => {
 
   updateCardForm.delete(route('cards.delete', cardId), {
     onSuccess: () => {
-      // Find and remove the card from the columns array
-      columns.value = columns.value.map(column => ({
-        ...column,
-        cards: column.cards.filter(card => card.id !== cardId)
-      }));
-      selectedCard.value = null;
-      editModalOpen.value = false;
+      console.log('Card deleted');
     }
   });
 };
 
+const updateCardTasks = async (cardId: number) => {
+  if (selectedCard.value == null) return;
+  const response = await axios.get(route('cards.get.tasks', { card: cardId }));
+  selectedCard.value.tasks = response.data.tasks;
+}
 
-// Handle card drag and drop
 const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) => {
   const { added } = event;
   if (!added) return;
@@ -354,9 +366,11 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
                             <Button variant="secondary">Cancel</Button>
                           </DialogClose>
 
-                          <Button variant="destructive" :disabled="updateCardForm.processing">
-                            <button type="submit">Delete task</button>
-                          </Button>
+                          <DialogClose as-child>
+                            <Button variant="destructive" :disabled="updateCardForm.processing" type="submit">
+                              Delete task
+                            </Button>
+                          </DialogClose>
                         </DialogFooter>
                       </form>
                     </DialogContent>
@@ -392,10 +406,15 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
                         <Textarea id="description" v-model="taskForm.description" class="col-span-3" />
                       </div>
                     </div>
-                    <DialogFooter>
-                      <Button type="submit">
-                        Save changes
-                      </Button>
+                    <DialogFooter class="gap-2">
+                      <DialogClose as-child>
+                        <Button variant="secondary">Cancel</Button>
+                      </DialogClose>
+                      <DialogClose as-child>
+                        <Button type="submit">
+                          Save changes
+                        </Button>
+                      </DialogClose>
                     </DialogFooter>
                   </form>
                 </DialogContent>

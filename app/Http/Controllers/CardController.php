@@ -9,6 +9,7 @@ use App\Models\Workspace;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 
 class CardController extends Controller
 {
@@ -99,5 +100,14 @@ class CardController extends Controller
         $card->tasks()->attach($task->id);
 
         return redirect()->back()->with('success', 'Task added successfully');
+    }
+
+    public function getTasks(Card $card): JsonResponse
+    {
+        $tasks = $card->tasks()->get();
+
+        return response()->json([
+            'tasks' => $tasks,
+        ]);
     }
 }

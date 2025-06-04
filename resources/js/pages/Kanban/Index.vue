@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,20 +11,7 @@ import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHe
 import { Label } from '@/components/ui/label';
 import { Pencil, Trash2, GripVertical } from 'lucide-vue-next';
 import draggable from 'vuedraggable';
-import { useFilter } from 'reka-ui';
 import { cn } from '@/lib/utils';
-import { TagsInput, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText } from '@/components/ui/tags-input';
-
-import {
-    Combobox,
-    ComboboxAnchor,
-    ComboboxInput,
-    ComboboxList,
-    ComboboxEmpty,
-    ComboboxGroup,
-    ComboboxItem,
-} from '@/components/ui/combobox';
-
 
 interface Column {
     id?: number;
@@ -64,7 +51,6 @@ const columns = ref<Column[]>([]);
 
 const form = useForm({
     name: '',
-    tags: [] as string[],
     columns: [] as unknown as Record<string, any>[],
 });
 
@@ -176,15 +162,6 @@ const updateColumnOrder = () => {
     });
 };
 
-const openSearchTerm = ref(false)
-const searchTerm = ref('')
-
-const { contains } = useFilter({ sensitivity: 'base' })
-
-const filteredTags = computed(() => {
-    const options = props.tags.filter(i => !form.tags.includes(i.name))
-    return searchTerm.value ? options.filter(option => contains(option.name, searchTerm.value)) : options
-})
 </script>
 
 <template>
@@ -211,61 +188,6 @@ const filteredTags = computed(() => {
                                     <Input id="name" v-model="form.name" class="col-span-4" />
                                 </div>
 
-                                <!-- <div class="flex flex-col gap-4">
-                                    <Label for="title" class="text-right"> Tags </Label>
-                                    <div>
-                                        <Combobox v-model="form.tags" v-model:open="openSearchTerm"
-                                            :ignore-filter="true">
-                                            <ComboboxAnchor as-child :class="cn('dark:bg-input/30')">
-                                                <TagsInput :model-value="form.tags"
-                                                    @update:model-value="(val) => (form.tags = val)"
-                                                    :class="cn('p-0 gap-0 w-full bg-input/30')">
-
-                                                    <div
-                                                        :class="['flex gap-2 flex-wrap items-center', form.tags.length > 0 ? 'p-2' : '']">
-                                                        <TagsInputItem v-for="tag in form.tags" :key="tag" :value="tag">
-                                                            <TagsInputItemText />
-                                                            <TagsInputItemDelete />
-                                                        </TagsInputItem>
-                                                    </div>
-
-                                                    <ComboboxInput v-model="searchTerm" as-child>
-                                                        <TagsInputInput placeholder="Tags..."
-                                                            :class="cn('min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto')"
-                                                            @keydown.enter.prevent />
-                                                    </ComboboxInput>
-                                                </TagsInput>
-
-                                                <ComboboxList class="w-[--reka-popper-anchor-width]">
-                                                    <ComboboxEmpty />
-                                                    <ComboboxGroup>
-                                                        <ComboboxItem v-for="tag in filteredTags" :key="tag.name"
-                                                            :value="tag.name" @select.prevent="(ev) => {
-                                                                if (typeof ev.detail.value === 'string') {
-                                                                    searchTerm = ''
-                                                                    form.tags.push(ev.detail.value)
-                                                                }
-
-                                                                if (filteredTags.length === 0) {
-                                                                    openSearchTerm = false
-                                                                }
-                                                            }">
-                                                            {{ tag.name }}
-                                                        </ComboboxItem>
-                                                    </ComboboxGroup>
-                                                </ComboboxList>
-                                            </ComboboxAnchor>
-                                        </Combobox>
-
-                                        <span class="text-xs text-gray-500"> Use comma <span class="font-bold">( ,
-                                                )</span> to add </span>
-                                    </div>
-
-                                    <div v-if="form.errors.tags" class="text-sm text-red-500">
-                                        {{ form.errors.tags }}
-                                    </div>
-                                </div> -->
-
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="edit-columns" class="text-right">Columns</Label>
                                     <div class="col-span-4">
@@ -279,7 +201,7 @@ const filteredTags = computed(() => {
                                                     <div class="flex-1">
                                                         <Input v-model="column.name" class="bg-gray-100" />
                                                     </div>
-                                                    <Button variant="ghost" type="button" size="icon"
+                                                    <Button variant="destructive" type="button" size="icon"
                                                         :class="cn('cursor-pointer')" @click="removeColumn(index)">
                                                         <Trash2 class="h-4 w-4" />
                                                     </Button>
@@ -352,8 +274,8 @@ const filteredTags = computed(() => {
                                                                         <Input v-model="column.name"
                                                                             class="bg-gray-100" />
                                                                     </div>
-                                                                    <Button variant="ghost" type="button" size="icon"
-                                                                        @click="updateRemoveColumn(index)">
+                                                                    <Button variant="destructive" type="button"
+                                                                        size="icon" @click="updateRemoveColumn(index)">
                                                                         <Trash2 class="h-4 w-4" />
                                                                     </Button>
                                                                 </div>

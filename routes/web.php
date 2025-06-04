@@ -74,6 +74,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('cards/{card}', [CardController::class, 'update'])->name('cards.update');
     Route::delete('cards/{card}', [CardController::class, 'delete'])->name('cards.delete');
     Route::post('cards/{card}/tasks', [CardController::class, 'attachTask'])->name('cards.attach.task');
+    Route::get('cards/{card}/tasks', [CardController::class, 'getTasks'])->name('cards.get.tasks');
 
     // Events
     Route::get('events', [EventController::class, 'index'])->name('events.index');
