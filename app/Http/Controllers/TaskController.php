@@ -133,7 +133,7 @@ class TaskController extends Controller
             'repeat' => 'sometimes|string|in:daily,weekly,monthly,none',
             'description' => 'nullable|string',
             'done' => 'sometimes|boolean',
-            'tags' => 'nullable|array',
+            'tags' => 'sometimes|array',
             'tags.*' => 'string|max:50',
             'delete_after' => 'sometimes|boolean',
             'highlight' => 'sometimes|boolean',
@@ -141,7 +141,7 @@ class TaskController extends Controller
 
         $task->update($validated);
 
-        if (!empty($validated['tags'])) {
+        if (array_key_exists('tags', $validated)) {
             $tagIds = collect($validated['tags'])->map(function ($tagName) use ($user) {
                 return Tag::firstOrCreate([
                     'name' => $tagName,
@@ -151,8 +151,6 @@ class TaskController extends Controller
             });
 
             $task->tags()->sync($tagIds);
-        } else {
-            $task->tags()->detach();
         }
 
         if ($task->delete_after && $task->done) {
