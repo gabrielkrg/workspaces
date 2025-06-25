@@ -8,6 +8,7 @@ use App\Models\Client;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\Workspace;
+
 class ClientController extends Controller
 {
     use AuthorizesRequests;
@@ -42,12 +43,12 @@ class ClientController extends Controller
             'address' => 'nullable|string|max:255',
         ]);
 
-        $client = Client::create([
+        Client::create([
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
             'address' => $request->address,
-            'workspace_id' => $workspace->id,   
+            'workspace_id' => $workspace->id,
         ]);
 
         return redirect()->route('clients.index')->with('success', 'Client created successfully');
@@ -55,12 +56,10 @@ class ClientController extends Controller
 
     public function update(Request $request, Client $client)
     {
-        $user = Auth::user();
-
-        $workspace = Workspace::findOrFail($user->workspace_id);
+        $workspace = Workspace::findOrFail($client->workspace_id);
 
         $this->authorize('update', $workspace);
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
@@ -80,9 +79,7 @@ class ClientController extends Controller
 
     public function delete(Client $client)
     {
-        $user = Auth::user();
-
-        $workspace = Workspace::findOrFail($user->workspace_id);
+        $workspace = Workspace::findOrFail($client->workspace_id);
 
         $this->authorize('delete', $workspace);
 

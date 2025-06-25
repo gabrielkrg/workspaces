@@ -16,7 +16,9 @@ class TagController extends Controller
     public function index()
     {
         $user = Auth::user();
+
         $workspace = Workspace::findOrFail($user->workspace_id);
+
         $tags = $workspace->tags()->orderBy('created_at', 'desc')->get();
 
         return Inertia::render('Tag/Index', ['tags' => $tags]);
@@ -24,6 +26,12 @@ class TagController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
+
+        $this->authorize('update', $workspace);
+
         $validated = $request->validate([
             'name' => 'required|string|max:50',
             'color' => 'nullable|string|max:7',
@@ -54,9 +62,7 @@ class TagController extends Controller
             'color' => 'nullable|string|max:7',
         ]);
 
-        $user = Auth::user();
-
-        $workspace = Workspace::findOrFail($user->workspace_id);
+        $workspace = Workspace::findOrFail($tag->workspace_id);
 
         $this->authorize('update', $workspace);
 
@@ -67,9 +73,7 @@ class TagController extends Controller
 
     public function delete(Tag $tag)
     {
-        $user = Auth::user();
-
-        $workspace = Workspace::findOrFail($user->workspace_id);
+        $workspace = Workspace::findOrFail($tag->workspace_id);
 
         $this->authorize('update', $workspace);
 

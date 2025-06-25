@@ -17,7 +17,8 @@ class KanbanController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $workspace = Workspace::where('id', $user->workspace_id)->first();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
 
         $this->authorize('view', $workspace);
 
@@ -36,7 +37,8 @@ class KanbanController extends Controller
     public function show(Kanban $kanban)
     {
         $user = Auth::user();
-        $workspace = Workspace::where('id', $user->workspace_id)->first();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
 
         $this->authorize('view', $workspace);
 
@@ -53,7 +55,8 @@ class KanbanController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        $workspace = Workspace::where('id', $user->workspace_id)->first();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
 
         $this->authorize('update', $workspace);
 
@@ -84,8 +87,7 @@ class KanbanController extends Controller
 
     public function update(Request $request, Kanban $kanban)
     {
-        $user = Auth::user();
-        $workspace = Workspace::where('id', $user->workspace_id)->first();
+        $workspace = Workspace::findOrFail($kanban->workspace_id);
 
         $this->authorize('update', $workspace);
 
@@ -134,8 +136,7 @@ class KanbanController extends Controller
 
     public function delete(Kanban $kanban)
     {
-        $user = Auth::user();
-        $workspace = Workspace::where('id', $user->workspace_id)->first();
+        $workspace = Workspace::findOrFail($kanban->workspace_id);
 
         $this->authorize('delete', $workspace);
 

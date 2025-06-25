@@ -12,6 +12,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class NoteController extends Controller
 {
     use AuthorizesRequests;
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -35,8 +36,7 @@ class NoteController extends Controller
 
     public function show(Note $note)
     {
-        $user = Auth::user();
-        $workspace = Workspace::findOrFail($user->workspace_id);
+        $workspace = Workspace::findOrFail($note->workspace_id);
 
         $this->authorize('view', $workspace);
 
@@ -76,11 +76,10 @@ class NoteController extends Controller
             'content' => 'nullable|string',
         ]);
 
-        $user = Auth::user();
+        $workspace = Workspace::findOrFail($note->workspace_id);
 
-        $workspace = Workspace::findOrFail($user->workspace_id);
-
-        $this->authorize('update', $workspace);
+        $test = $this->authorize('update', $workspace);
+        dd($test);
 
         $note->update($data);
 
@@ -89,16 +88,12 @@ class NoteController extends Controller
 
     public function delete(Note $note)
     {
-        $user = Auth::user();
-        $workspace = Workspace::findOrFail($user->workspace_id);
+        $workspace = Workspace::findOrFail($note->workspace_id);
 
         $this->authorize('delete', $workspace);
 
         $note->delete();
 
-        $notes = $user->workspace->notes;
-        $currentNote = $notes->first();
-
-        return redirect()->route('notes.index', ['note' => $currentNote])->with('success', 'Note deleted successfully');
+        return redirect()->route('notes.index')->with('success', 'Note deleted successfully');
     }
 }

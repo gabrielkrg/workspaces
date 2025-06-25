@@ -22,8 +22,8 @@ class TicketController extends Controller
 
         $this->authorize('view', $workspace);
 
-        $tickets = Ticket::where('workspace_id', $user->workspace_id)->get();
-        $clients = Client::where('workspace_id', $user->workspace_id)->get();
+        $tickets = Ticket::where('workspace_id', $workspace->id)->get();
+        $clients = Client::where('workspace_id', $workspace->id)->get();
 
         return Inertia::render('Ticket/Index', [
             'tickets' => $tickets,
@@ -50,16 +50,14 @@ class TicketController extends Controller
             'workspace_id' => $workspace->id,
         ]);
 
-        $ticket = Ticket::create($request->all());
+        Ticket::create($request->all());
 
         return redirect()->route('tickets.index')->with('success', 'Ticket created successfully');
     }
 
     public function update(Request $request, Ticket $ticket)
     {
-        $user = Auth::user();
-
-        $workspace = Workspace::findOrFail($user->workspace_id);
+        $workspace = Workspace::findOrFail($ticket->workspace_id);
 
         $this->authorize('update', $workspace);
 
@@ -75,9 +73,7 @@ class TicketController extends Controller
 
     public function destroy(Ticket $ticket)
     {
-        $user = Auth::user();
-
-        $workspace = Workspace::findOrFail($user->workspace_id);
+        $workspace = Workspace::findOrFail($ticket->workspace_id);
 
         $this->authorize('update', $workspace);
 

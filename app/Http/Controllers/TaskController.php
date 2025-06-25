@@ -124,7 +124,7 @@ class TaskController extends Controller
     {
         $user = Auth::user();
 
-        $workspace = Workspace::findOrFail($user->workspace_id);
+        $workspace = Workspace::findOrFail($task->workspace_id);
 
         $this->authorize('update', $workspace);
 
@@ -163,9 +163,7 @@ class TaskController extends Controller
 
     public function delete(Task $task)
     {
-        $user = Auth::user();
-
-        $workspace = Workspace::findOrFail($user->workspace_id);
+        $workspace = Workspace::findOrFail($task->workspace_id);
 
         $this->authorize('update', $workspace);
 
