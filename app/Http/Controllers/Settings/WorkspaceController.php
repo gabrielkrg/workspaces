@@ -17,7 +17,7 @@ class WorkspaceController extends Controller
 
     public function edit(Request $request)
     {
-        $user = Auth::user()->load(['workspace.users:id,name,email', 'workspaces']);
+        $user = Auth::user()->with(['workspace.users:id,name,email', 'workspaces'])->first();
 
         return Inertia::render('settings/Workspace', ['user' => $user]);
     }
@@ -65,12 +65,12 @@ class WorkspaceController extends Controller
             $currentUserIds = $workspace->users->pluck('id')->toArray();
 
             $newUserIds = collect($validated['users'])->pluck('id')->toArray();
-            
+
             $usersToRemove = array_diff($currentUserIds, $newUserIds);
             foreach ($usersToRemove as $userId) {
                 $workspace->users()->detach($userId);
             }
-            
+
             foreach ($validated['users'] as $user) {
                 $workspace->users()->updateExistingPivot($user['id'], [
                     'role' => $user['pivot']['role'],
