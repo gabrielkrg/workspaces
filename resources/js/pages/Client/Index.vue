@@ -19,11 +19,6 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { EllipsisVertical } from 'lucide-vue-next';
 import { onMounted, onUnmounted, ref } from 'vue';
-import { ChromePicker } from 'vue-color';
-
-const color = defineModel({
-    default: '#68CCCA',
-});
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -119,7 +114,7 @@ onUnmounted(() => {
 
 <template>
 
-    <Head title="Daily Tasks" />
+    <Head title="Clients" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">

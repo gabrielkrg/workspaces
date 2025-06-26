@@ -109,6 +109,11 @@ const trackables = ref<Trackable[]>([]);
 const selectedTimeTracking = ref<TimeTracking | null>(null);
 
 const selectTimeTracking = (timeTracking: TimeTracking) => {
+    if (!timeTracking.trackable) {
+        // Optionally show an alert or handle the case where trackable is null
+        return;
+    }
+
     selectedTimeTracking.value = timeTracking;
     trackableType.value = timeTracking.trackable_type;
 
@@ -117,7 +122,6 @@ const selectTimeTracking = (timeTracking: TimeTracking) => {
 
     updateForm.trackable_id = timeTracking.trackable_id || null;
     updateForm.trackable_type = timeTracking.trackable_type;
-
 };
 
 const updateTimeTracking = () => {
@@ -252,7 +256,7 @@ watch(trackableType, async () => {
                                     {{types.find(type => type.model === timeTracking.trackable_type)?.label}}
                                 </p>
                                 <p class="text-md font-semibold">
-                                    {{ timeTracking.trackable.title }}
+                                    {{ timeTracking.trackable?.title || 'Deleted Item' }}
                                 </p>
                             </div>
                         </div>
@@ -282,7 +286,8 @@ watch(trackableType, async () => {
                                         <Sheet>
                                             <SheetTrigger as-child>
                                                 <div @click="selectTimeTracking(timeTracking)"
-                                                    class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
+                                                    class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100"
+                                                    :class="{ 'opacity-50 cursor-not-allowed': !timeTracking.trackable }">
                                                     Edit
                                                 </div>
                                             </SheetTrigger>
@@ -327,7 +332,7 @@ watch(trackableType, async () => {
                                                                 </SelectTrigger>
                                                                 <SelectContent position="popper">
                                                                     <SelectItem v-for="trackable in trackables"
-                                                                        :key="trackable.id" :value="trackable.id">
+                                                                        :key="trackable.id" :value="trackable.id">/
                                                                         {{ trackable.title }}
                                                                     </SelectItem>
                                                                 </SelectContent>
