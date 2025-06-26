@@ -27,8 +27,8 @@ const color = defineModel({
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Daily Tasks',
-        href: '/tasks',
+        title: 'Tags',
+        href: '/tags',
     },
 ];
 
@@ -112,7 +112,7 @@ onUnmounted(() => {
 
 <template>
 
-    <Head title="Daily Tasks" />
+    <Head title="Tags" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">

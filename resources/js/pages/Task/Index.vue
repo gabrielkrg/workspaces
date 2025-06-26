@@ -37,7 +37,7 @@ import { cn } from '@/lib/utils';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Daily Tasks',
+        title: 'Tasks',
         href: '/tasks',
     },
 ];
