@@ -78,8 +78,7 @@ class NoteController extends Controller
 
         $workspace = Workspace::findOrFail($note->workspace_id);
 
-        $test = $this->authorize('update', $workspace);
-        dd($test);
+        $this->authorize('update', $workspace);
 
         $note->update($data);
 
