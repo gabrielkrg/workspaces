@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title')->required();
             $table->text('content')->nullable();
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('workspace_id')->constrained('workspaces');
+            $table->foreignId('workspace_id')->constrained('workspaces')->onDelete('cascade');
             $table->timestamps();
         });
     }

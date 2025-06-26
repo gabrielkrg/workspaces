@@ -17,9 +17,13 @@ class WorkspaceController extends Controller
 
     public function edit(Request $request)
     {
-        $user = Auth::user()->with(['workspace.users:id,name,email', 'workspaces'])->first();
+        $user = Auth::user();
 
-        return Inertia::render('settings/Workspace', ['user' => $user]);
+        return Inertia::render('settings/Workspace', [
+            'user' => $user,
+            'workspaces' => $user->workspaces,
+            'workspace' => $user->workspace ? $user->workspace->load('users') : null
+        ]);
     }
 
     public function store(Request $request)

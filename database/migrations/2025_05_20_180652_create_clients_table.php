@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('city')->nullable();
             $table->string('state')->nullable();
             $table->string('zip')->nullable();
-            $table->foreignId('workspace_id')->constrained('workspaces');
+            $table->foreignId('workspace_id')->constrained('workspaces')->onDelete('cascade');
             $table->timestamps();
         });
     }

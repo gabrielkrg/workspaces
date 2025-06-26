@@ -24,13 +24,14 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-
 import axios from 'axios';
 import { Trash2Icon } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     user: Object,
+    workspace: Object,
+    workspaces: Object,
 });
 
 const { getInitials } = useInitials();
@@ -46,15 +47,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 const isDialogEditOpen = ref(false);
 
 const updateForm = useForm({
-    name: props.user?.workspace?.name,
-    users: props.user?.workspace?.users,
-    time_zone: props.user?.workspace?.time_zone,
+    name: props.workspace?.name,
+    users: props.workspace?.users,
+    time_zone: props.workspace?.time_zone,
 });
 
 const update = () => {
-    updateForm.put(route('workspace.update', props.user?.workspace), {
+    updateForm.put(route('workspace.update', props.workspace), {
         preserveScroll: true,
-        onSuccess: () => {},
+        onSuccess: () => { },
         onError: (errors) => {
             console.log(errors);
         },
@@ -63,12 +64,12 @@ const update = () => {
     isDialogEditOpen.value = false;
 };
 
-const removeUser = (userId) => {
-    updateForm.users = updateForm.users.filter((user) => user.id !== userId);
+const removeUser = (userId: number) => {
+    updateForm.users = updateForm.users.filter(user => user.id !== userId);
 };
 
 const setForm = useForm({
-    workspace_id: props.user?.workspace?.id,
+    workspace_id: props.workspace?.id,
 });
 
 const set = () => {
@@ -95,11 +96,11 @@ const create = () => {
 const deleteWorkspace = (workspaceId) => {
     router.delete(route('workspace.destroy', workspaceId), {
         preserveScroll: true,
-        onSuccess: () => {},
+        onSuccess: () => { },
     });
 };
 
-const workspaceLink = ref(props.user?.workspace?.id);
+const workspaceLink = ref(props.workspace?.id);
 const link = ref('');
 const copied = ref(false);
 const link_errors = ref('');
@@ -142,7 +143,7 @@ const copyToClipboard = async (link) => {
 };
 
 watch(
-    () => props.user?.workspace,
+    () => props.workspace,
     (n) => {
         workspaceLink.value = n?.id;
 
@@ -152,12 +153,16 @@ watch(
         updateForm.users = n?.users;
         updateForm.time_zone = n?.time_zone;
     },
-    { immediate: true },
+    {
+        immediate: true,
+        deep: true
+    },
 );
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
+
         <Head title="Workspace settings" />
 
         <SettingsLayout>
@@ -170,7 +175,8 @@ watch(
                         <form @submit.prevent="update" class="mb-6 space-y-6">
                             <DialogHeader>
                                 <DialogTitle>Edit Workspace</DialogTitle>
-                                <DialogDescription> Make changes to your workspace here. Click save when you're done. </DialogDescription>
+                                <DialogDescription> Make changes to your workspace here. Click save when you're done.
+                                </DialogDescription>
                             </DialogHeader>
                             <div class="grid gap-4 py-4">
                                 <div class="grid grid-cols-4 items-center gap-4">
@@ -211,7 +217,8 @@ watch(
                         <form @submit.prevent="create" class="mb-6 space-y-6">
                             <DialogHeader>
                                 <DialogTitle>Create Workspace</DialogTitle>
-                                <DialogDescription> Create a workspace here. Click save when you're done. </DialogDescription>
+                                <DialogDescription> Create a workspace here. Click save when you're done.
+                                </DialogDescription>
                             </DialogHeader>
                             <div class="grid gap-4 py-4">
                                 <div class="grid grid-cols-4 items-center gap-4">
@@ -234,12 +241,14 @@ watch(
                     <form @submit.prevent="set" class="mb-6">
                         <div class="flex flex-col space-y-2">
                             <Label for="workspace">Workspace</Label>
+
                             <Select v-model="setForm.workspace_id">
                                 <SelectTrigger id="workspace" class="w-full">
                                     <SelectValue placeholder="Select" />
                                 </SelectTrigger>
                                 <SelectContent position="popper">
-                                    <SelectItem v-for="workspace in props.user?.workspaces" :key="workspace.id" :value="workspace.id">
+                                    <SelectItem v-for="workspace in workspaces" :key="workspace.id"
+                                        :value="workspace.id">
                                         {{ workspace.name }}
                                     </SelectItem>
                                 </SelectContent>
@@ -249,12 +258,8 @@ watch(
                         <div class="flex flex-wrap items-center gap-3">
                             <Button :disabled="setForm.processing" class="cursor-pointer">Save</Button>
 
-                            <Transition
-                                enter-active-class="transition ease-in-out"
-                                enter-from-class="opacity-0"
-                                leave-active-class="transition ease-in-out"
-                                leave-to-class="opacity-0"
-                            >
+                            <Transition enter-active-class="transition ease-in-out" enter-from-class="opacity-0"
+                                leave-active-class="transition ease-in-out" leave-to-class="opacity-0">
                                 <p v-show="setForm.recentlySuccessful" class="text-sm text-neutral-600">Saving.</p>
                             </Transition>
                         </div>
@@ -262,7 +267,8 @@ watch(
                 </div>
 
                 <div class="flex flex-col space-y-6" v-if="user?.workspace">
-                    <HeadingSmall title="Generate link" description="Select the workspace that you want to create a access link" />
+                    <HeadingSmall title="Generate link"
+                        description="Select the workspace that you want to create a access link" />
 
                     <form @submit.prevent="genereteLink" class="mb-6">
                         <div class="flex flex-col space-y-2">
@@ -272,7 +278,8 @@ watch(
                                     <SelectValue placeholder="Select" />
                                 </SelectTrigger>
                                 <SelectContent position="popper">
-                                    <SelectItem v-for="workspace in props.user?.workspaces" :key="workspace.id" :value="workspace.id">
+                                    <SelectItem v-for="workspace in workspaces" :key="workspace.id"
+                                        :value="workspace.id">
                                         {{ workspace.name }}
                                     </SelectItem>
                                 </SelectContent>
@@ -294,19 +301,19 @@ watch(
                 </div>
 
                 <div class="space-y-6" v-if="user?.workspace">
-                    <HeadingSmall title="Manage users" description="Manage the users permissions for the current selected workspace" />
+                    <HeadingSmall title="Manage users"
+                        description="Manage the users permissions for the current selected workspace" />
                     <Card class="mb-6 w-full">
                         <CardHeader>
                             <CardTitle>People with access</CardTitle>
-                            <CardDescription>Below are the people with access to the current workspace.</CardDescription>
+                            <CardDescription>Below are the people with access to the current workspace.
+                            </CardDescription>
                         </CardHeader>
+
                         <form class="space-y-4" @submit.prevent="update">
                             <CardContent class="space-y-6 divide-y">
-                                <div
-                                    class="flex flex-col flex-wrap items-start justify-between pb-6 md:flex-row md:items-center"
-                                    v-for="(user, index) in updateForm.users"
-                                    :key="user.id"
-                                >
+                                <div class="flex flex-col flex-wrap items-start justify-between pb-6 md:flex-row md:items-center"
+                                    v-for="(user, index) in updateForm.users" :key="user.id">
                                     <div class="flex items-center gap-3">
                                         <Avatar>
                                             <AvatarImage v-if="showAvatar" :src="user.avatar" :alt="user.name" />
@@ -319,7 +326,7 @@ watch(
                                     </div>
 
                                     <div class="mt-2 flex gap-3">
-                                        <Select v-model="updateForm.users[index].pivot.role" :key="user.id">
+                                        <Select v-model="user.pivot.role" :key="user.id">
                                             <SelectTrigger id="role">
                                                 <SelectValue placeholder="Select" />
                                             </SelectTrigger>
@@ -332,19 +339,23 @@ watch(
 
                                         <AlertDialog>
                                             <AlertDialogTrigger as-child>
-                                                <Button variant="destructive" class="cursor-pointer"> <Trash2Icon /> </Button>
+                                                <Button variant="destructive" class="cursor-pointer">
+                                                    <Trash2Icon />
+                                                </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
                                                 <AlertDialogHeader>
                                                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        This action cannot be undone. This will remove the user from ther current workspace.
+                                                        This action cannot be undone. This will remove the user from
+                                                        ther current workspace.
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
 
-                                                    <Button variant="destructive" type="button" @click="removeUser(user.id)">
+                                                    <Button variant="destructive" type="button"
+                                                        @click="removeUser(user.id)">
                                                         <button type="submit">Delete</button>
                                                     </Button>
                                                 </AlertDialogFooter>
@@ -361,10 +372,8 @@ watch(
                 </div>
 
                 <div class="flex flex-col space-y-6" v-if="user?.workspace">
-                    <HeadingSmall
-                        :title="`Delete ${user.workspace?.name}`"
-                        description="The workspace will deleted together with all the tasks in it"
-                    />
+                    <HeadingSmall :title="`Delete ${user.workspace?.name}`"
+                        description="The workspace will deleted together with all the tasks in it" />
 
                     <div class="inline">
                         <AlertDialog>
@@ -376,13 +385,15 @@ watch(
                                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                     <AlertDialogDescription>
                                         This action cannot be undone. This will remove the workspace
-                                        <span class="font-bold text-red-900">{{ user.workspace?.name }}</span> and tasks permanently.
+                                        <span class="font-bold text-red-900">{{ user.workspace?.name }}</span> and tasks
+                                        permanently.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
 
-                                    <Button variant="destructive" type="button" @click="deleteWorkspace(user.workspace?.id)">
+                                    <Button variant="destructive" type="button"
+                                        @click="deleteWorkspace(user.workspace?.id)">
                                         <button type="submit">Delete</button>
                                     </Button>
                                 </AlertDialogFooter>
