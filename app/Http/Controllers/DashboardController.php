@@ -10,7 +10,9 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $user = Auth::user()->load('workspace.tasks');
+        $user = Auth::user();
+
+        $workspace = $user->workspace->loadCount('tasks', 'tickets', 'clients');
 
         $workspaces = $user->workspaces()
             ->select('workspaces.id', 'workspaces.name')
@@ -21,6 +23,7 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'user' => $user,
+            'workspace' => $workspace,
             'workspaces' => $workspaces,
         ]);
     }

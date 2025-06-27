@@ -12,6 +12,9 @@ const props = defineProps({
     user: {
         type: Object,
     },
+    workspace: {
+        type: Object,
+    },
     workspaces: {
         type: Array,
     },
@@ -107,9 +110,7 @@ const workspcesLineData = {
                         <CardTitle>Tasks</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p class="text-2xl font-bold">{{props.workspaces?.reduce((acc, workspace) => acc +
-                            workspace.tasks_count,
-                            0)}}</p>
+                        <p class="text-2xl font-bold">{{ props.workspace.tasks_count }}</p>
                     </CardContent>
                 </Card>
                 </Link>
@@ -120,8 +121,7 @@ const workspcesLineData = {
                         <CardTitle>Tickets</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p class="text-2xl font-bold">{{props.workspaces?.reduce((acc, workspace) => acc +
-                            workspace.tickets_count, 0)}}</p>
+                        <p class="text-2xl font-bold">{{ props.workspace.tickets_count }}</p>
                     </CardContent>
                 </Card>
                 </Link>
@@ -132,9 +132,7 @@ const workspcesLineData = {
                         <CardTitle>Clients</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p class="text-2xl font-bold">{{props.workspaces?.reduce((acc, workspace) => acc +
-                            workspace.clients_count,
-                            0)}}</p>
+                        <p class="text-2xl font-bold">{{ props.workspace.clients_count }}</p>
                     </CardContent>
                 </Card>
                 </Link>
