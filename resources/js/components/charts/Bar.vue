@@ -58,7 +58,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 </script>
 
 <template>
-    <div class="flex flex-col text-center">
+    <div class="flex flex-col text-center" v-if="chartData.datasets.length > 0">
         <HeadingSmall :title="title" :description="description" class="mb-5" />
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative flex rounded-xl border p-5">
             <Bar :data="chartData" :options="chartOptions" />
