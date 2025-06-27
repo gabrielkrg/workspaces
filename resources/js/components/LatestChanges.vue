@@ -20,7 +20,7 @@ onMounted(async () => {
 });
 </script>
 <template>
-    <div class="flex flex-col text-center">
+    <div class="flex flex-col text-center" v-if="tasks.length > 0">
         <HeadingSmall :title="title" :description="description" class="mb-5" />
 
         <Card>
@@ -34,11 +34,8 @@ onMounted(async () => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr
-                            v-for="task in tasks"
-                            :key="task.id"
-                            class="border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                        >
+                        <tr v-for="task in tasks" :key="task.id"
+                            class="border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800">
                             <td class="px-4 py-3">
                                 <CheckIcon v-if="task.done" class="h-5 w-5 text-green-500" />
                                 <Circle class="h-4 w-4 text-gray-400" v-else />

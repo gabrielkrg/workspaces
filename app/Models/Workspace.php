@@ -23,8 +23,8 @@ class Workspace extends Model
     public function users()
     {
         return $this->belongsToMany(User::class)
-                    ->withPivot('role')
-                    ->withTimestamps();
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     public function tasks()
@@ -36,14 +36,14 @@ class Workspace extends Model
     {
         return $this->hasMany(Ticket::class);
     }
-    
+
 
     public function cards()
     {
         return $this->hasMany(Card::class);
     }
 
-  public function notes()
+    public function notes()
     {
         return $this->hasMany(Note::class);
     }
@@ -53,5 +53,8 @@ class Workspace extends Model
         return $this->hasMany(Tag::class);
     }
 
-  
+    public function clients()
+    {
+        return $this->hasMany(Client::class);
+    }
 }

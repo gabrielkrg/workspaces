@@ -13,9 +13,11 @@ class DashboardController extends Controller
         $user = Auth::user()->load('workspace.tasks');
 
         $workspaces = $user->workspaces()
-                            ->select('workspaces.id', 'workspaces.name')
-                            ->withCount('tasks')
-                            ->get();
+            ->select('workspaces.id', 'workspaces.name')
+            ->withCount('tasks')
+            ->withCount('tickets')
+            ->withCount('clients')
+            ->get();
 
         return Inertia::render('Dashboard', [
             'user' => $user,

@@ -4,7 +4,10 @@ import Doughnut from '@/components/charts/Doughnut.vue';
 import LatestChanges from '@/components/LatestChanges.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import CardAction from '@/components/ui/card/CardAction.vue';
+import HeadingSmall from '@/components/HeadingSmall.vue';
 
 const props = defineProps({
     user: {
@@ -90,27 +93,71 @@ const workspcesLineData = {
 </script>
 
 <template>
+
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex-col gap-4 rounded-xl p-4">
+            <HeadingSmall title="Overview" description="Here you have to total number of tasks, tickets and clients"
+                class="mb-5 text-center" />
+
+            <div class="grid auto-rows-min gap-4 md:grid-cols-3">
+                <Link :href="route('tasks.index')">
+                <Card class="hover:bg-sidebar-border/70 dark:hover:bg-sidebar-border">
+                    <CardHeader>
+                        <CardTitle>Tasks</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p class="text-2xl font-bold">{{props.workspaces?.reduce((acc, workspace) => acc +
+                            workspace.tasks_count,
+                            0)}}</p>
+                    </CardContent>
+                </Card>
+                </Link>
+
+                <Link :href="route('tickets.index')">
+                <Card class="hover:bg-sidebar-border/70 dark:hover:bg-sidebar-border">
+                    <CardHeader>
+                        <CardTitle>Tickets</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p class="text-2xl font-bold">{{props.workspaces?.reduce((acc, workspace) => acc +
+                            workspace.tickets_count, 0)}}</p>
+                    </CardContent>
+                </Card>
+                </Link>
+
+                <Link :href="route('clients.index')">
+                <Card class="hover:bg-sidebar-border/70 dark:hover:bg-sidebar-border">
+                    <CardHeader>
+                        <CardTitle>Clients</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p class="text-2xl font-bold">{{props.workspaces?.reduce((acc, workspace) => acc +
+                            workspace.clients_count,
+                            0)}}</p>
+                    </CardContent>
+                </Card>
+                </Link>
+
+            </div>
+        </div>
+
+
+        <div class="flex-col gap-4 rounded-xl p-4">
+
             <div class="grid auto-rows-min gap-4 md:grid-cols-3">
                 <div>
                     <LatestChanges />
                 </div>
                 <div>
-                    <Bar
-                        :title="'Workspaces tasks'"
+                    <Bar :title="'Workspaces tasks'"
                         :description="'Here you have to total number of tasks per workspace'"
-                        :chartData="workspacesBarData"
-                    />
+                        :chartData="workspacesBarData" />
                 </div>
                 <div>
-                    <Doughnut
-                        :chartData="workspacesData"
-                        :title="'Workspaces tasks'"
-                        :description="'Here you have to total number of tasks per workspace'"
-                    />
+                    <Doughnut :chartData="workspacesData" :title="'Workspaces tasks'"
+                        :description="'Here you have to total number of tasks per workspace'" />
                 </div>
                 <!-- <div>
                     <Line
