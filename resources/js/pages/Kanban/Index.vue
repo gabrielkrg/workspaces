@@ -248,13 +248,17 @@ const updateColumnOrder = () => {
             <!-- Kanbans List -->
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3" v-if="kanbans.length > 0">
                 <Card v-for="kanban in kanbans" :key="kanban.id" class="cursor-pointer"
-                    @click="navigateToKanban(kanban)">
+                    @click="navigateToKanban(kanban)"
+                    :class="cn('hover:bg-sidebar-border/70 dark:hover:bg-sidebar-border')">
                     <CardHeader>
                         <CardTitle class="flex items-center justify-between">
                             <div class="flex flex-col">
                                 <h3 class="text-lg font-medium">{{ kanban.name }}</h3>
                                 <p class="text-sm font-light">
-                                    {{ kanban.cards_count }} card{{ kanban.cards_count === 1 ? '' : 's' }}
+                                    <span class="font-medium capitalize text-sidebar-accent-foreground">Card{{
+                                        kanban.cards_count === 1 ? '' : 's' }}:
+                                    </span>
+                                    {{ kanban.cards_count }}
                                 </p>
                             </div>
                             <div class="flex gap-2" @click.stop>

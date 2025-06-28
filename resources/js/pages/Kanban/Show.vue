@@ -404,7 +404,7 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
               @change="handleCardMove">
               <template #item="{ element }">
                 <KanbanCard :title="element.title" :description="element.description" :tasks="element.tasks"
-                  @click="selectCard(element)" class="cursor-pointer" />
+                  :tags="element.tags" @click="selectCard(element)" class="cursor-pointer" />
 
               </template>
             </draggable>
