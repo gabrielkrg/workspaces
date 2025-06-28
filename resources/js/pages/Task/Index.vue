@@ -124,11 +124,15 @@ const updateTask = (task, updates) => {
     });
 };
 
-const closeModal = () => { };
 const deleteTask = (taskId) => {
     router.delete(route('tasks.delete', taskId), {
         preserveScroll: true,
-        onSuccess: () => closeModal(),
+        onSuccess: () => {
+            router.get(route('tasks.index'), {
+                preserveState: true,
+                replace: true,
+            });
+        },
         onError: (errors) => {
             console.log('Erro ao atualizar tarefa:', errors);
         },

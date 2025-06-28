@@ -8,10 +8,17 @@ interface Task {
     done: boolean;
 }
 
+interface Tag {
+    id: number;
+    name: string;
+    color: string;
+}
+
 const props = defineProps<{
     title: string;
     description: string;
     tasks: Task[];
+    tags: Tag[];
 }>();
 
 const doneTasks = computed(() => props.tasks.filter(task => task.done).length);

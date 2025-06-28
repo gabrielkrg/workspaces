@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+
 
 class Task extends Model
 {
@@ -29,19 +31,13 @@ class Task extends Model
         return $this->belongsTo(Workspace::class);
     }
 
-    public function tags()
-    {
-        return $this->belongsToMany(Tag::class);
-    }
+    // public function tags()
+    // {
+    //     return $this->belongsToMany(Tag::class);
+    // }
 
-    public function modelables()
+    public function tags(): MorphToMany
     {
-        return $this->morphedByMany(
-            Model::class,
-            'model',
-            'model_task',
-            'task_id',
-            'model_id'
-        );
+        return $this->morphToMany(Tag::class, 'taggable');
     }
 }

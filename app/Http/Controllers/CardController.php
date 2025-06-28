@@ -6,6 +6,7 @@ use App\Models\Card;
 use App\Models\Task;
 use App\Models\Kanban;
 use App\Models\Workspace;
+use App\Models\Tag;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,8 @@ class CardController extends Controller
             'description' => 'nullable|string',
             'column_id' => 'required|exists:columns,id',
             'order' => 'required|integer',
+            'tags' => 'sometimes|array',
+            'tags.*' => 'string|max:50',
         ]);
 
         $user = Auth::user();
@@ -29,7 +32,7 @@ class CardController extends Controller
 
         $this->authorize('update', $workspace);
 
-        Card::create([
+        $card = Card::create([
             'title' => $request->title,
             'description' => $request->description,
             'column_id' => $request->column_id,
@@ -39,17 +42,32 @@ class CardController extends Controller
             'order' => $request->order,
         ]);
 
+        if (!empty($request->tags)) {
+            $tagIds = collect($request->tags)->map(function ($tagName) use ($user) {
+                return Tag::firstOrCreate([
+                    'name' => $tagName,
+                    'user_id' => $user->id,
+                    'workspace_id' => $user->workspace_id,
+                ])->id;
+            });
+
+            $card->tags()->attach($tagIds);
+        }
+
         return redirect()->route('kanban.show', $kanban->id)->with('success', 'Card created successfully');
     }
 
     public function update(Request $request, Card $card)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'order' => 'sometimes|integer',
             'column_id' => 'sometimes|exists:columns,id',
+            'tags' => 'sometimes|array',
+            'tags.*' => 'string|max:50',
         ]);
+
 
         $user = Auth::user();
         $workspace = Workspace::findOrFail($user->workspace_id);
@@ -57,11 +75,23 @@ class CardController extends Controller
         $this->authorize('update', $workspace);
 
         $card->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'order' => $request->order,
-            'column_id' => $request->column_id,
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'order' => $validated['order'],
+            'column_id' => $validated['column_id'],
         ]);
+
+        if (array_key_exists('tags', $validated)) {
+            $tagIds = collect($validated['tags'])->map(function ($tagName) use ($user) {
+                return Tag::firstOrCreate([
+                    'name' => $tagName,
+                    'user_id' => $user->id,
+                    'workspace_id' => $user->workspace_id,
+                ])->id;
+            });
+
+            $card->tags()->sync($tagIds);
+        }
 
         return redirect()->route('kanban.show', $card->kanban_id)->with('success', 'Card updated successfully');
     }
@@ -83,7 +113,10 @@ class CardController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'tags' => 'sometimes|array',
+            'tags.*' => 'string|max:50',
         ]);
+
 
         $user = Auth::user();
         $workspace = Workspace::findOrFail($user->workspace_id);
@@ -96,6 +129,18 @@ class CardController extends Controller
             'user_id' => $user->id,
             'workspace_id' => $workspace->id,
         ]);
+
+        if (!empty($request->tags)) {
+            $tagIds = collect($request->tags)->map(function ($tagName) use ($user) {
+                return Tag::firstOrCreate([
+                    'name' => $tagName,
+                    'user_id' => $user->id,
+                    'workspace_id' => $user->workspace_id,
+                ])->id;
+            });
+
+            $task->tags()->attach($tagIds);
+        }
 
         $card->tasks()->attach($task->id);
 

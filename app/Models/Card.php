@@ -39,4 +39,9 @@ class Card extends Model
     {
         return $this->morphToMany(Task::class, 'model', 'model_task');
     }
+
+    public function tags()
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
+    }
 }

@@ -67,7 +67,7 @@ class ColumnController extends Controller
 
     public function getCards(Column $column): JsonResponse
     {
-        $cards = $column->cards()->get();
+        $cards = $column->cards()->with('tags', 'tasks')->get();
 
         return response()->json($cards);
     }

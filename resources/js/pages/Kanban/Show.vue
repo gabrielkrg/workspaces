@@ -6,7 +6,7 @@ import KanbanCard from '@/components/kanban/KanbanCard.vue';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetFooter, SheetClose } from '@/components/ui/sheet';
 import draggable from 'vuedraggable';
 import { router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Plus, Trash2, Check } from 'lucide-vue-next';
 import { Label } from '@/components/ui/label';
@@ -24,6 +24,17 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
+import { useFilter } from 'reka-ui';
+import {
+  Combobox,
+  ComboboxAnchor,
+  ComboboxInput,
+  ComboboxList,
+  ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxItem,
+} from '@/components/ui/combobox';
+import { TagsInput, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText } from '@/components/ui/tags-input';
 
 interface Kanban {
   id: number;
@@ -49,6 +60,7 @@ interface Card {
   column_id: number;
   tasks: Task[];
   column: Column;
+  tags: string[];
 }
 
 interface Task {
@@ -56,6 +68,12 @@ interface Task {
   title: string;
   description: string;
   done: boolean;
+}
+
+interface Tag {
+  id: number;
+  name: string;
+  color: string;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -67,9 +85,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const props = defineProps<{
   kanban: Kanban;
+  tags: Tag[];
 }>();
 
 const columns = ref<Column[]>(props.kanban.columns);
+
+const openSearchTerm = ref(false)
+const searchTerm = ref('')
+
+const { contains } = useFilter({ sensitivity: 'base' })
+
+const filteredTags = computed(() => {
+  const options = props.tags.filter(i => !card.tags.includes(i.name))
+  return searchTerm.value ? options.filter(option => contains(option.name, searchTerm.value)) : options
+})
 
 // Unified form for both new and edit card
 const card = useForm({
@@ -77,6 +106,7 @@ const card = useForm({
   description: '',
   column_id: null as number | null,
   order: 0,
+  tags: [] as string[],
 });
 
 const createCard = (column: Column) => {
@@ -86,6 +116,11 @@ const createCard = (column: Column) => {
     onSuccess: (response) => {
       updateColumnCards(column);
       card.reset();
+
+      router.get(route('kanban.show', { kanban: props.kanban.id }), {
+        preserveState: true,
+        replace: true,
+      });
     },
     onError: (errors) => {
       console.log('Error creating card:', errors);
@@ -100,6 +135,7 @@ const updateCardForm = useForm({
   description: '',
   column_id: null as number | null,
   order: 0,
+  tags: [] as string[],
 });
 
 const editModalOpen = ref(false);
@@ -112,6 +148,7 @@ const selectCard = (card: Card) => {
   updateCardForm.description = card.description;
   updateCardForm.column_id = card.column_id;
   updateCardForm.order = card.order;
+  updateCardForm.tags = card.tags?.map(tag => tag.name) || [];
 
   updateCardTasks(card);
 };
@@ -130,6 +167,11 @@ const updateCard = (card: Card) => {
       updateCardForm.reset();
       selectedCard.value = null;
       editModalOpen.value = false;
+
+      router.get(route('kanban.show', { kanban: props.kanban.id }), {
+        preserveState: true,
+        replace: true,
+      });
     },
     onError: (errors) => {
       console.log('Error updating card:', errors);
@@ -146,7 +188,7 @@ const taskForm = useForm({
 const attachTask = () => {
   if (selectedCard.value == null) return;
 
-  taskForm.post(route('cards.attach.task', { card: selectedCard.value?.id }), {
+  taskForm.post(route('cards.attach.task', { card: selectedCard.value?.id, tags: selectedCard.value?.tags.map(tag => tag.name) || [] }), {
     onSuccess: () => {
 
       updateCardTasks(selectedCard.value!);
@@ -271,7 +313,7 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
               </SheetTrigger>
               <SheetContent :class="cn('overflow-y-auto')">
                 <SheetHeader>
-                  <SheetTitle>New Card</SheetTitle>
+                  <SheetTitle>Create Card</SheetTitle>
                   <SheetDescription>
                     Create a new card for your kanban board.
                   </SheetDescription>
@@ -283,18 +325,74 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
                       <Label for="title" class="text-sm font-medium">Title</Label>
                       <Input id="title" v-model="card.title" class="rounded-md border px-3 py-2"
                         placeholder="Enter card title" />
+                      <div v-if="card.errors.title" class="text-sm text-red-500 col-span-full">
+                        {{ card.errors.title }}
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col gap-4">
+                      <Label for="title" class="text-right"> Tags </Label>
+                      <div>
+                        <Combobox v-model="card.tags" v-model:open="openSearchTerm" :ignore-filter="true">
+                          <ComboboxAnchor as-child :class="cn('dark:bg-input/30')">
+                            <TagsInput :model-value="card.tags" @update:model-value="(val) => (card.tags = val)"
+                              :class="cn('p-0 gap-0 w-full bg-input/30')">
+
+                              <div :class="['flex gap-2 flex-wrap items-center', card.tags.length > 0 ? 'p-2' : '']">
+                                <TagsInputItem v-for="tag in card.tags" :key="tag" :value="tag">
+                                  <TagsInputItemText />
+                                  <TagsInputItemDelete />
+                                </TagsInputItem>
+                              </div>
+
+                              <ComboboxInput v-model="searchTerm" as-child>
+                                <TagsInputInput placeholder="Tags..."
+                                  :class="cn('min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto')"
+                                  @keydown.enter.prevent />
+                              </ComboboxInput>
+                            </TagsInput>
+
+                            <ComboboxList class="w-[--reka-popper-anchor-width]">
+                              <ComboboxEmpty />
+                              <ComboboxGroup>
+                                <ComboboxItem v-for="tag in filteredTags" :key="tag.name" :value="tag.name"
+                                  @select.prevent="(ev) => {
+                                    if (typeof ev.detail.value === 'string') {
+                                      searchTerm = ''
+                                      card.tags.push(ev.detail.value)
+                                    }
+
+                                    if (filteredTags.length === 0) {
+                                      openSearchTerm = false
+                                    }
+                                  }">
+                                  {{ tag.name }}
+                                </ComboboxItem>
+                              </ComboboxGroup>
+                            </ComboboxList>
+                          </ComboboxAnchor>
+                        </Combobox>
+
+                        <span class="text-xs text-gray-500"> Use comma <span class="font-bold">( ,
+                            )</span> to add </span>
+                      </div>
+
+                      <div v-if="card.errors.tags" class="text-sm text-red-500">
+                        {{ card.errors.tags }}
+                      </div>
                     </div>
 
                     <div class="grid gap-2">
                       <Label for="description" class="text-sm font-medium">Description</Label>
                       <Textarea id="description" v-model="card.description" class="rounded-md border px-3 py-2"
                         placeholder="Enter card description" rows="4" />
+                      <div v-if="card.errors.description" class="text-sm text-red-500 col-span-full">
+                        {{ card.errors.description }}
+                      </div>
                     </div>
                   </div>
                   <SheetFooter :class="{ 'hidden': card.processing }" class="p-0">
-                    <SheetClose as-child>
-                      <Button type="submit" class="cursor-pointer"> Save </Button>
-                    </SheetClose>
+                    <Button type="submit" class="cursor-pointer"> Save </Button>
                   </SheetFooter>
                 </form>
               </SheetContent>
@@ -330,11 +428,72 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
               <Label for="title" class="text-sm font-medium">Title</Label>
               <Input id="title" v-model="updateCardForm.title" class="rounded-md border px-3 py-2"
                 placeholder="Enter card title" />
+              <span v-if="updateCardForm.errors.title" class="text-sm text-red-500 col-span-full">
+                {{ updateCardForm.errors.title }}
+              </span>
             </div>
+
+
+            <div class="flex flex-col gap-4">
+              <Label for="title" class="text-right"> Tags </Label>
+              <div>
+                <Combobox v-model="updateCardForm.tags" v-model:open="openSearchTerm" :ignore-filter="true">
+                  <ComboboxAnchor as-child :class="cn('dark:bg-input/30')">
+                    <TagsInput :model-value="updateCardForm.tags"
+                      @update:model-value="(val) => (updateCardForm.tags = val)"
+                      :class="cn('p-0 gap-0 w-full bg-input/30')">
+
+                      <div :class="['flex gap-2 flex-wrap items-center', updateCardForm.tags.length > 0 ? 'p-2' : '']">
+                        <TagsInputItem v-for="tag in updateCardForm.tags" :key="tag" :value="tag">
+                          <TagsInputItemText />
+                          <TagsInputItemDelete />
+                        </TagsInputItem>
+                      </div>
+
+                      <ComboboxInput v-model="searchTerm" as-child>
+                        <TagsInputInput placeholder="Tags..."
+                          :class="cn('min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto')" @keydown.enter.prevent />
+                      </ComboboxInput>
+                    </TagsInput>
+
+                    <ComboboxList class="w-[--reka-popper-anchor-width]">
+                      <ComboboxEmpty />
+                      <ComboboxGroup>
+                        <ComboboxItem v-for="tag in filteredTags" :key="tag.name" :value="tag.name" @select.prevent="(ev) => {
+                          if (typeof ev.detail.value === 'string') {
+                            searchTerm = ''
+                            updateCardForm.tags.push(ev.detail.value)
+                          }
+
+                          if (filteredTags.length === 0) {
+                            openSearchTerm = false
+                          }
+                        }">
+                          {{ tag.name }}
+                        </ComboboxItem>
+                      </ComboboxGroup>
+                    </ComboboxList>
+                  </ComboboxAnchor>
+                </Combobox>
+
+                <span class="text-xs text-gray-500"> Use comma <span class="font-bold">( ,
+                    )</span> to add </span>
+              </div>
+
+              <span v-if="updateCardForm.errors.tags" class="text-sm text-red-500">
+                {{ updateCardForm.errors.tags }}
+              </span>
+            </div>
+
+
+
             <div class="grid gap-2">
               <Label for="description" class="text-sm font-medium">Description</Label>
               <Textarea id="description" v-model="updateCardForm.description" class="rounded-md border px-3 py-2"
                 placeholder="Enter card description" rows="4" />
+              <span v-if="updateCardForm.errors.description" class="text-sm text-red-500">
+                {{ updateCardForm.errors.description }}
+              </span>
             </div>
 
             <div class="grid gap-2">
@@ -376,20 +535,20 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
 
                         <DialogFooter class="gap-2">
                           <DialogClose as-child>
-                            <Button variant="secondary">Cancel</Button>
+                            <Button variant="secondary" type="button">Cancel</Button>
                           </DialogClose>
 
-                          <DialogClose as-child>
-                            <Button variant="destructive" :disabled="updateCardForm.processing" type="submit">
-                              Delete task
-                            </Button>
-                          </DialogClose>
+                          <Button variant="destructive" :disabled="updateCardForm.processing" type="submit">
+                            Delete task
+                          </Button>
                         </DialogFooter>
                       </form>
                     </DialogContent>
                   </Dialog>
                 </div>
               </div>
+
+
 
               <Dialog>
                 <DialogTrigger as-child>
@@ -432,6 +591,10 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
                   </form>
                 </DialogContent>
               </Dialog>
+
+              <span v-if="selectedCard?.tags.length > 0" class="text-sm text-blue-400">
+                Tasks created from here will have the tags of the card
+              </span>
             </div>
           </div>
 
@@ -468,11 +631,10 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
             </Dialog>
             <div class="flex justify-end gap-2">
               <SheetClose asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button variant="outline" type="button" class="cursor-pointer">Cancel</Button>
               </SheetClose>
-              <SheetClose asChild>
-                <Button type="submit">Save Changes</Button>
-              </SheetClose>
+
+              <Button type="submit" :disabled="updateCardForm.processing" class="cursor-pointer">Save Changes</Button>
             </div>
           </div>
         </form>
