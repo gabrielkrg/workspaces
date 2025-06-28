@@ -22,7 +22,7 @@ class KanbanController extends Controller
 
         $this->authorize('view', $workspace);
 
-        $kanbans = Kanban::where('workspace_id', $workspace->id)->with(['columns' => function ($query) {
+        $kanbans = Kanban::where('workspace_id', $workspace->id)->withCount('cards')->with(['columns' => function ($query) {
             $query->orderBy('order');
         }])->get();
 

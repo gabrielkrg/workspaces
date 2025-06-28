@@ -47,6 +47,11 @@ const submit = () => {
     form.post(route('tags.store'), {
         onSuccess: () => {
             form.reset();
+
+            router.get(route('tags.index'), {
+                preserveState: true,
+                replace: true,
+            });
         },
     });
 };
@@ -80,15 +85,24 @@ const update = (tagId) => {
     updateForm.put(route('tags.update', tagId), {
         onSuccess: () => {
             updateForm.reset();
+
+            router.get(route('tags.index'), {
+                preserveState: true,
+                replace: true,
+            });
         },
     });
 };
 
-const closeModal = () => { };
 const deleteTag = (tagId) => {
     router.delete(route('tags.delete', tagId), {
         preserveScroll: true,
-        onSuccess: () => closeModal(),
+        onSuccess: () => {
+            router.get(route('tags.index'), {
+                preserveState: true,
+                replace: true,
+            });
+        },
         onError: (errors) => {
             console.log('Erro ao deletar tag:', errors);
         },
@@ -117,6 +131,7 @@ onUnmounted(() => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div class="flex flex-wrap items-end justify-between gap-4">
+                <div></div>
                 <Sheet>
                     <SheetTrigger as-child>
                         <Button variant="default" class="cursor-pointer"> Create </Button>
@@ -132,6 +147,9 @@ onUnmounted(() => {
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="name" class="text-right"> Name </Label>
                                     <Input id="name" v-model="form.name" class="col-span-4" />
+                                    <div v-if="form.errors.name" class="text-sm text-red-500 col-span-full">
+                                        {{ form.errors.name }}
+                                    </div>
                                 </div>
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="color" class="text-right"> Color </Label>
@@ -139,112 +157,113 @@ onUnmounted(() => {
                                 </div>
                             </div>
                             <SheetFooter>
-                                <SheetClose as-child>
-                                    <Button type="submit" class="cursor-pointer"> Save </Button>
-                                </SheetClose>
+                                <Button type="submit" class="cursor-pointer"> Save </Button>
                             </SheetFooter>
                         </form>
                     </SheetContent>
                 </Sheet>
             </div>
 
-            <div
-                class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4"
+                v-if="tags && tags.length > 0">
                 <!-- tags -->
-                <div v-if="tags.length > 0">
-                    <div v-for="tag in tags" :key="tag.id" class="group flex items-start gap-4 border-b p-4">
-                        <!-- Color indicator -->
-                        <div class="flex items-start pt-1">
-                            <div class="h-6 w-6 rounded-full" :style="{ backgroundColor: tag.color }"></div>
-                        </div>
+                <div v-for="tag in tags" :key="tag.id" class="group flex items-start gap-4 border-b p-4">
+                    <!-- Color indicator -->
+                    <div class="flex items-start pt-1">
+                        <div class="h-6 w-6 rounded-full" :style="{ backgroundColor: tag.color }"></div>
+                    </div>
 
-                        <!-- Name -->
-                        <div class="flex-1 min-w-0">
-                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                {{ tag.name }}
-                            </h2>
-                        </div>
+                    <!-- Name -->
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            {{ tag.name }}
+                        </h2>
+                    </div>
 
-                        <!-- Actions -->
-                        <div class="flex items-start justify-end">
-                            <Popover class="relative">
-                                <PopoverTrigger as-child>
-                                    <button class="cursor-pointer p-2">
-                                        <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
-                                    </button>
-                                </PopoverTrigger>
+                    <!-- Actions -->
+                    <div class="flex items-start justify-end">
+                        <Popover class="relative">
+                            <PopoverTrigger as-child>
+                                <button class="cursor-pointer p-2">
+                                    <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
+                                </button>
+                            </PopoverTrigger>
 
-                                <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
-                                    align="end">
-                                    <Sheet>
-                                        <SheetTrigger as-child>
-                                            <div @click="selectTag(tag)"
-                                                class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
-                                                Edit
-                                            </div>
-                                        </SheetTrigger>
-                                        <SheetContent>
-                                            <form @submit.prevent="update(tag)">
-                                                <SheetHeader>
-                                                    <SheetTitle>Edit tag</SheetTitle>
-                                                    <SheetDescription>Click save when you're done.</SheetDescription>
-                                                </SheetHeader>
-                                                <div class="grid gap-4 p-4">
-                                                    <div class="grid grid-cols-4 items-center gap-4">
-                                                        <Label for="name" class="text-right">Name</Label>
-                                                        <Input id="name" v-model="updateForm.name" class="col-span-4" />
-                                                    </div>
-
-                                                    <div class="grid grid-cols-4 items-center gap-4">
-                                                        <Label for="color" class="text-right">Color</Label>
-                                                        <ChromePicker v-model="updateForm.color" class="col-span-4" />
+                            <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
+                                align="end">
+                                <Sheet>
+                                    <SheetTrigger as-child>
+                                        <div @click="selectTag(tag)"
+                                            class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
+                                            Edit
+                                        </div>
+                                    </SheetTrigger>
+                                    <SheetContent>
+                                        <form @submit.prevent="update(tag)">
+                                            <SheetHeader>
+                                                <SheetTitle>Edit tag</SheetTitle>
+                                                <SheetDescription>Click save when you're done.</SheetDescription>
+                                            </SheetHeader>
+                                            <div class="grid gap-4 p-4">
+                                                <div class="grid grid-cols-4 items-center gap-4">
+                                                    <Label for="name" class="text-right">Name</Label>
+                                                    <Input id="name" v-model="updateForm.name" class="col-span-4" />
+                                                    <div v-if="updateForm.errors.name"
+                                                        class="text-sm text-red-500 col-span-full">
+                                                        {{ updateForm.errors.name }}
                                                     </div>
                                                 </div>
-                                                <SheetFooter>
-                                                    <SheetClose as-child>
-                                                        <Button type="submit">Save changes</Button>
-                                                    </SheetClose>
-                                                </SheetFooter>
-                                            </form>
-                                        </SheetContent>
-                                    </Sheet>
-                                    <Dialog>
-                                        <DialogTrigger as-child>
-                                            <div class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
-                                                variant="destructive">
-                                                Delete
+
+                                                <div class="grid grid-cols-4 items-center gap-4">
+                                                    <Label for="color" class="text-right">Color</Label>
+                                                    <ChromePicker v-model="updateForm.color" class="col-span-4" />
+                                                </div>
                                             </div>
-                                        </DialogTrigger>
+                                            <SheetFooter>
+                                                <Button type="submit">Save changes</Button>
+                                            </SheetFooter>
+                                        </form>
+                                    </SheetContent>
+                                </Sheet>
+                                <Dialog>
+                                    <DialogTrigger as-child>
+                                        <div class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                            variant="destructive">
+                                            Delete
+                                        </div>
+                                    </DialogTrigger>
 
-                                        <DialogContent>
-                                            <form class="space-y-6" @submit.prevent="deleteTag(tag.id)">
-                                                <DialogHeader class="space-y-3">
-                                                    <DialogTitle>Are you sure you want to delete this tag?</DialogTitle>
-                                                    <DialogDescription>
-                                                        Once your tag is deleted, there's no way to recover it.
-                                                    </DialogDescription>
-                                                </DialogHeader>
+                                    <DialogContent>
+                                        <form class="space-y-6" @submit.prevent="deleteTag(tag.id)">
+                                            <DialogHeader class="space-y-3">
+                                                <DialogTitle>Are you sure you want to delete this tag?</DialogTitle>
+                                                <DialogDescription>
+                                                    Once your tag is deleted, there's no way to recover it.
+                                                </DialogDescription>
+                                            </DialogHeader>
 
-                                                <DialogFooter class="gap-2">
-                                                    <DialogClose as-child>
-                                                        <Button variant="secondary">Cancel</Button>
-                                                    </DialogClose>
-
-                                                    <Button variant="destructive" :disabled="form.processing">
-                                                        <button type="submit">Delete tag</button>
+                                            <DialogFooter class="gap-2">
+                                                <DialogClose as-child>
+                                                    <Button variant="secondary" type="button" class="cursor-pointer">
+                                                        Cancel
                                                     </Button>
-                                                </DialogFooter>
-                                            </form>
-                                        </DialogContent>
-                                    </Dialog>
-                                </PopoverContent>
-                            </Popover>
-                        </div>
+                                                </DialogClose>
+
+                                                <Button variant="destructive" type="submit" class="cursor-pointer"
+                                                    :disabled="form.processing">
+                                                    Delete tag
+                                                </Button>
+                                            </DialogFooter>
+                                        </form>
+                                    </DialogContent>
+                                </Dialog>
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 </div>
-                <div v-else class="flex h-32 items-center justify-center rounded-lg border">
-                    <p class="text-gray-800 dark:text-gray-100">There are no tags yet</p>
-                </div>
+            </div>
+            <div v-else class="flex h-32 items-center justify-center rounded-lg border">
+                <p class="text-gray-800 dark:text-gray-100">There are no tags yet</p>
             </div>
         </div>
     </AppLayout>

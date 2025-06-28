@@ -27,6 +27,7 @@ interface Kanban {
     created_at: string;
     updated_at: string;
     columns: Column[];
+    cards_count: number;
 }
 
 interface Tag {
@@ -97,6 +98,11 @@ const submit = () => {
         onSuccess: () => {
             form.reset();
             columns.value = [];
+
+            router.get(route('kanban.index'), {
+                preserveState: true,
+                replace: true,
+            });
         },
     });
 };
@@ -140,6 +146,10 @@ const updateKanban = (kanban: Kanban) => {
     formUpdateKanban.put(route('kanban.update', kanban.id), {
         onSuccess: () => {
             formUpdateKanban.reset();
+            router.get(route('kanban.index'), {
+                preserveState: true,
+                replace: true,
+            });
         },
     });
 };
@@ -171,6 +181,7 @@ const updateColumnOrder = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div class="flex flex-wrap items-end justify-between gap-4">
+                <div></div>
                 <Sheet>
                     <SheetTrigger as-child>
                         <Button variant="default" class="cursor-pointer"> Create </Button>
@@ -186,10 +197,14 @@ const updateColumnOrder = () => {
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="name" class="text-right">Name</Label>
                                     <Input id="name" v-model="form.name" class="col-span-4" />
+                                    <span class="text-sm text-red-500 col-span-full" v-if="form.errors.name">
+                                        {{ form.errors.name }}
+                                    </span>
                                 </div>
 
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="edit-columns" class="text-right">Columns</Label>
+
                                     <div class="col-span-4">
                                         <draggable v-model="form.columns" :item-key="'id'" handle=".handle"
                                             class="flex flex-col gap-2" @change="columnOrder">
@@ -217,12 +232,13 @@ const updateColumnOrder = () => {
                                             </Button>
                                         </div>
                                     </div>
+                                    <span class="text-sm text-red-500 col-span-full" v-if="form.errors.columns">
+                                        {{ form.errors.columns }}
+                                    </span>
                                 </div>
                             </div>
                             <SheetFooter>
-                                <SheetClose as-child>
-                                    <Button type="submit" class="cursor-pointer">Save</Button>
-                                </SheetClose>
+                                <Button type="submit" class="cursor-pointer">Save</Button>
                             </SheetFooter>
                         </form>
                     </SheetContent>
@@ -235,7 +251,12 @@ const updateColumnOrder = () => {
                     @click="navigateToKanban(kanban)">
                     <CardHeader>
                         <CardTitle class="flex items-center justify-between">
-                            <span>{{ kanban.name }}</span>
+                            <div class="flex flex-col">
+                                <h3 class="text-lg font-medium">{{ kanban.name }}</h3>
+                                <p class="text-sm font-light">
+                                    {{ kanban.cards_count }} card{{ kanban.cards_count === 1 ? '' : 's' }}
+                                </p>
+                            </div>
                             <div class="flex gap-2" @click.stop>
                                 <!-- Edit Button -->
                                 <Sheet>
@@ -257,6 +278,10 @@ const updateColumnOrder = () => {
                                                     <Label for="edit-name" class="text-right">Name</Label>
                                                     <Input id="edit-name" v-model="formUpdateKanban.name"
                                                         class="col-span-4" />
+                                                    <span class="text-sm text-red-500 col-span-full"
+                                                        v-if="formUpdateKanban.errors.name">
+                                                        {{ formUpdateKanban.errors.name }}
+                                                    </span>
                                                 </div>
 
                                                 <div class="grid grid-cols-4 items-center gap-4">
@@ -294,9 +319,7 @@ const updateColumnOrder = () => {
                                                 </div>
                                             </div>
                                             <SheetFooter>
-                                                <SheetClose asChild>
-                                                    <Button type="submit" class="cursor-pointer">Save changes</Button>
-                                                </SheetClose>
+                                                <Button type="submit" class="cursor-pointer">Save changes</Button>
                                             </SheetFooter>
                                         </form>
                                     </SheetContent>
@@ -332,10 +355,8 @@ const updateColumnOrder = () => {
                     </CardHeader>
                 </Card>
             </div>
-            <div v-else>
-                <div class="flex h-full items-center justify-center">
-                    <p class="text-sm text-gray-500">No kanbans found. Create one to get started.</p>
-                </div>
+            <div v-else class="flex h-32 items-center justify-center rounded-lg border">
+                <p class="text-gray-800 dark:text-gray-100">There are no kanbans yet</p>
             </div>
         </div>
     </AppLayout>

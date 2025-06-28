@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
@@ -34,7 +33,7 @@ import {
     ComboboxItem,
 } from '@/components/ui/combobox';
 import { cn } from '@/lib/utils';
-
+import DialogClose from '@/components/ui/dialog/DialogClose.vue';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Tasks',
@@ -60,6 +59,11 @@ const submit = () => {
     form.post(route('tasks.store'), {
         onSuccess: () => {
             form.reset();
+
+            router.get(route('tasks.index'), {
+                preserveState: true,
+                replace: true,
+            });
         },
     });
 };
@@ -90,6 +94,11 @@ const update = (taskId) => {
     updateForm.put(route('tasks.update', taskId), {
         onSuccess: () => {
             updateForm.reset();
+
+            router.get(route('tasks.index'), {
+                preserveState: true,
+                replace: true,
+            });
         },
     });
 };
@@ -185,7 +194,7 @@ watch(
 
 <template>
 
-    <Head title="Daily Tasks" />
+    <Head title="Tasks" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
@@ -366,6 +375,7 @@ watch(
                     </div>
                 </div>
 
+
                 <Sheet>
                     <SheetTrigger as-child>
                         <Button variant="default" class="cursor-pointer"> Create </Button>
@@ -381,6 +391,9 @@ watch(
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="title" class="text-right"> Title </Label>
                                     <Input id="title" v-model="form.title" class="col-span-4" />
+                                    <div v-if="form.errors.title" class="text-sm text-red-500 col-span-full">
+                                        {{ form.errors.title }}
+                                    </div>
                                 </div>
 
                                 <div class="flex flex-col gap-4">
@@ -474,9 +487,7 @@ watch(
                                 </div>
                             </div>
                             <SheetFooter>
-                                <SheetClose as-child>
-                                    <Button type="submit" class="cursor-pointer"> Save </Button>
-                                </SheetClose>
+                                <Button type="submit" class="cursor-pointer"> Save </Button>
                             </SheetFooter>
                         </form>
                     </SheetContent>
@@ -496,243 +507,243 @@ watch(
             </div>
 
 
-            <div
-                class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4"
+                v-if="tasks.length > 0">
                 <!-- tasks -->
-                <div v-if="tasks.length > 0">
-                    <div v-for="task in tasks" :key="task.id" class="group flex items-start gap-4 border-b p-4"
-                        :class="{ 'line-through': task.done }">
-                        <!-- Checkbox -->
-                        <div class="flex items-start pt-1">
-                            <label class="inline-flex cursor-pointer items-center">
-                                <input type="checkbox" :checked="task.done"
-                                    @change="updateTask(task, { done: !task.done })" class="peer sr-only" />
-                                <div
-                                    class="flex h-5 w-5 items-center justify-center rounded border-2 border-gray-300 transition-colors duration-300 peer-checked:border-green-600 peer-checked:bg-green-600">
-                                    <Check v-if="task.done" class="h-4 w-4 text-white" />
-                                </div>
-                            </label>
-                        </div>
+                <div v-for="task in tasks" :key="task.id" class="group flex items-start gap-4 border-b p-4"
+                    :class="{ 'line-through': task.done }">
+                    <!-- Checkbox -->
+                    <div class="flex items-start pt-1">
+                        <label class="inline-flex cursor-pointer items-center">
+                            <input type="checkbox" :checked="task.done" @change="updateTask(task, { done: !task.done })"
+                                class="peer sr-only" />
+                            <div
+                                class="flex h-5 w-5 items-center justify-center rounded border-2 border-gray-300 transition-colors duration-300 peer-checked:border-green-600 peer-checked:bg-green-600">
+                                <Check v-if="task.done" class="h-4 w-4 text-white" />
+                            </div>
+                        </label>
+                    </div>
 
-                        <!-- Title, Tags, Description -->
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white"
-                                    :class="{ 'highlighter highlight': task.highlight }">
-                                    {{ task.title }}
-                                </h2>
-                                <div class="flex items-center gap-1 flex-wrap">
-                                    <div class="flex rounded bg-green-700 px-1 text-xs font-normal text-white capitalize"
-                                        v-if="task.repeat != 'none'">
-                                        {{ task.repeat }}
-                                    </div>
-                                    <div v-for="tag in task.tags" :key="tag.index">
-                                        <div class="flex rounded bg-gray-400 px-1 text-xs font-normal text-white capitalize"
-                                            :style="tag.color ? { backgroundColor: tag.color } : { backgroundColor: '#9ca3af' }">
-                                            {{ tag.name }}
-                                        </div>
+                    <!-- Title, Tags, Description -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-col md:flex-row gap-2 flex-wrap">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white order-2 md:order-1"
+                                :class="{ 'highlighter highlight': task.highlight }">
+                                {{ task.title }}
+                            </h2>
+                            <div class="flex items-center gap-1 flex-wrap order-1 md:order-2">
+                                <div class="flex rounded bg-green-700 px-1 text-xs font-normal text-white capitalize"
+                                    v-if="task.repeat != 'none'">
+                                    {{ task.repeat }}
+                                </div>
+                                <div v-for="tag in task.tags" :key="tag.index">
+                                    <div class="flex rounded bg-gray-400 px-1 text-xs font-normal text-white capitalize"
+                                        :style="tag.color ? { backgroundColor: tag.color } : { backgroundColor: '#9ca3af' }">
+                                        {{ tag.name }}
                                     </div>
                                 </div>
                             </div>
-                            <p class="mt-1 text-gray-700 dark:text-gray-300 break-words inline-block"
-                                :class="{ 'highlighter highlight': task.highlight }">
-                                {{ task.description }}
-                            </p>
                         </div>
+                        <p class="mt-1 text-gray-700 dark:text-gray-300 break-words inline-block"
+                            :class="{ 'highlighter highlight': task.highlight }">
+                            {{ task.description }}
+                        </p>
+                    </div>
 
-                        <!-- Actions -->
-                        <div class="flex items-start justify-end">
-                            <button type="button"
-                                :class="{ 'bg-accent hover:bg-accent/90 hover:text-accent-foreground dark:hover:bg-accent/50': task.highlight }"
-                                class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md"
-                                @click="updateTask(task, { highlight: !task.highlight })">
-                                <Highlighter class="text-gray-900 dark:text-white" />
-                            </button>
-                            <Popover class=" relative">
-                                <PopoverTrigger as-child>
-                                    <button type="button"
-                                        class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md">
-                                        <EllipsisVertical class="text-gray-900 dark:text-white" />
-                                    </button>
-                                </PopoverTrigger>
+                    <!-- Actions -->
+                    <div class="flex items-start justify-end">
+                        <button type="button"
+                            :class="{ 'bg-accent hover:bg-accent/90 hover:text-accent-foreground dark:hover:bg-accent/50': task.highlight }"
+                            class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md"
+                            @click="updateTask(task, { highlight: !task.highlight })">
+                            <Highlighter class="text-gray-900 dark:text-white" />
+                        </button>
+                        <Popover class=" relative">
+                            <PopoverTrigger as-child>
+                                <button type="button"
+                                    class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md">
+                                    <EllipsisVertical class="text-gray-900 dark:text-white" />
+                                </button>
+                            </PopoverTrigger>
 
-                                <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
-                                    align="end">
-                                    <Sheet>
-                                        <SheetTrigger as-child>
-                                            <SheetClose as-child>
-                                                <div @click="selectTask(task)"
-                                                    class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
-                                                    Edit
-                                                </div>
-                                            </SheetClose>
-                                        </SheetTrigger>
-                                        <SheetContent :class="cn('overflow-y-auto')">
-                                            <form @submit.prevent="update(task)">
-                                                <SheetHeader>
-                                                    <SheetTitle> Edit task </SheetTitle>
-                                                    <SheetDescription> Click save when you're done.
-                                                    </SheetDescription>
-                                                </SheetHeader>
-                                                <div class="grid gap-4 p-4">
-                                                    <div class="grid grid-cols-4 items-center gap-4">
-                                                        <Label for="title" class="text-right"> Title
-                                                        </Label>
-                                                        <Input id="title" v-model="updateForm.title"
-                                                            class="col-span-4" />
-                                                    </div>
-
-                                                    <div class="flex flex-col gap-4">
-                                                        <Label for="title" class="text-right"> Repeat
-                                                        </Label>
-                                                        <Select v-model="updateForm.repeat" class="">
-                                                            <SelectTrigger id="role" class="w-full">
-                                                                <SelectValue placeholder="Select" />
-                                                            </SelectTrigger>
-                                                            <SelectContent position="popper">
-                                                                <SelectItem value="none"> Never
-                                                                </SelectItem>
-                                                                <SelectItem value="daily"> Daily
-                                                                </SelectItem>
-                                                                <SelectItem value="weekly"> Weekly
-                                                                </SelectItem>
-                                                                <SelectItem value="monthly"> Monthly
-                                                                </SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-
-                                                    <div class="flex flex-col gap-4">
-                                                        <Label for="title" class="text-right"> Tags </Label>
-                                                        <div>
-                                                            <Combobox v-model="updateForm.tags"
-                                                                v-model:open="openSearchTerm" :ignore-filter="true">
-                                                                <ComboboxAnchor as-child>
-                                                                    <TagsInput :model-value="updateForm.tags"
-                                                                        @update:model-value="(val) => (updateForm.tags = val)"
-                                                                        :class="cn('p-0 gap-0 w-full bg-input/30')">
-
-                                                                        <div
-                                                                            :class="['flex gap-2 flex-wrap items-center', updateForm.tags.length > 0 ? 'p-2' : '']">
-                                                                            <TagsInputItem
-                                                                                v-for="tag in updateForm.tags"
-                                                                                :key="tag" :value="tag">
-                                                                                <TagsInputItemText />
-                                                                                <TagsInputItemDelete />
-                                                                            </TagsInputItem>
-                                                                        </div>
-
-                                                                        <ComboboxInput v-model="searchTerm" as-child>
-                                                                            <TagsInputInput placeholder="Tags..."
-                                                                                :class="cn('min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto')"
-                                                                                @keydown.enter.prevent />
-                                                                        </ComboboxInput>
-                                                                    </TagsInput>
-
-                                                                    <ComboboxList
-                                                                        class="w-[--reka-popper-anchor-width]">
-                                                                        <ComboboxEmpty />
-                                                                        <ComboboxGroup>
-                                                                            <ComboboxItem v-for="tag in filteredTags"
-                                                                                :key="tag.name" :value="tag.name"
-                                                                                @select.prevent="(ev) => {
-                                                                                    if (typeof ev.detail.value === 'string') {
-                                                                                        searchTerm = ''
-                                                                                        updateForm.tags.push(ev.detail.value)
-                                                                                    }
-
-                                                                                    if (filteredTags.length === 0) {
-                                                                                        openSearchTerm = false
-                                                                                    }
-                                                                                }">
-                                                                                {{ tag.name }}
-                                                                            </ComboboxItem>
-                                                                        </ComboboxGroup>
-                                                                    </ComboboxList>
-                                                                </ComboboxAnchor>
-                                                            </Combobox>
-
-                                                            <span class="text-xs text-gray-500">
-                                                                Use comma <span class="font-bold">( ,
-                                                                    )</span> to
-                                                                add
-                                                            </span>
-                                                        </div>
-
-                                                        <div v-if="updateForm.errors.tags" class="text-sm text-red-500">
-                                                            {{ updateForm.errors.tags }}
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="grid grid-cols-4 items-center gap-4">
-                                                        <Label for="description" class="text-right">
-                                                            Description
-                                                        </Label>
-                                                        <Textarea id="description" v-model="updateForm.description"
-                                                            class="col-span-4" />
-                                                    </div>
-
-                                                    <div class="items-top flex gap-x-2">
-                                                        <Checkbox id="delete2" v-model="updateForm.delete_after" />
-                                                        <div class="grid gap-1.5 leading-none">
-                                                            <label for="delete2"
-                                                                class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                                                Delete after conclusion
-                                                            </label>
-                                                            <p class="text-muted-foreground text-sm">
-                                                                Be careful, if checked this tasks will be
-                                                                automatically deleted after conclusion.
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <SheetFooter>
-                                                    <SheetClose as-child>
-                                                        <Button type="submit"> Save changes </Button>
-                                                    </SheetClose>
-                                                </SheetFooter>
-                                            </form>
-                                        </SheetContent>
-                                    </Sheet>
-                                    <Dialog>
-                                        <DialogTrigger as-child>
-                                            <div class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
-                                                variant="destructive">
-                                                Delete
+                            <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
+                                align="end">
+                                <Sheet>
+                                    <SheetTrigger as-child>
+                                        <SheetClose as-child>
+                                            <div @click="selectTask(task)"
+                                                class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
+                                                Edit
                                             </div>
-                                        </DialogTrigger>
+                                        </SheetClose>
+                                    </SheetTrigger>
+                                    <SheetContent :class="cn('overflow-y-auto')">
+                                        <form @submit.prevent="update(task)">
+                                            <SheetHeader>
+                                                <SheetTitle> Edit task </SheetTitle>
+                                                <SheetDescription> Click save when you're done.
+                                                </SheetDescription>
+                                            </SheetHeader>
+                                            <div class="grid gap-4 p-4">
+                                                <div class="grid grid-cols-4 items-center gap-4">
+                                                    <Label for="title" class="text-right"> Title
+                                                    </Label>
+                                                    <Input id="title" v-model="updateForm.title" class="col-span-4" />
+                                                    <div v-if="updateForm.errors.title"
+                                                        class="text-sm text-red-500 col-span-full">
+                                                        {{ updateForm.errors.title }}
+                                                    </div>
+                                                </div>
 
-                                        <DialogContent>
-                                            <form class="space-y-6" @submit.prevent="deleteTask(task.id)">
-                                                <DialogHeader class="space-y-3">
-                                                    <DialogTitle>Are you sure you want to delete this task?
-                                                    </DialogTitle>
-                                                    <DialogDescription>
-                                                        Once your task is deleted, there's no way to recover
-                                                        it.
-                                                    </DialogDescription>
-                                                </DialogHeader>
+                                                <div class="flex flex-col gap-4">
+                                                    <Label for="title" class="text-right"> Repeat
+                                                    </Label>
+                                                    <Select v-model="updateForm.repeat" class="">
+                                                        <SelectTrigger id="role" class="w-full">
+                                                            <SelectValue placeholder="Select" />
+                                                        </SelectTrigger>
+                                                        <SelectContent position="popper">
+                                                            <SelectItem value="none"> Never
+                                                            </SelectItem>
+                                                            <SelectItem value="daily"> Daily
+                                                            </SelectItem>
+                                                            <SelectItem value="weekly"> Weekly
+                                                            </SelectItem>
+                                                            <SelectItem value="monthly"> Monthly
+                                                            </SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
 
-                                                <DialogFooter class="gap-2">
-                                                    <DialogClose as-child>
-                                                        <Button variant="secondary">Cancel</Button>
-                                                    </DialogClose>
+                                                <div class="flex flex-col gap-4">
+                                                    <Label for="title" class="text-right"> Tags </Label>
+                                                    <div>
+                                                        <Combobox v-model="updateForm.tags"
+                                                            v-model:open="openSearchTerm" :ignore-filter="true">
+                                                            <ComboboxAnchor as-child>
+                                                                <TagsInput :model-value="updateForm.tags"
+                                                                    @update:model-value="(val) => (updateForm.tags = val)"
+                                                                    :class="cn('p-0 gap-0 w-full bg-input/30')">
 
-                                                    <Button variant="destructive" :disabled="form.processing">
-                                                        <button type="submit">Delete task</button>
+                                                                    <div
+                                                                        :class="['flex gap-2 flex-wrap items-center', updateForm.tags.length > 0 ? 'p-2' : '']">
+                                                                        <TagsInputItem v-for="tag in updateForm.tags"
+                                                                            :key="tag" :value="tag">
+                                                                            <TagsInputItemText />
+                                                                            <TagsInputItemDelete />
+                                                                        </TagsInputItem>
+                                                                    </div>
+
+                                                                    <ComboboxInput v-model="searchTerm" as-child>
+                                                                        <TagsInputInput placeholder="Tags..."
+                                                                            :class="cn('min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto')"
+                                                                            @keydown.enter.prevent />
+                                                                    </ComboboxInput>
+                                                                </TagsInput>
+
+                                                                <ComboboxList class="w-[--reka-popper-anchor-width]">
+                                                                    <ComboboxEmpty />
+                                                                    <ComboboxGroup>
+                                                                        <ComboboxItem v-for="tag in filteredTags"
+                                                                            :key="tag.name" :value="tag.name"
+                                                                            @select.prevent="(ev) => {
+                                                                                if (typeof ev.detail.value === 'string') {
+                                                                                    searchTerm = ''
+                                                                                    updateForm.tags.push(ev.detail.value)
+                                                                                }
+
+                                                                                if (filteredTags.length === 0) {
+                                                                                    openSearchTerm = false
+                                                                                }
+                                                                            }">
+                                                                            {{ tag.name }}
+                                                                        </ComboboxItem>
+                                                                    </ComboboxGroup>
+                                                                </ComboboxList>
+                                                            </ComboboxAnchor>
+                                                        </Combobox>
+
+                                                        <span class="text-xs text-gray-500">
+                                                            Use comma <span class="font-bold">( ,
+                                                                )</span> to
+                                                            add
+                                                        </span>
+                                                    </div>
+
+                                                    <div v-if="updateForm.errors.tags" class="text-sm text-red-500">
+                                                        {{ updateForm.errors.tags }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="grid grid-cols-4 items-center gap-4">
+                                                    <Label for="description" class="text-right">
+                                                        Description
+                                                    </Label>
+                                                    <Textarea id="description" v-model="updateForm.description"
+                                                        class="col-span-4" />
+                                                </div>
+
+                                                <div class="items-top flex gap-x-2">
+                                                    <Checkbox id="delete2" v-model="updateForm.delete_after" />
+                                                    <div class="grid gap-1.5 leading-none">
+                                                        <label for="delete2"
+                                                            class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                                            Delete after conclusion
+                                                        </label>
+                                                        <p class="text-muted-foreground text-sm">
+                                                            Be careful, if checked this tasks will be
+                                                            automatically deleted after conclusion.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <SheetFooter>
+                                                <Button type="submit"> Save changes </Button>
+                                            </SheetFooter>
+                                        </form>
+                                    </SheetContent>
+                                </Sheet>
+                                <Dialog>
+                                    <DialogTrigger as-child>
+                                        <div class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+                                            variant="destructive">
+                                            Delete
+                                        </div>
+                                    </DialogTrigger>
+
+                                    <DialogContent>
+                                        <form class="space-y-6" @submit.prevent="deleteTask(task.id)">
+                                            <DialogHeader class="space-y-3">
+                                                <DialogTitle>Are you sure you want to delete this task?
+                                                </DialogTitle>
+                                                <DialogDescription>
+                                                    Once your task is deleted, there's no way to recover
+                                                    it.
+                                                </DialogDescription>
+                                            </DialogHeader>
+
+                                            <DialogFooter class="gap-2">
+                                                <DialogClose as-child>
+                                                    <Button variant="secondary" type="button" class="cursor-pointer">
+                                                        Cancel
                                                     </Button>
-                                                </DialogFooter>
-                                            </form>
-                                        </DialogContent>
-                                    </Dialog>
-                                </PopoverContent>
-                            </Popover>
-                        </div>
+                                                </DialogClose>
+
+                                                <Button variant="destructive" type="submit" class="cursor-pointer"
+                                                    :disabled="form.processing">
+                                                    Delete task
+                                                </Button>
+                                            </DialogFooter>
+                                        </form>
+                                    </DialogContent>
+                                </Dialog>
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 </div>
-                <div v-else class="flex h-32 items-center justify-center rounded-lg border">
-                    <p class="text-gray-800 dark:text-gray-100">There are no tasks yet</p>
-                </div>
+            </div>
+            <div v-else class="flex h-32 items-center justify-center rounded-lg border">
+                <p class="text-gray-800 dark:text-gray-100">There are no tasks yet</p>
             </div>
         </div>
     </AppLayout>

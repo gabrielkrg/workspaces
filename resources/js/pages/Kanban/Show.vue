@@ -305,8 +305,9 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
             <draggable :list="column.cards" :group="{ name: 'cards' }" item-key="id" class="flex flex-1 flex-col gap-2"
               @change="handleCardMove">
               <template #item="{ element }">
-                <KanbanCard :title="element.title" :description="element.description" @click="selectCard(element)"
-                  class="cursor-pointer" />
+                <KanbanCard :title="element.title" :description="element.description" :tasks="element.tasks"
+                  @click="selectCard(element)" class="cursor-pointer" />
+
               </template>
             </draggable>
           </div>
@@ -432,7 +433,6 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
                 </DialogContent>
               </Dialog>
             </div>
-
           </div>
 
           <div class="flex justify-between gap-2">
