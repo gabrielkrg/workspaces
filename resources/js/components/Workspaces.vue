@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import UserInfo from '@/components/UserInfo.vue';
+import { SquareStack } from 'lucide-vue-next';
+
+import WorkspaceInfo from '@/components/WorkspaceInfo.vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { type SharedData, type User } from '@/types';
@@ -19,15 +21,21 @@ const { isMobile, state } = useSidebar();
                 <DropdownMenuTrigger as-child>
                     <SidebarMenuButton size="lg"
                         class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                        <UserInfo :user="user" />
+                        <WorkspaceInfo :user="user" />
+
                         <ChevronsUpDown class="ml-auto size-4" />
                     </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent class="w-(--reka-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-                    :side="isMobile ? 'left' : state === 'collapsed' ? 'left' : 'left'" align="end" :side-offset="4">
+                    :side="isMobile ? 'bottom' : state === 'collapsed' ? 'left' : 'bottom'" align="end"
+                    :side-offset="4">
                     <UserMenuContent :user="user" />
+
                 </DropdownMenuContent>
             </DropdownMenu>
         </SidebarMenuItem>
     </SidebarMenu>
+
+
+
 </template>

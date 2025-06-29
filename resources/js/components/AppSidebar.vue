@@ -2,12 +2,10 @@
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import Workspace from '@/components/Workspace.vue';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { CalendarFold, Clock, LayoutGrid, ListTodo, NotebookText, SquareKanban, Tags, Ticket, User } from 'lucide-vue-next';
-import AppLogo from './AppLogo.vue';
+import { Clock, LayoutGrid, ListTodo, NotebookText, SquareKanban, Tags, Ticket, User } from 'lucide-vue-next';
+import NavWorkspace from './NavWorkspace.vue';
 
 const mainNavItems: NavItem[] = [
     {
@@ -15,11 +13,6 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
     },
-    // {
-    //     title: 'Workspaces',
-    //     href: '/workspaces',
-    //     icon: SquareStack,
-    // },
     {
         title: 'Tasks',
         href: '/tasks',
@@ -79,15 +72,7 @@ const footerNavItems: NavItem[] = [
 <template>
     <Sidebar collapsible="icon" variant="inset">
         <SidebarHeader>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('dashboard')">
-                        <AppLogo />
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
+            <NavWorkspace />
         </SidebarHeader>
 
         <SidebarContent>
@@ -96,7 +81,6 @@ const footerNavItems: NavItem[] = [
 
         <SidebarFooter>
             <NavFooter :items="footerNavItems" />
-            <Workspace />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

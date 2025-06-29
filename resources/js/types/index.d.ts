@@ -26,6 +26,11 @@ export interface SharedData extends PageProps {
     sidebarOpen: boolean;
 }
 
+interface Workspace {
+    id: number;
+    name: string;
+}
+
 export interface User {
     id: number;
     name: string;
@@ -34,10 +39,8 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
-    workspaces: {
-        id: number;
-        name: string;
-    }[];
+    workspace: Workspace;
+    workspaces: Workspace[];
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
