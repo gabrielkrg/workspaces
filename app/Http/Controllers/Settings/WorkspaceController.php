@@ -95,8 +95,6 @@ class WorkspaceController extends Controller
         Auth::user()->update($validated);
 
         return redirect()->back()->with('success', 'Workspace changed successfully!');
-        // return redirect()->route('workspace.edit')->with('success', 'Workspace changed successfully!');
-
     }
 
 
