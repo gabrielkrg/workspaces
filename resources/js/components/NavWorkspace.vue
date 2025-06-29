@@ -5,11 +5,11 @@ import { type SharedData, type User } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 import { Box, ChevronsUpDown } from 'lucide-vue-next';
 import WorkspaceMenuContent from './WorkspaceMenuContent.vue';
-import { watch } from 'vue';
 
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
 const { isMobile, state } = useSidebar();
+
 </script>
 
 <template>
@@ -19,8 +19,8 @@ const { isMobile, state } = useSidebar();
                 <DropdownMenuTrigger as-child>
                     <SidebarMenuButton size="lg"
                         class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                        <div class="flex items-center gap-2">
-                            <Box class="size-6 overflow-hidden rounded-lg" />
+                        <div class="size-9 overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                            <Box class="size-6" />
                         </div>
 
                         <div class="grid flex-1 text-left text-sm leading-tight">

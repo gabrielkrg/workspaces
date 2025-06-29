@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Link, router } from '@inertiajs/vue3';
-import { Box, Plus, Settings } from 'lucide-vue-next';
+import { Box, Settings } from 'lucide-vue-next';
 import DropdownMenuLabel from './ui/dropdown-menu/DropdownMenuLabel.vue';
-import { Button } from '@/components/ui/button';
 
 interface Workspace {
     id: number;
@@ -21,8 +20,6 @@ const setWorkspace = (workspaceId: number) => {
         workspace_id: workspaceId,
     }, {
         onSuccess: () => {
-            // Reload the current page to refresh the user data
-            router.reload();
         },
         onError: (errors) => {
             console.error('Error setting workspace:', errors);
@@ -30,9 +27,7 @@ const setWorkspace = (workspaceId: number) => {
     });
 };
 
-// const createWorkspace = () => {
-//     router.post(route('workspace.create'));
-// };
+
 </script>
 
 <template>

@@ -12,7 +12,10 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        $workspace = $user->workspace->loadCount('tasks', 'tickets', 'clients');
+        $workspace = $user->workspace()->first();
+        if ($workspace) {
+            $workspace->loadCount('tasks', 'tickets', 'clients');
+        }
 
         $workspaces = $user->workspaces()
             ->select('workspaces.id', 'workspaces.name')
