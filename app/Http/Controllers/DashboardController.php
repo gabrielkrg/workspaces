@@ -14,7 +14,7 @@ class DashboardController extends Controller
 
         $workspace = $user->workspace()->first();
         if ($workspace) {
-            $workspace->loadCount('tasks', 'tickets', 'clients');
+            $workspace->loadCount('tasks', 'tickets', 'clients', 'cards');
         }
 
         $workspaces = $user->workspaces()

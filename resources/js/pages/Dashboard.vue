@@ -103,7 +103,7 @@ const workspcesLineData = {
             <HeadingSmall title="Overview" description="Here you have to total number of tasks, tickets and clients"
                 class="mb-5 text-center" />
 
-            <div class="grid auto-rows-min gap-4 md:grid-cols-3">
+            <div class="grid auto-rows-min gap-4 md:grid-cols-4">
                 <Link :href="route('tasks.index')">
                 <Card class="hover:bg-sidebar-border/70 dark:hover:bg-sidebar-border">
                     <CardHeader>
@@ -111,6 +111,17 @@ const workspcesLineData = {
                     </CardHeader>
                     <CardContent>
                         <p class="text-2xl font-bold">{{ props.workspace.tasks_count }}</p>
+                    </CardContent>
+                </Card>
+                </Link>
+
+                <Link :href="route('kanban.index')">
+                <Card class="hover:bg-sidebar-border/70 dark:hover:bg-sidebar-border">
+                    <CardHeader>
+                        <CardTitle>Cards</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p class="text-2xl font-bold">{{ props.workspace.cards_count }}</p>
                     </CardContent>
                 </Card>
                 </Link>
