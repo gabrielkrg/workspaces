@@ -47,10 +47,12 @@ class KanbanController extends Controller
         }, 'columns.cards.tasks', 'columns.cards.tags']);
 
         $tags = $workspace->tags()->orderBy('name', 'asc')->get();
+        $clients = $workspace->clients()->orderBy('name', 'asc')->get();
 
         return Inertia::render('Kanban/Show', [
             'kanban' => $kanban,
             'tags' => $tags,
+            'clients' => $clients,
         ]);
     }
 

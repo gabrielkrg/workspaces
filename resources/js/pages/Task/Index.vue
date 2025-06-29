@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/combobox';
 import { cn } from '@/lib/utils';
 import DialogClose from '@/components/ui/dialog/DialogClose.vue';
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Tasks',
@@ -45,11 +46,13 @@ const props = defineProps<{
     tasks: any[],
     tags: { name: string, color: string }[],
     filters: object,
+    clients: any[],
 }>();
 
 const form = useForm({
     title: '',
     description: '',
+    client_id: null,
     repeat: 'none',
     tags: [] as string[],
     delete_after: false,
@@ -74,6 +77,7 @@ const updateForm = useForm({
     title: '',
     repeat: '',
     tags: [] as string[],
+    client_id: null,
     description: '',
     delete_after: false,
 });
@@ -86,6 +90,7 @@ const selectTask = (task) => {
     updateForm.tags = task.tags?.map((tag) => tag.name) || [];
     updateForm.description = task.description;
     updateForm.delete_after = task.delete_after;
+    updateForm.client_id = task.client_id;
 };
 
 const update = (taskId) => {
@@ -144,6 +149,7 @@ const filtersForm = useForm({
     tags: props.filters?.tags || [],
     done: props.filters?.done || '',
     order: props.filters?.order || '',
+    client_id: props.filters?.client_id || '',
 });
 
 const submitFilters = () => {
@@ -164,7 +170,6 @@ const filteredTags = computed(() => {
 })
 
 const openSearchTermFilter = ref(false)
-const openSearchTermFilterMobile = ref(false)
 const searchTermFilter = ref('')
 
 const filteredTagsFilter = computed(() => {
@@ -194,6 +199,13 @@ watch(
     },
     { deep: true }
 );
+
+watch(
+    () => filtersForm.client_id,
+    () => {
+        submitFilters();
+    },
+);
 </script>
 
 <template>
@@ -203,23 +215,24 @@ watch(
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div class="flex flex-wrap items-end justify-between gap-4">
-                <div class="grid grid-cols-1 gap-4 md:hidden">
+                <div class="grid grid-cols-1 gap-4">
                     <Popover>
                         <PopoverTrigger as-child>
                             <Button variant="outline"> Filters
                                 <ChevronDown class="h-5 w-5 text-gray-900 dark:text-white" />
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent class="flex w-80 flex-col gap-3">
+                        <PopoverContent class="flex w-80 flex-col gap-3" :side="'bottom'" align="start"
+                            :side-offset="4">
                             <div class="flex w-full max-w-sm flex-col gap-1.5">
-                                <Label for="search-mobile">Title</Label>
-                                <Input @input="submitFilters" id="search-mobile" type="search" placeholder="Title"
+                                <Label for="search">Title</Label>
+                                <Input @input="submitFilters" id="search" type="search" placeholder="Title"
                                     v-model="filtersForm.search" />
                             </div>
 
                             <div class="flex w-full max-w-sm flex-col gap-1.5">
-                                <Label for="tag-mobile">Tag</Label>
-                                <Combobox v-model="filtersForm.tags" v-model:open="openSearchTermFilterMobile"
+                                <Label for="tag">Tag</Label>
+                                <Combobox v-model="filtersForm.tags" v-model:open="openSearchTermFilter"
                                     :ignore-filter="true">
                                     <ComboboxAnchor as-child>
                                         <TagsInput :model-value="filtersForm.tags" @update:model-value="(val) => {
@@ -265,9 +278,9 @@ watch(
                             </div>
 
                             <div class="flex w-full max-w-sm flex-col gap-1.5">
-                                <Label for="status-mobile">Status</Label>
+                                <Label for="status">Status</Label>
                                 <Select v-model="filtersForm.done">
-                                    <SelectTrigger id="status-mobile" class="w-full">
+                                    <SelectTrigger id="status" class="w-full">
                                         <SelectValue placeholder="Select" />
                                     </SelectTrigger>
                                     <SelectContent position="popper">
@@ -279,9 +292,9 @@ watch(
                             </div>
 
                             <div class="flex w-full max-w-sm flex-col gap-1.5">
-                                <Label for="status-mobile">Order by</Label>
+                                <Label for="order">Order by</Label>
                                 <Select v-model="filtersForm.order">
-                                    <SelectTrigger id="status-mobile" class="w-full">
+                                    <SelectTrigger id="order" class="w-full">
                                         <SelectValue placeholder="Select" />
                                     </SelectTrigger>
                                     <SelectContent position="popper">
@@ -292,91 +305,23 @@ watch(
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            <div class="flex w-full max-w-sm flex-col gap-1.5">
+                                <Label for="client">Client</Label>
+                                <Select v-model="filtersForm.client_id">
+                                    <SelectTrigger id="client" class="w-full">
+                                        <SelectValue placeholder="Select" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                        <SelectItem :value="null"> All </SelectItem>
+                                        <SelectItem v-for="client in clients" :key="client.id" :value="client.id">
+                                            {{ client.name }}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </PopoverContent>
                     </Popover>
-                </div>
-
-                <div class="hidden grid-cols-4 gap-4 md:grid">
-                    <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
-                        <Label for="search">Title</Label>
-                        <Input @input="submitFilters" id="search" type="search" placeholder="Title"
-                            v-model="filtersForm.search" />
-                    </div>
-
-                    <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1 relative">
-                        <Label for="tag">Tag</Label>
-                        <Combobox v-model="filtersForm.tags" v-model:open="openSearchTermFilter" :ignore-filter="true">
-                            <ComboboxAnchor as-child :class="cn('dark:bg-input/30 relative')">
-                                <TagsInput :model-value="filtersForm.tags" @update:model-value="(val) => {
-                                    filtersForm.tags = [...val]
-                                    submitFilters()
-                                }" :class="cn('p-0 gap-0 w-full')">
-
-                                    <div
-                                        :class="['flex gap-2 flex-wrap items-center', filtersForm.tags.length > 0 ? 'p-2' : '']">
-                                        <TagsInputItem v-for="tag in filtersForm.tags" :key="tag" :value="tag">
-                                            <TagsInputItemText />
-                                            <TagsInputItemDelete />
-                                        </TagsInputItem>
-                                    </div>
-
-                                    <ComboboxInput v-model="searchTermFilter" as-child>
-                                        <TagsInputInput placeholder="Select tags..."
-                                            :class="cn('min-w-[200px] w-full p-0 focus-visible:ring-0 h-auto')"
-                                            @keydown.enter.prevent />
-                                    </ComboboxInput>
-                                </TagsInput>
-
-                                <ComboboxList :class="cn('w-[--reka-popper-anchor-width]')">
-                                    <ComboboxEmpty />
-                                    <ComboboxGroup>
-                                        <ComboboxItem v-for="tag in filteredTagsFilter" :key="tag.name"
-                                            :value="tag.name" @select.prevent="(ev) => {
-                                                if (typeof ev.detail.value === 'string') {
-                                                    searchTermFilter = ''
-                                                    filtersForm.tags.push(ev.detail.value)
-                                                }
-
-                                                if (filteredTagsFilter.length === 0) {
-                                                    openSearchTermFilter = false
-                                                }
-                                            }">
-                                            {{ tag.name }}
-                                        </ComboboxItem>
-                                    </ComboboxGroup>
-                                </ComboboxList>
-                            </ComboboxAnchor>
-                        </Combobox>
-                    </div>
-
-                    <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
-                        <Label for="status">Status</Label>
-                        <Select v-model="filtersForm.done">
-                            <SelectTrigger id="status" class="w-full">
-                                <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                            <SelectContent position="popper">
-                                <SelectItem :value="null"> All </SelectItem>
-                                <SelectItem value="false"> To do </SelectItem>
-                                <SelectItem value="true"> Done </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div class="col-span-full grid w-full max-w-sm items-center gap-1.5 md:col-span-1">
-                        <Label for="status-mobile">Order by</Label>
-                        <Select v-model="filtersForm.order">
-                            <SelectTrigger id="status-mobile" class="w-full">
-                                <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                            <SelectContent position="popper">
-                                <SelectItem value="recent"> Recent </SelectItem>
-                                <SelectItem value="oldest"> Oldest </SelectItem>
-                                <SelectItem value="title"> Title </SelectItem>
-                                <SelectItem value="highlight"> Highlight </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
                 </div>
 
 
@@ -398,6 +343,20 @@ watch(
                                     <div v-if="form.errors.title" class="text-sm text-red-500 col-span-full">
                                         {{ form.errors.title }}
                                     </div>
+                                </div>
+
+                                <div class="flex flex-col gap-4">
+                                    <Label for="title" class="text-right"> Client </Label>
+                                    <Select v-model="form.client_id" class="">
+                                        <SelectTrigger id="role" class="w-full">
+                                            <SelectValue placeholder="Select" />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            <SelectItem v-for="client in clients" :key="client.id" :value="client.id">
+                                                {{ client.name }}
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <div class="flex flex-col gap-4">
@@ -469,6 +428,7 @@ watch(
                                         {{ form.errors.tags }}
                                     </div>
                                 </div>
+
 
                                 <div class="grid grid-cols-4 items-center gap-4">
                                     <Label for="description" class="text-right"> Description </Label>
@@ -597,6 +557,22 @@ watch(
                                                         class="text-sm text-red-500 col-span-full">
                                                         {{ updateForm.errors.title }}
                                                     </div>
+                                                </div>
+
+                                                <div class="flex flex-col gap-4">
+                                                    <Label for="title" class="text-right"> Client
+                                                    </Label>
+                                                    <Select v-model="updateForm.client_id" class="">
+                                                        <SelectTrigger id="role" class="w-full">
+                                                            <SelectValue placeholder="Select" />
+                                                        </SelectTrigger>
+                                                        <SelectContent position="popper">
+                                                            <SelectItem v-for="client in clients" :key="client.id"
+                                                                :value="client.id">
+                                                                {{ client.name }}
+                                                            </SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
                                                 </div>
 
                                                 <div class="flex flex-col gap-4">

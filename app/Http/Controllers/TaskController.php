@@ -66,12 +66,18 @@ class TaskController extends Controller
                 ->orderBy('created_at', 'desc');
         }
 
+        if ($request->filled('client_id')) {
+            $query->where('client_id', $request->client_id);
+        }
+
         $tasks = $query->get();
         $tags = $workspace->tags()->orderBy('name', 'asc')->get();
+        $clients = $workspace->clients()->orderBy('name', 'asc')->get();
 
         return Inertia::render('Task/Index', [
             'tasks' => $tasks,
             'tags' => $tags,
+            'clients' => $clients,
             'filters' => $request->only(['search', 'tags', 'done']),
         ]);
     }
@@ -88,20 +94,17 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'repeat' => 'required|string|in:daily,weekly,monthly,none',
             'description' => 'nullable|string',
+            'client_id' => 'nullable|exists:clients,id',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
             'delete_after' => 'required|boolean',
         ]);
 
-        $task = new Task([
-            'title' => $validated['title'],
-            'description' => $validated['description'] ?? '',
-            'repeat' => $validated['repeat'],
+        $task = new Task(array_merge($validated, [
             'done' => false,
             'user_id' => $user->id,
             'workspace_id' => $user->workspace_id,
-            'delete_after' => $validated['delete_after'],
-        ]);
+        ]));
 
         $task->save();
 
@@ -132,6 +135,7 @@ class TaskController extends Controller
             'title' => 'sometimes|string|max:255',
             'repeat' => 'sometimes|string|in:daily,weekly,monthly,none',
             'description' => 'nullable|string',
+            'client_id' => 'nullable|exists:clients,id',
             'done' => 'sometimes|boolean',
             'tags' => 'sometimes|array',
             'tags.*' => 'string|max:50',

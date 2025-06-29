@@ -11,7 +11,7 @@ class Task extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'repeat', 'highlight', 'done', 'delete_after', 'user_id', 'workspace_id'];
+    protected $fillable = ['title', 'description', 'repeat', 'highlight', 'done', 'delete_after', 'user_id', 'workspace_id', 'client_id'];
 
     protected $guarded = [];
 
@@ -30,11 +30,6 @@ class Task extends Model
     {
         return $this->belongsTo(Workspace::class);
     }
-
-    // public function tags()
-    // {
-    //     return $this->belongsToMany(Tag::class);
-    // }
 
     public function tags(): MorphToMany
     {

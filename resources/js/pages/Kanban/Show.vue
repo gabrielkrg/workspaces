@@ -35,6 +35,7 @@ import {
   ComboboxItem,
 } from '@/components/ui/combobox';
 import { TagsInput, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText } from '@/components/ui/tags-input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Kanban {
   id: number;
@@ -86,6 +87,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const props = defineProps<{
   kanban: Kanban;
   tags: Tag[];
+  clients: any[];
 }>();
 
 const columns = ref<Column[]>(props.kanban.columns);
@@ -107,6 +109,7 @@ const card = useForm({
   column_id: null as number | null,
   order: 0,
   tags: [] as string[],
+  client_id: null as number | null,
 });
 
 const createCard = (column: Column) => {
@@ -136,6 +139,7 @@ const updateCardForm = useForm({
   column_id: null as number | null,
   order: 0,
   tags: [] as string[],
+  client_id: null as number | null,
 });
 
 const editModalOpen = ref(false);
@@ -149,6 +153,7 @@ const selectCard = (card: Card) => {
   updateCardForm.column_id = card.column_id;
   updateCardForm.order = card.order;
   updateCardForm.tags = card.tags?.map(tag => tag.name) || [];
+  updateCardForm.client_id = card.client_id;
 
   updateCardTasks(card);
 };
@@ -188,7 +193,11 @@ const taskForm = useForm({
 const attachTask = () => {
   if (selectedCard.value == null) return;
 
-  taskForm.post(route('cards.attach.task', { card: selectedCard.value?.id, tags: selectedCard.value?.tags.map(tag => tag.name) || [] }), {
+  taskForm.post(route('cards.attach.task', {
+    card: selectedCard.value?.id,
+    tags: selectedCard.value?.tags.map(tag => tag.name) || [],
+    client_id: selectedCard.value?.client_id || null
+  }), {
     onSuccess: () => {
 
       updateCardTasks(selectedCard.value!);
@@ -331,6 +340,20 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
                     </div>
 
                     <div class="flex flex-col gap-4">
+                      <Label for="title" class="text-right"> Client </Label>
+                      <Select v-model="card.client_id" class="">
+                        <SelectTrigger id="role" class="w-full">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                          <SelectItem v-for="client in clients" :key="client.id" :value="client.id">
+                            {{ client.name }}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div class="flex flex-col gap-4">
                       <Label for="title" class="text-right"> Tags </Label>
                       <div>
                         <Combobox v-model="card.tags" v-model:open="openSearchTerm" :ignore-filter="true">
@@ -433,6 +456,19 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
               </span>
             </div>
 
+            <div class="flex flex-col gap-4">
+              <Label for="title" class="text-right"> Client </Label>
+              <Select v-model="updateCardForm.client_id" class="">
+                <SelectTrigger id="role" class="w-full">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem v-for="client in clients" :key="client.id" :value="client.id">
+                    {{ client.name }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             <div class="flex flex-col gap-4">
               <Label for="title" class="text-right"> Tags </Label>
@@ -592,8 +628,8 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
                 </DialogContent>
               </Dialog>
 
-              <span v-if="selectedCard?.tags.length > 0" class="text-sm text-blue-400">
-                Tasks created from here will have the tags of the card
+              <span class="text-xs text-gray-500">
+                Tasks created from here will have the tags and client of the card
               </span>
             </div>
           </div>

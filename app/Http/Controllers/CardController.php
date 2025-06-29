@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 
 class CardController extends Controller
 {
@@ -18,29 +19,27 @@ class CardController extends Controller
 
     public function store(Request $request, Kanban $kanban)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'column_id' => 'required|exists:columns,id',
             'order' => 'required|integer',
             'tags' => 'sometimes|array',
             'tags.*' => 'string|max:50',
+            'client_id' => 'nullable|exists:clients,id',
         ]);
+
 
         $user = Auth::user();
         $workspace = Workspace::findOrFail($user->workspace_id);
 
         $this->authorize('update', $workspace);
 
-        $card = Card::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'column_id' => $request->column_id,
-            'kanban_id' => $kanban->id,
+        $card = Card::create(array_merge($validated, [
             'workspace_id' => $workspace->id,
+            'kanban_id' => $kanban->id,
             'user_id' => $user->id,
-            'order' => $request->order,
-        ]);
+        ]));
 
         if (!empty($request->tags)) {
             $tagIds = collect($request->tags)->map(function ($tagName) use ($user) {
@@ -59,30 +58,25 @@ class CardController extends Controller
 
     public function update(Request $request, Card $card)
     {
-        $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'description' => 'sometimes|string',
-            'order' => 'sometimes|integer',
-            'column_id' => 'sometimes|exists:columns,id',
-            'tags' => 'sometimes|array',
-            'tags.*' => 'string|max:50',
-        ]);
-
-
         $user = Auth::user();
         $workspace = Workspace::findOrFail($user->workspace_id);
 
         $this->authorize('update', $workspace);
 
-        $card->update([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'order' => $validated['order'],
-            'column_id' => $validated['column_id'],
+        $validated = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'order' => 'sometimes|integer',
+            'column_id' => 'sometimes|exists:columns,id',
+            'client_id' => 'nullable|exists:clients,id',
+            'tags' => 'sometimes|array',
+            'tags.*' => 'string|max:50',
         ]);
 
+        $card->update(array_merge(Arr::except($validated, ['tags'])));
+
         if (array_key_exists('tags', $validated)) {
-            $tagIds = collect($validated['tags'])->map(function ($tagName) use ($user) {
+            $tagIds = collect($validated['tags'])->map(function ($tagName) use ($user) { // create tags if they don't exist
                 return Tag::firstOrCreate([
                     'name' => $tagName,
                     'user_id' => $user->id,
@@ -91,7 +85,16 @@ class CardController extends Controller
             });
 
             $card->tags()->sync($tagIds);
+            $card->tasks()->each(function ($task) use ($tagIds) {
+                $task->tags()->sync($tagIds);
+            });
         }
+
+        $card->tasks()->each(function ($task) use ($validated) {
+            $task->update([
+                'client_id' => $validated['client_id'],
+            ]);
+        });
 
         return redirect()->route('kanban.show', $card->kanban_id)->with('success', 'Card updated successfully');
     }
@@ -110,24 +113,25 @@ class CardController extends Controller
 
     public function attachTask(Request $request, Card $card)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'tags' => 'sometimes|array',
-            'tags.*' => 'string|max:50',
-        ]);
-
-
         $user = Auth::user();
         $workspace = Workspace::findOrFail($user->workspace_id);
 
         $this->authorize('update', $workspace);
 
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'tags' => 'sometimes|array',
+            'tags.*' => 'string|max:50',
+            'client_id' => 'nullable|exists:clients,id',
+        ]);
+
         $task = Task::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'user_id' => $user->id,
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'client_id' => $validated['client_id'] ?? null,
             'workspace_id' => $workspace->id,
+            'user_id' => $user->id,
         ]);
 
         if (!empty($request->tags)) {

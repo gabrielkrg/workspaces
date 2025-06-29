@@ -14,6 +14,7 @@ class Card extends Model
         'user_id',
         'column_id',
         'order',
+        'client_id',
     ];
 
     protected $casts = [
@@ -44,4 +45,10 @@ class Card extends Model
     {
         return $this->morphToMany(Tag::class, 'taggable');
     }
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
+
 }

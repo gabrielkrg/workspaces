@@ -22,19 +22,18 @@ const { isMobile, state } = useSidebar();
                         <div class="size-9 overflow-hidden rounded-lg bg-muted flex items-center justify-center">
                             <Box class="size-6" />
                         </div>
-
                         <div class="grid flex-1 text-left text-sm leading-tight">
                             <span class="text-xs text-sidebar-accent-foreground">
                                 Workspace
                             </span>
                             <span class="mb-0.5 truncate leading-none font-semibold">{{ user.workspace.name }}</span>
                         </div>
-
                         <ChevronsUpDown class="ml-auto size-4" />
                     </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent class="w-(--reka-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-                    :side="isMobile ? 'left' : state === 'collapsed' ? 'left' : 'left'" align="start" :side-offset="4">
+                    :side="isMobile ? 'bottom' : state === 'collapsed' ? 'left' : 'left'" align="start"
+                    :side-offset="4">
                     <WorkspaceMenuContent :workspaces="user.workspaces" />
                 </DropdownMenuContent>
             </DropdownMenu>
