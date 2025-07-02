@@ -196,7 +196,8 @@ const attachTask = () => {
   taskForm.post(route('cards.attach.task', {
     card: selectedCard.value?.id,
     tags: selectedCard.value?.tags.map(tag => tag.name) || [],
-    client_id: selectedCard.value?.client_id || null
+    client_id: selectedCard.value?.client_id || null,
+    kanban_id: props.kanban.id
   }), {
     onSuccess: () => {
 

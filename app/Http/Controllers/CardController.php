@@ -125,15 +125,14 @@ class CardController extends Controller
             'tags' => 'sometimes|array',
             'tags.*' => 'string|max:50',
             'client_id' => 'nullable|exists:clients,id',
+            'kanban_id' => 'required|exists:kanbans,id',
         ]);
 
-        $task = Task::create([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'client_id' => $validated['client_id'] ?? null,
+        $task = Task::create(array_merge(Arr::except($validated, ['tags', 'client_id']), [
             'workspace_id' => $workspace->id,
             'user_id' => $user->id,
-        ]);
+            "client_id" => $validated['client_id'] ?? null,
+        ]));
 
         if (!empty($request->tags)) {
             $tagIds = collect($request->tags)->map(function ($tagName) use ($user) {

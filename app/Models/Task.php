@@ -13,7 +13,9 @@ class Task extends Model
 {
     use HasFactory, HasApiTokens;
 
-    protected $fillable = ['title', 'description', 'repeat', 'highlight', 'done', 'delete_after', 'user_id', 'workspace_id', 'client_id'];
+    protected $fillable = [
+        'title', 'description', 'repeat', 'highlight', 'done', 'delete_after', 'user_id', 'workspace_id', 'client_id', 'kanban_id'
+    ];
 
     protected $guarded = [];
 

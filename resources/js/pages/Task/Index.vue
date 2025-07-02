@@ -19,8 +19,8 @@ import { TagsInput, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInpu
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm } from '@inertiajs/vue3';
-import { Check, ChevronDown, EllipsisVertical, Highlighter, Timer } from 'lucide-vue-next';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { Check, ChevronDown, EllipsisVertical, Highlighter, Kanban, Timer } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { useFilter } from 'reka-ui'
 import {
@@ -520,11 +520,15 @@ watch(
 
                     <!-- Actions -->
                     <div class="flex items-start justify-end gap-1">
-                        <button type="button"
+                        <!-- <button type="button"
                             class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md"
                             @click="startTimer(task.id)">
                             <Timer class="text-gray-900 dark:text-white" />
-                        </button>
+                        </button> -->
+                        <Link :href="route('kanban.show', { kanban: task.kanban_id })" v-if="task.kanban_id"
+                            class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md">
+                        <Kanban class="text-gray-900 dark:text-white" />
+                        </Link>
                         <button type="button"
                             :class="{ 'bg-accent hover:bg-accent/90 hover:text-accent-foreground dark:hover:bg-accent/50': task.highlight }"
                             class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md"
