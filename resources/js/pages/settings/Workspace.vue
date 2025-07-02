@@ -167,9 +167,33 @@ watch(
 
         <SettingsLayout>
             <div class="flex flex-wrap gap-3">
+
+                <Dialog v-model:open="isDialogCreateOpen">
+                    <DialogTrigger as-child>
+                        <Button variant="default" class="cursor-pointer"> Create Workspace </Button>
+                    </DialogTrigger>
+                    <DialogContent class="sm:max-w-[425px]">
+                        <form @submit.prevent="create" class="mb-6 space-y-6">
+                            <DialogHeader>
+                                <DialogTitle>Create Workspace</DialogTitle>
+                                <DialogDescription> Create a workspace here. Click save when you're done.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div class="grid gap-4 py-4">
+                                <div class="grid grid-cols-4 items-center gap-4">
+                                    <Label for="name" class="text-right"> Name </Label>
+                                    <Input id="name" v-model="createForm.name" class="col-span-3" />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button type="submit" class="cursor-pointer"> Save </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
                 <Dialog v-model:open="isDialogEditOpen">
                     <DialogTrigger as-child>
-                        <Button variant="outline" class="cursor-pointer"> Edit Workspace </Button>
+                        <Button variant="secondary" class="cursor-pointer"> Edit Workspace </Button>
                     </DialogTrigger>
                     <DialogContent class="sm:max-w-[425px]">
                         <form @submit.prevent="update" class="mb-6 space-y-6">
@@ -204,30 +228,6 @@ watch(
                             </div>
                             <DialogFooter>
                                 <Button type="submit" class="cursor-pointer"> Save changes </Button>
-                            </DialogFooter>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-
-                <Dialog v-model:open="isDialogCreateOpen">
-                    <DialogTrigger as-child>
-                        <Button variant="outline" class="cursor-pointer"> Create Workspace </Button>
-                    </DialogTrigger>
-                    <DialogContent class="sm:max-w-[425px]">
-                        <form @submit.prevent="create" class="mb-6 space-y-6">
-                            <DialogHeader>
-                                <DialogTitle>Create Workspace</DialogTitle>
-                                <DialogDescription> Create a workspace here. Click save when you're done.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div class="grid gap-4 py-4">
-                                <div class="grid grid-cols-4 items-center gap-4">
-                                    <Label for="name" class="text-right"> Name </Label>
-                                    <Input id="name" v-model="createForm.name" class="col-span-3" />
-                                </div>
-                            </div>
-                            <DialogFooter>
-                                <Button type="submit" class="cursor-pointer"> Save </Button>
                             </DialogFooter>
                         </form>
                     </DialogContent>

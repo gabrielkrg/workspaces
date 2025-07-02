@@ -584,8 +584,6 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
                 </div>
               </div>
 
-
-
               <Dialog>
                 <DialogTrigger as-child>
                   <Button variant="outline">
@@ -614,7 +612,8 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
                         <Textarea id="description" v-model="taskForm.description" class="col-span-3" />
                       </div>
                     </div>
-                    <DialogFooter class="gap-2">
+
+                    <DialogFooter class="gap-2 flex justify-end">
                       <DialogClose as-child>
                         <Button variant="secondary">Cancel</Button>
                       </DialogClose>
@@ -634,43 +633,47 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
             </div>
           </div>
 
-          <div class="flex justify-between gap-2">
-            <Dialog>
-              <DialogTrigger as-child>
-                <Button variant="destructive">
-                  Delete
-                </Button>
-              </DialogTrigger>
+          <div class="flex flex-wrap space-y-2 justify-between gap-2">
+            <div class="order-2 md:order-1">
+              <Dialog class="">
+                <DialogTrigger as-child>
+                  <Button variant="destructive">
+                    Delete
+                  </Button>
+                </DialogTrigger>
 
-              <DialogContent>
-                <form class="space-y-6" @submit.prevent="selectedCard && deleteCard(selectedCard.id)">
-                  <DialogHeader class="space-y-3">
-                    <DialogTitle>Are you sure you want to delete this card?
-                    </DialogTitle>
-                    <DialogDescription>
-                      Once your card is deleted, there's no way to recover
-                      it.
-                    </DialogDescription>
-                  </DialogHeader>
+                <DialogContent>
+                  <form class="space-y-6" @submit.prevent="selectedCard && deleteCard(selectedCard.id)">
+                    <DialogHeader class="space-y-3">
+                      <DialogTitle>Are you sure you want to delete this card?
+                      </DialogTitle>
+                      <DialogDescription>
+                        Once your card is deleted, there's no way to recover
+                        it.
+                      </DialogDescription>
+                    </DialogHeader>
 
-                  <DialogFooter class="gap-2">
-                    <DialogClose as-child>
-                      <Button variant="secondary">Cancel</Button>
-                    </DialogClose>
+                    <DialogFooter class="gap-2">
+                      <DialogClose as-child>
+                        <Button variant="secondary">Cancel</Button>
+                      </DialogClose>
 
-                    <Button variant="destructive" :disabled="updateCardForm.processing">
-                      <button type="submit">Delete card</button>
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-            <div class="flex justify-end gap-2">
+                      <Button variant="destructive" :disabled="updateCardForm.processing">
+                        <button type="submit">Delete card</button>
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div class="flex justify-end gap-2 order-1 md:order-2">
               <SheetClose asChild>
                 <Button variant="outline" type="button" class="cursor-pointer">Cancel</Button>
               </SheetClose>
 
-              <Button type="submit" :disabled="updateCardForm.processing" class="cursor-pointer">Save Changes</Button>
+              <Button type="submit" :disabled="updateCardForm.processing" class="cursor-pointer">Save
+                Changes</Button>
             </div>
           </div>
         </form>

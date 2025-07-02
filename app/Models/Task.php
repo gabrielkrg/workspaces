@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Laravel\Sanctum\HasApiTokens;
+
 
 
 class Task extends Model
 {
-    use HasFactory;
+    use HasFactory, HasApiTokens;
 
     protected $fillable = ['title', 'description', 'repeat', 'highlight', 'done', 'delete_after', 'user_id', 'workspace_id', 'client_id'];
 

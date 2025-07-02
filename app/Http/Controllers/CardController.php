@@ -76,7 +76,8 @@ class CardController extends Controller
         $card->update(array_merge(Arr::except($validated, ['tags'])));
 
         if (array_key_exists('tags', $validated)) {
-            $tagIds = collect($validated['tags'])->map(function ($tagName) use ($user) { // create tags if they don't exist
+            // create tags if they don't exist
+            $tagIds = collect($validated['tags'])->map(function ($tagName) use ($user) { 
                 return Tag::firstOrCreate([
                     'name' => $tagName,
                     'user_id' => $user->id,
@@ -92,7 +93,7 @@ class CardController extends Controller
 
         $card->tasks()->each(function ($task) use ($validated) {
             $task->update([
-                'client_id' => $validated['client_id'],
+                'client_id' => $validated['client_id'] ?? null,
             ]);
         });
 

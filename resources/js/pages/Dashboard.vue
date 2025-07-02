@@ -110,7 +110,7 @@ const workspcesLineData = {
                         <CardTitle>Tasks</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p class="text-2xl font-bold">{{ props.workspace.tasks_count }}</p>
+                        <p class="text-2xl font-bold">{{ workspace?.tasks_count }}</p>
                     </CardContent>
                 </Card>
                 </Link>
@@ -121,7 +121,7 @@ const workspcesLineData = {
                         <CardTitle>Cards</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p class="text-2xl font-bold">{{ props.workspace.cards_count }}</p>
+                        <p class="text-2xl font-bold">{{ workspace?.cards_count }}</p>
                     </CardContent>
                 </Card>
                 </Link>
@@ -132,7 +132,7 @@ const workspcesLineData = {
                         <CardTitle>Tickets</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p class="text-2xl font-bold">{{ props.workspace.tickets_count }}</p>
+                        <p class="text-2xl font-bold">{{ workspace?.tickets_count }}</p>
                     </CardContent>
                 </Card>
                 </Link>
@@ -143,7 +143,7 @@ const workspcesLineData = {
                         <CardTitle>Clients</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p class="text-2xl font-bold">{{ props.workspace.clients_count }}</p>
+                        <p class="text-2xl font-bold">{{ workspace?.clients_count }}</p>
                     </CardContent>
                 </Card>
                 </Link>

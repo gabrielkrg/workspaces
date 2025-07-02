@@ -24,6 +24,7 @@ Route::get('/', function () {
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
+ 
     // Tasks
     Route::get('tasks', [TaskController::class, 'index'])->name('tasks.index');
     Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');
@@ -88,15 +89,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('notes/{note}', [NoteController::class, 'delete'])->name('notes.delete');
 });
 
-// API
-Route::middleware(['auth'])->group(function () {
-    // Tasks
-    Route::get('/tasks/heatmap', [ApiTaskController::class, 'heatmap'])->name('tasks.heatmap');
-    Route::get('/tasks/latest', [ApiTaskController::class, 'latestChanges'])->name('tasks.latest');
-
-    // Time Tracking
-    Route::get('time-tracking/trackables', [TimeTrackingController::class, 'trackables'])->name('time-tracking.trackables');
-});
-
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
+require __DIR__ . '/api.php';

@@ -16,7 +16,7 @@ interface Tag {
 
 const props = defineProps<{
     title: string;
-    description: string;
+    description: string | null;
     tasks: Task[];
     tags: Tag[];
 }>();

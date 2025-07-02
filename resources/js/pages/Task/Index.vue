@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { Check, ChevronDown, EllipsisVertical, Highlighter } from 'lucide-vue-next';
+import { Check, ChevronDown, EllipsisVertical, Highlighter, Timer } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { useFilter } from 'reka-ui'
 import {
@@ -142,6 +142,10 @@ const deleteTask = (taskId) => {
             console.log('Erro ao atualizar tarefa:', errors);
         },
     });
+};
+
+const startTimer = (taskId: number) => {
+    console.log(taskId);
 };
 
 const filtersForm = useForm({
@@ -347,7 +351,7 @@ watch(
 
                                 <div class="flex flex-col gap-4">
                                     <Label for="title" class="text-right"> Client </Label>
-                                    <Select v-model="form.client_id" class="">
+                                    <Select v-model="form.client_id">
                                         <SelectTrigger id="role" class="w-full">
                                             <SelectValue placeholder="Select" />
                                         </SelectTrigger>
@@ -473,7 +477,7 @@ watch(
 
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4"
                 v-if="tasks.length > 0">
-                <!-- tasks -->
+                <!-- tasks list -->
                 <div v-for="task in tasks" :key="task.id" class="group flex items-start gap-4 border-b p-4"
                     :class="{ 'line-through': task.done }">
                     <!-- Checkbox -->
@@ -516,6 +520,11 @@ watch(
 
                     <!-- Actions -->
                     <div class="flex items-start justify-end">
+                        <button type="button"
+                            class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md"
+                            @click="startTimer(task.id)">
+                            <Timer class="text-gray-900 dark:text-white" />
+                        </button>
                         <button type="button"
                             :class="{ 'bg-accent hover:bg-accent/90 hover:text-accent-foreground dark:hover:bg-accent/50': task.highlight }"
                             class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md"
