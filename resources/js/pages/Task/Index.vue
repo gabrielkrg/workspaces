@@ -519,7 +519,7 @@ watch(
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex items-start justify-end">
+                    <div class="flex items-start justify-end gap-1">
                         <button type="button"
                             class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md"
                             @click="startTimer(task.id)">

@@ -12,9 +12,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Timer, Play, Pause } from 'lucide-vue-next'
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import axios from 'axios'
 import { useTimerStore } from '@/stores/timer'
@@ -41,17 +40,6 @@ interface Trackable {
 // Use the Pinia store
 const timerStore = useTimerStore()
 
-// Access timer state
-console.log(timerStore.isRunning)
-console.log(timerStore.formattedTime)
-console.log(timerStore.trackableType)
-console.log(timerStore.trackableId)
-
-// Control timer
-timerStore.startTimer()
-timerStore.pauseTimer()
-timerStore.resetTimer()
-
 // Timer state
 const isRunning = ref(false)
 const elapsedTime = ref(0)
@@ -73,6 +61,8 @@ const toggleTimer = () => {
     } else {
         startTimer()
     }
+
+    timerStore.toggleTimer()
 }
 
 // Start timer
@@ -83,6 +73,7 @@ const startTimer = () => {
             elapsedTime.value++
         }, 1000)
     }
+
 }
 
 // Pause timer
@@ -94,6 +85,9 @@ const pauseTimer = () => {
             intervalId.value = null
         }
     }
+
+    timerStore.setEndTime(new Date().toISOString())
+    timerStore.setStartTime(new Date(new Date().getTime() - elapsedTime.value * 1000).toISOString())
 }
 
 // Reset timer
@@ -110,14 +104,6 @@ const types = [
     {
         label: 'Card',
         model: 'App\\Models\\Card'
-    },
-    {
-        label: 'Kanban',
-        model: 'App\\Models\\Kanban'
-    },
-    {
-        label: 'Workspace',
-        model: 'App\\Models\\Workspace'
     }
 ];
 
@@ -153,6 +139,14 @@ onMounted(() => {
     }
 })
 
+// here I need to watch the timerStore.isRunning and if it is true, I need to set the form.end_time to the current time and the form.start_time to the current time minus the elapsed time
+watch(() => isRunning.value, (newIsRunning) => {
+    if (!newIsRunning) {
+        form.end_time = new Date().toISOString().slice(0, 16)
+        form.start_time = new Date(new Date().getTime() - elapsedTime.value * 1000).toISOString().slice(0, 16)
+    }
+})
+
 const loadTrackables = async (type: string) => {
     try {
         const response = await axios.get(route('time-tracking.trackables'), {
@@ -173,15 +167,16 @@ const submit = () => {
     form.start_time = timerStore.startTime || ''
     form.end_time = timerStore.endTime || ''
 
-    form.post(route('time-trackings.store'), {
+    form.post(route('time-tracking.store'), {
         onSuccess: () => {
-            console.log('success')
-            // Reset the timer after successful save
             timerStore.resetTimer()
-            // Reset form
             form.reset()
+
             trackableType.value = ''
             trackables.value = []
+        },
+        onError: () => {
+            console.log('error')
         }
     })
 }
@@ -229,101 +224,101 @@ watch(() => form.end_time, (newTime) => {
 </script>
 
 <template>
-    <div class="fixed top-5 right-10 z-40">
-        <Dialog>
-            <DialogTrigger as-child>
-                <Button variant="default"
-                    :class="cn('rounded-full cursor-pointer px-2 py-2 animate-in fade-in duration-500', timerStore.hasActiveTimer ? 'bg-red-500 text-white dark:text-dark hover:text-white hover:dark:text-black' : '')">
-                    <Timer class="size-5" />
-                    <span v-if="timerStore.hasActiveTimer"
-                        class="ml-2 text-xs bg-red-500 text-white px-2 py-1 rounded-full">
-                        {{ timerStore.formattedTime }}
-                    </span>
-                </Button>
-            </DialogTrigger>
-            <DialogContent class="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Timer</DialogTitle>
-                    <DialogDescription>
-                        Start a timer for your task.
-                    </DialogDescription>
-                </DialogHeader>
+    <Dialog>
+        <DialogTrigger as-child>
+            <Button variant="default"
+                :class="cn('rounded-full cursor-pointer px-2 py-2', timerStore.hasActiveTimer ? 'bg-red-500 text-white dark:text-dark hover:text-white hover:dark:text-black' : '')">
+                <Timer class="size-5" />
+                <span v-if="timerStore.hasActiveTimer" class="text-xs bg-red-500 text-white px-2 py-1 rounded-full">
+                    {{ timerStore.formattedTime }}
+                </span>
+                <span v-else>
+                    Timer
+                </span>
+            </Button>
+        </DialogTrigger>
+        <DialogContent class="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Timer</DialogTitle>
+                <DialogDescription>
+                    Start a timer for your task.
+                </DialogDescription>
+            </DialogHeader>
 
-                <form @submit.prevent="submit">
-                    <div class="grid gap-4">
-                        <div class="flex flex-col gap-4">
-                            <Label for="title" class="text-right">Type</Label>
-                            <Select v-model="trackableType" class="">
-                                <SelectTrigger id="role" class="w-full">
-                                    <SelectValue placeholder="Select" />
-                                </SelectTrigger>
-                                <SelectContent position="popper">
-                                    <SelectItem v-for="type in types" :key="type.label" :value="type.model">
-                                        {{ type.label }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <span class="text-sm text-red-500 col-span-full" v-if="form.errors.trackable_type">
-                                {{ form.errors.trackable_type }}
-                            </span>
-                        </div>
-
-                        <div class="flex flex-col gap-4" v-if="trackableType">
-                            <Label for="trackable_id" class="text-right">Item</Label>
-                            <Select v-model="form.trackable_id" class="" :disabled="!trackableType">
-                                <SelectTrigger id="role" class="w-full">
-                                    <SelectValue placeholder="Select" />
-                                </SelectTrigger>
-                                <SelectContent position="popper">
-                                    <SelectItem v-for="trackable in trackables" :key="trackable.id"
-                                        :value="trackable.id">
-                                        {{ trackable.title }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <span class="text-sm text-red-500 col-span-full" v-if="form.errors.trackable_id">
-                                {{ form.errors.trackable_id }}
-                            </span>
-                        </div>
-
-                        <div class="col-span-full">
-                            <p class="text-2xl font-bold">{{ timerStore.formattedTime }}</p>
-                        </div>
-
-                        <div v-if="!timerStore.isRunning" class="grid gap-4 animate-in fade-in duration-500">
-                            <div class="grid grid-cols-4 items-center gap-4">
-                                <Label for="start_time" class="text-right">Start Time</Label>
-                                <Input id="start_time" v-model="form.start_time" type="datetime-local"
-                                    class="col-span-4" />
-                                <span class="text-sm text-red-500 col-span-full" v-if="form.errors.start_time">
-                                    {{ form.errors.start_time }}
-                                </span>
-                            </div>
-
-                            <div class="grid grid-cols-4 items-center gap-4">
-                                <Label for="end_time" class="text-right">End Time</Label>
-                                <Input id="end_time" v-model="form.end_time" type="datetime-local" class="col-span-4" />
-                                <span class="text-sm text-red-500 col-span-full" v-if="form.errors.end_time">
-                                    {{ form.errors.end_time }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <DialogFooter class="grid grid-cols-4 gap-2">
-                            <Button type="button" class="col-span-3" variant='outline' @click="timerStore.toggleTimer">
-                                <Play v-if="!timerStore.isRunning" class="w-4 h-4 mr-2" />
-                                <Pause v-else class="w-4 h-4 mr-2" />
-                                {{ timerStore.isRunning ? 'Pause' : 'Play' }}
-                            </Button>
-                            <Button type="button" variant="destructive" class="col-span-1"
-                                @click="timerStore.resetTimer" :disabled="timerStore.elapsedTime === 0">
-                                Reset
-                            </Button>
-                            <Button type="submit" class="cursor-pointer col-span-full">Save</Button>
-                        </DialogFooter>
+            <form @submit.prevent="submit">
+                <div class="grid gap-4">
+                    <div class="flex flex-col gap-4">
+                        <Label for="title" class="text-right">Type</Label>
+                        <Select v-model="trackableType" class="">
+                            <SelectTrigger id="role" class="w-full">
+                                <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent position="popper">
+                                <SelectItem v-for="type in types" :key="type.label" :value="type.model">
+                                    {{ type.label }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <span class="text-sm text-red-500 col-span-full" v-if="form.errors.trackable_type">
+                            {{ form.errors.trackable_type }}
+                        </span>
                     </div>
-                </form>
-            </DialogContent>
-        </Dialog>
-    </div>
+
+                    <div class="flex flex-col gap-4" v-if="trackableType">
+                        <Label for="trackable_id" class="text-right">Item</Label>
+                        <Select v-model="form.trackable_id" class="" :disabled="!trackableType">
+                            <SelectTrigger id="role" class="w-full">
+                                <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent position="popper">
+                                <SelectItem v-for="trackable in trackables" :key="trackable.id" :value="trackable.id">
+                                    {{ trackable.title }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <span class="text-sm text-red-500 col-span-full" v-if="form.errors.trackable_id">
+                            {{ form.errors.trackable_id }}
+                        </span>
+                    </div>
+
+                    <div class="col-span-full">
+                        <p class="text-2xl font-bold">{{ timerStore.formattedTime }}</p>
+                    </div>
+
+                    <div v-if="!timerStore.isRunning && timerStore.formattedTime != '00:00:00'"
+                        class="grid gap-4 animate-in fade-in duration-500">
+                        <div class="grid grid-cols-4 items-center gap-4">
+                            <Label for="start_time" class="text-right col-span-full">Start Time</Label>
+                            <Input id="start_time" v-model="form.start_time" type="datetime-local" class="col-span-4" />
+                            <span class="text-sm text-red-500 col-span-full" v-if="form.errors.start_time">
+                                {{ form.errors.start_time }}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-4 items-center gap-4">
+                            <Label for="end_time" class="text-right col-span-full">End Time</Label>
+                            <Input id="end_time" v-model="form.end_time" type="datetime-local" class="col-span-4" />
+                            <span class="text-sm text-red-500 col-span-full" v-if="form.errors.end_time">
+                                {{ form.errors.end_time }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <DialogFooter class="grid grid-cols-4 gap-2">
+                        <Button type="button" class="col-span-3" variant='outline' @click="toggleTimer">
+                            <Play v-if="!timerStore.isRunning" class="w-4 h-4 mr-2" />
+                            <Pause v-else class="w-4 h-4 mr-2" />
+                            {{ timerStore.isRunning ? 'Pause' : 'Play' }}
+                        </Button>
+                        <Button type="button" variant="destructive" class="col-span-1" @click="timerStore.resetTimer"
+                            :disabled="timerStore.elapsedTime === 0">
+                            Reset
+                        </Button>
+                        <Button type="submit" class="cursor-pointer col-span-full" v-if="!isRunning"
+                            :disable="!isRunning">Save</Button>
+                    </DialogFooter>
+                </div>
+            </form>
+        </DialogContent>
+    </Dialog>
 </template>

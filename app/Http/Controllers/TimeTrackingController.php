@@ -37,19 +37,18 @@ class TimeTrackingController extends Controller
 
         $this->authorize('update', $workspace);
 
-        $request->validate([
+        $validated = $request->validate([
             'trackable_id' => 'required|integer',
             'trackable_type' => 'required|string|max:255',
             'start_time' => 'required|date',
             'end_time' => 'nullable|date',
         ]);
 
-        $request->merge([
-            'user_id' => $user->id,
-            'workspace_id' => $user->workspace->id,
-        ]);
-
-        TimeTracking::create($request->all());
+        TimeTracking::create(array_merge($validated, [
+                'user_id' => $user->id,
+                'workspace_id' => $user->workspace->id,
+            ])
+        );
 
         return redirect()->route('time-tracking.index')->with('success', 'Time tracking created successfully');
     }
