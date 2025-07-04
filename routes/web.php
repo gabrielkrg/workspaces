@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\UserController as ApiUserController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
@@ -8,9 +7,7 @@ use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TaskController;
-use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\TaskController as ApiTaskController;
 use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\TicketController;
@@ -24,7 +21,7 @@ Route::get('/', function () {
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
- 
+
     // Tasks
     Route::get('tasks', [TaskController::class, 'index'])->name('tasks.index');
     Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');
