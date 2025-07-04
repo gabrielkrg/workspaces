@@ -310,7 +310,7 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
       </div>
       <div class="flex h-full gap-4 overflow-x-auto px-4">
         <div
-          class="flex h-full w-72 flex-shrink-0 flex-col p-4 bg-sidebar-accent border-sidebar-border rounded-xl border"
+          class="flex h-full max-h-[calc(100vh-10rem)] w-72 flex-shrink-0 flex-col p-4 bg-sidebar-accent border-sidebar-border rounded-xl border"
           v-for="column in columns" :key="column.id">
           <div class="mb-4 flex items-center justify-between">
             <h3 class="font-semibold text-black dark:text-white">{{ column.name }}</h3>
@@ -423,7 +423,7 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
             </Sheet>
           </div>
 
-          <div class="flex flex-1 flex-col gap-2 overflow-y-auto">
+          <div class="flex flex-1 flex-col gap-2 overflow-y-auto pr-2">
             <draggable :list="column.cards" :group="{ name: 'cards' }" item-key="id" class="flex flex-1 flex-col gap-2"
               @change="handleCardMove">
               <template #item="{ element }">
