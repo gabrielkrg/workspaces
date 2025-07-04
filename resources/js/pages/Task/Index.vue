@@ -543,8 +543,9 @@ watch(
                                 </button>
                             </PopoverTrigger>
 
-                            <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
-                                align="end">
+                            <PopoverContent
+                                :class="cn('bg-sidebar absolute -top-10 right-5 z-50 w-40 rounded p-0 shadow')"
+                                :sideOffset="0" :align="'center'">
                                 <Sheet>
                                     <SheetTrigger as-child>
                                         <SheetClose as-child>
