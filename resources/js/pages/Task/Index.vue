@@ -512,7 +512,7 @@ watch(
                                 </div>
                             </div>
                         </div>
-                        <p class="mt-1 text-gray-700 dark:text-gray-300 break-words inline-block"
+                        <p class="mt-1 text-gray-700 dark:text-gray-300 break-words inline-block ellipsis"
                             :class="{ 'highlighter highlight': task.highlight }">
                             {{ task.description }}
                         </p>

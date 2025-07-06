@@ -19,6 +19,11 @@ const mainNavItems: NavItem[] = [
         icon: ListTodo,
     },
     {
+        title: 'Kanban',
+        href: '/kanban',
+        icon: SquareKanban,
+    },
+    {
         title: 'Tags',
         href: '/tags',
         icon: Tags,
@@ -28,11 +33,6 @@ const mainNavItems: NavItem[] = [
     //     href: '/calendar',
     //     icon: CalendarFold,
     // },
-    {
-        title: 'Kanban',
-        href: '/kanban',
-        icon: SquareKanban,
-    },
     {
         title: 'Notes',
         href: '/notes',

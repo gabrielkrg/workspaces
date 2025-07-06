@@ -21,6 +21,15 @@ class Card extends Model
         'tasks' => 'array',
     ];
 
+    protected $appends = [
+        'created_at_formatted',
+    ];
+
+    public function getCreatedAtFormattedAttribute()
+    {
+        return $this->created_at->format('d/m/Y');
+    }
+
     public function kanban()
     {
         return $this->belongsTo(Kanban::class);
@@ -50,5 +59,4 @@ class Card extends Model
     {
         return $this->belongsTo(Client::class);
     }
-
 }

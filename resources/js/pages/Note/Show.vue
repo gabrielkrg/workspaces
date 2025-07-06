@@ -6,16 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Editor from '@/components/Editor.vue';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-    {
-        title: 'Note',
-        href: '/note',
-    },
-];
 
 const props = defineProps({
     note: {
@@ -23,6 +13,16 @@ const props = defineProps({
         required: true,
     },
 });
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Notes',
+        href: '/notes',
+    },
+    {
+        title: props.note.title,
+        href: `/notes/${props.note.id}`,
+    },
+];
 
 const form = useForm({
     title: props.note.title,
