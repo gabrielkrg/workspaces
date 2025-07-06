@@ -6,9 +6,9 @@ import KanbanCard from '@/components/kanban/KanbanCard.vue';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetFooter, SheetClose } from '@/components/ui/sheet';
 import draggable from 'vuedraggable';
 import { router, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Button from '@/components/ui/button/Button.vue';
-import { Plus, Trash2, Check } from 'lucide-vue-next';
+import { Plus, Trash2, Check, ChevronDown } from 'lucide-vue-next';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,6 +22,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
 import { useFilter } from 'reka-ui';
@@ -36,6 +41,7 @@ import {
 } from '@/components/ui/combobox';
 import { TagsInput, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText } from '@/components/ui/tags-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { watchDebounced } from '@vueuse/core';
 
 interface Kanban {
   id: number;
@@ -77,18 +83,24 @@ interface Tag {
   color: string;
 }
 
+const props = defineProps<{
+  kanban: Kanban;
+  tags: Tag[];
+  clients: any[];
+  filters: Object;
+}>();
+
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Kanban',
     href: '/kanban',
   },
+  {
+    title: props.kanban.name,
+    href: route('kanban.show', { kanban: props.kanban.id }),
+  }
 ];
 
-const props = defineProps<{
-  kanban: Kanban;
-  tags: Tag[];
-  clients: any[];
-}>();
 
 const columns = ref<Column[]>(props.kanban.columns);
 
@@ -184,6 +196,29 @@ const updateCard = (card: Card) => {
   });
 };
 
+const filtersForm = useForm({
+  search: props.filters?.search || '',
+});
+
+const submitFilters = () => {
+  filtersForm.get(route('kanban.show', { kanban: props.kanban.id, search: filtersForm.search }), {
+    onError: (errors) => {
+      console.log('Error updating filters:', errors);
+    },
+    replace: true,
+  });
+};
+
+watchDebounced(
+  () => filtersForm.search,
+  () => {
+    submitFilters();
+  },
+  { deep: true, debounce: 1000 }
+);
+
+
+// task
 const taskForm = useForm({
   title: '',
   description: '',
@@ -303,14 +338,20 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-      <div class="flex justify-between items-center px-4">
+
+      <div class="flex justify-start items-center gap-4 px-4 ">
         <h1 class="text-lg font-bold text-black dark:text-white">
           {{ kanban.name }}
         </h1>
+        <div class="grid grid-cols-3 w-full max-w-sm gap-1.5">
+          <!-- <Label for="search" class="col-span-1">Search</Label> -->
+          <Input id="search" type="search" placeholder="Search" v-model="filtersForm.search" class="col-span-full" />
+        </div>
       </div>
+
       <div class="flex h-full gap-4 overflow-x-auto px-4">
         <div
-          class="flex h-full max-h-[calc(100vh-10rem)] w-72 flex-shrink-0 flex-col p-4 bg-sidebar-accent border-sidebar-border rounded-xl border"
+          class="flex h-full md:max-h-[calc(100vh-10rem)] w-72 flex-shrink-0 flex-col p-4 bg-sidebar-accent border-sidebar-border rounded-xl border"
           v-for="column in columns" :key="column.id">
           <div class="mb-4 flex items-center justify-between">
             <h3 class="font-semibold text-black dark:text-white">{{ column.name }}</h3>
@@ -521,8 +562,6 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
                 {{ updateCardForm.errors.tags }}
               </span>
             </div>
-
-
 
             <div class="grid gap-2">
               <Label for="description" class="text-sm font-medium">Description</Label>

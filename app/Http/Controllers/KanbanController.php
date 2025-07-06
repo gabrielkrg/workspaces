@@ -34,7 +34,7 @@ class KanbanController extends Controller
         ]);
     }
 
-    public function show(Kanban $kanban)
+    public function show(Kanban $kanban, Request $request)
     {
         $user = Auth::user();
 
@@ -42,9 +42,27 @@ class KanbanController extends Controller
 
         $this->authorize('view', $workspace);
 
-        $kanban->load(['columns' => function ($query) {
-            $query->orderBy('order');
-        }, 'columns.cards.tasks', 'columns.cards.tags']);
+        $kanban->load([
+            'columns' => function ($query) {
+                $query->orderBy('order');
+            },
+            'columns.cards' => function ($query) use ($request) {
+                $query->orderBy('created_at', 'desc')->with('tasks')->with('tags');
+            }
+        ]);
+
+        if ($request->filled('search')) {
+            $kanban->load([
+                'columns' => function ($query) {
+                    $query->orderBy('order');
+                },
+                'columns.cards' => function ($query) use ($request) {
+                    $query->where('title', 'like', '%' . $request->search . '%')->with('tasks')->with('tags');
+                }
+            ]);
+
+            // dd($kanban);
+        }
 
         $tags = $workspace->tags()->orderBy('name', 'asc')->get();
         $clients = $workspace->clients()->orderBy('name', 'asc')->get();
@@ -53,6 +71,7 @@ class KanbanController extends Controller
             'kanban' => $kanban,
             'tags' => $tags,
             'clients' => $clients,
+            'filters' => $request->only(['search']),
         ]);
     }
 
