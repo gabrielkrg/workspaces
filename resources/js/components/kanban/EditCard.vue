@@ -33,7 +33,7 @@ const props = defineProps<{
     clients: any[];
 }>();
 
-const emit = defineEmits(['update']);
+const emit = defineEmits(['update', 'unselect']);
 
 const isOpen = ref(false);
 const clients = ref(props.clients);
@@ -61,9 +61,6 @@ const form = useForm({
 
 const updateCard = () => {
     if (!props.card) return;
-
-    console.log('updateCard called with cardId:', props.card.id);
-    console.log('form.column_id:', form.column_id);
 
     form.put(route('cards.update', props.card.id), {
         preserveScroll: true,
@@ -112,10 +109,11 @@ onMounted(async () => {
     const response = await axios.get(route('api.tags'));
     tags.value = response.data;
 })
+
 </script>
 
 <template>
-    <Sheet v-model:open="isOpen">
+    <Sheet v-model:open="isOpen" @update:open="$emit('unselect')">
         <SheetContent :class="cn('overflow-y-auto')">
             <SheetHeader>
                 <SheetTitle>Edit Card</SheetTitle>
@@ -204,7 +202,6 @@ onMounted(async () => {
                             {{ form.errors.tags }}
                         </div>
                     </div>
-
 
                     <div class="grid gap-2">
                         <Label for="description" class="text-sm font-medium">Description</Label>

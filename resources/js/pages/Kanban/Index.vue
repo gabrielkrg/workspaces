@@ -98,11 +98,6 @@ const submit = () => {
         onSuccess: () => {
             form.reset();
             columns.value = [];
-
-            router.get(route('kanban.index'), {
-                preserveState: true,
-                replace: true,
-            });
         },
     });
 };

@@ -15,11 +15,19 @@ interface Tag {
     color: string;
 }
 
+interface Card {
+    id: number;
+    title: string;
+    description: string;
+    tasks: Task[];
+    tags: Tag[];
+}
+
 const props = defineProps<{
-    card: any;
+    card: Card;
 }>();
 
-const doneTasks = computed(() => props.card.tasks.filter(task => task.done).length);
+const doneTasks = computed(() => props.card.tasks.filter((task: Task) => task.done).length);
 const totalTasks = computed(() => props.card.tasks.length);
 </script>
 
@@ -35,7 +43,7 @@ const totalTasks = computed(() => props.card.tasks.length);
                     </div>
                 </div>
             </div>
-            <h4 class="font-medium">{{ card.title }}</h4>
+            <h4 class="font-medium ellipsis">{{ card.title }}</h4>
         </div>
 
         <p class="text-sm text-sidebar-accent-foreground ellipsis">{{ card.description }}</p>
