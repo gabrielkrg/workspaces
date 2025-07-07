@@ -5,12 +5,10 @@ import { Head } from '@inertiajs/vue3';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
-import KanbanCard from '@/components/kanban/KanbanCard.vue';
+import KanbanColumn from '@/components/kanban/KanbanColumn.vue';
 import EditCard from '@/components/kanban/EditCard.vue';
 import EditKanban from '@/components/kanban/EditKanban.vue';
-import CreateCard from '@/components/kanban/CreateCard.vue';
 
-import draggable from 'vuedraggable';
 import { watchDebounced } from '@vueuse/core';
 import { router, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
@@ -75,6 +73,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const selectedCard = ref<Card | null>(null);
+
+const handleCardSelect = (card: Card) => {
+  selectedCard.value = card;
+};
+
 const columns = ref<Column[]>(props.kanban.columns);
 
 const filtersForm = useForm({
@@ -128,6 +131,8 @@ const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) 
   }
 };
 
+
+
 watchDebounced(
   () => filtersForm.search,
   () => {
@@ -141,9 +146,9 @@ watchDebounced(
 
   <Head :title="`Kanban - ${kanban.name}`" />
   <AppLayout :breadcrumbs="breadcrumbs">
-    <EditCard :card="selectedCard" :clients="clients" @update="updateColumnCards" />
+    <EditCard :card="selectedCard" :clients="clients" @unselect="selectedCard = null" @update="updateColumnCards" />
 
-    <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+    <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-hidden">
       <div class="flex justify-start items-center gap-3 px-4 ">
         <h1 class="text-lg font-bold text-black dark:text-white">
           {{ kanban.name }}
@@ -157,25 +162,11 @@ watchDebounced(
         </div>
       </div>
 
-      <div class="flex h-full gap-4 overflow-x-auto px-4">
-        <div
-          class="flex h-full md:max-h-[calc(100vh-11rem)] w-72 flex-shrink-0 flex-col p-4 bg-sidebar-accent border-sidebar-border rounded-xl border"
-          v-for="column in columns" :key="column.id">
-          <div class="mb-4 flex items-center justify-between">
-            <h3 class="font-semibold text-black dark:text-white">{{ column.name }}</h3>
-            <CreateCard :column_id="column.id" :kanban_id="kanban.id" :clients="clients" @update="updateColumnCards" />
-          </div>
-          <div class="flex flex-1 flex-col gap-2 overflow-y-auto pr-2">
-            <draggable :list="column.cards" :group="{ name: 'cards' }" item-key="id" class="flex flex-1 flex-col gap-2"
-              @change="handleCardMove">
-              <template #item="{ element }">
-                <KanbanCard :card="element" class="cursor-pointer" @click="selectedCard = element" />
-              </template>
-            </draggable>
-          </div>
-        </div>
+      <div class="flex h-full gap-4 overflow-x-auto">
+        <KanbanColumn v-for="column in columns" :key="column.id" :column="column" :kanban-id="kanban.id"
+          :clients="clients" @card-move="handleCardMove" @card-select="handleCardSelect"
+          @update="updateColumnCards(column.id)" />
       </div>
     </div>
-
   </AppLayout>
 </template>
