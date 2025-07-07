@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TimeTrackingController;
 use App\Http\Controllers\Api\WorkspaceController;
 use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\TagController;
 
 Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
     Route::get('/workspaces', [WorkspaceController::class, 'index'])->name('api.workspaces');
@@ -15,4 +16,7 @@ Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
 
     // Time Tracking
     Route::get('time-tracking/trackables', [TimeTrackingController::class, 'trackables'])->name('time-tracking.trackables');
+
+    // Tags
+    Route::get('/tags', [TagController::class, 'index'])->name('api.tags');
 });

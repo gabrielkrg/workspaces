@@ -63,6 +63,8 @@ class CardController extends Controller
 
         $this->authorize('update', $workspace);
 
+        // dd($request->all());
+
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
@@ -73,11 +75,13 @@ class CardController extends Controller
             'tags.*' => 'string|max:50',
         ]);
 
+        // dd($validated);
+
         $card->update(array_merge(Arr::except($validated, ['tags'])));
 
         if (array_key_exists('tags', $validated)) {
             // create tags if they don't exist
-            $tagIds = collect($validated['tags'])->map(function ($tagName) use ($user) { 
+            $tagIds = collect($validated['tags'])->map(function ($tagName) use ($user) {
                 return Tag::firstOrCreate([
                     'name' => $tagName,
                     'user_id' => $user->id,

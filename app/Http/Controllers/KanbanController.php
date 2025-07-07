@@ -105,7 +105,7 @@ class KanbanController extends Controller
             ]);
         }
 
-        return redirect()->route('kanban.index')->with('success', 'Kanban created successfully');
+        return redirect()->route('kanban.show', $kanban->id)->with('success', 'Kanban created successfully');
     }
 
     public function update(Request $request, Kanban $kanban)
@@ -154,7 +154,7 @@ class KanbanController extends Controller
             }
         }
 
-        return redirect()->route('kanban.index')->with('success', 'Kanban updated successfully');
+        return redirect()->back()->with('success', 'Kanban updated successfully');
     }
 
     public function delete(Kanban $kanban)
