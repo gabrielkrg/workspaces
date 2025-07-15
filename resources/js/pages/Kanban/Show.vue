@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import KanbanColumn from '@/components/kanban/KanbanColumn.vue';
 import EditCard from '@/components/kanban/EditCard.vue';
 import EditKanban from '@/components/kanban/EditKanban.vue';
+import GenerateWithAi from '@/components/GenerateWithAi.vue';
 
 import { watchDebounced } from '@vueuse/core';
 import { router, useForm } from '@inertiajs/vue3';
@@ -160,6 +161,8 @@ watchDebounced(
           <Label for="search" class="col-span-1 hidden">Search</Label>
           <Input id="search" type="search" placeholder="Search" v-model="filtersForm.search" class="col-span-full" />
         </div>
+
+        <GenerateWithAi :kanban="kanban" :columns="columns" @submit="updateColumnCards" />
       </div>
 
       <div class="flex h-full gap-4 overflow-x-auto">

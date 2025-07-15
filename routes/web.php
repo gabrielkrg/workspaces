@@ -75,6 +75,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('cards/{card}/tasks', [CardController::class, 'attachTask'])->name('cards.attach.task');
     Route::get('cards/{card}/tasks', [CardController::class, 'getTasks'])->name('cards.get.tasks');
 
+    Route::post('bulk-cards', [KanbanController::class, 'bulkCards'])->name('cards.bulk');
+
     // Events
     Route::get('events', [EventController::class, 'index'])->name('events.index');
 

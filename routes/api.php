@@ -5,6 +5,7 @@ use App\Http\Controllers\TimeTrackingController;
 use App\Http\Controllers\Api\WorkspaceController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TagController;
+use App\Http\Controllers\AiController;
 
 Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
     Route::get('/workspaces', [WorkspaceController::class, 'index'])->name('api.workspaces');
@@ -19,4 +20,7 @@ Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
 
     // Tags
     Route::get('/tags', [TagController::class, 'index'])->name('api.tags');
+
+    // AI
+    Route::post('/generate-with-ai', [AiController::class, 'generateWithAi'])->name('api.generate-with-ai');
 });

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Kanban;
 use App\Models\Workspace;
-use App\Models\Tag;
+use App\Models\Card;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -166,5 +166,37 @@ class KanbanController extends Controller
         $kanban->delete();
 
         return redirect()->route('kanban.index')->with('success', 'Kanban deleted successfully');
+    }
+
+    public function bulkCards(Request $request)
+    {
+        $user = Auth::user();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
+
+        $this->authorize('update', $workspace);
+
+        $request->validate([
+            'kanban_id' => 'required|integer',
+            'column_id' => 'required|integer',
+            'cards' => 'required|array',
+            'cards.*.title' => 'required|string|max:255',
+            'cards.*.description' => 'nullable|string|max:255',
+            'cards.*.order' => 'required|integer',
+        ]);
+
+        foreach ($request->cards as $card) {
+            Card::create([
+                'user_id' => $user->id,
+                'kanban_id' => $request->kanban_id,
+                'column_id' => $request->column_id,
+                'workspace_id' => $workspace->id,
+                'title' => $card['title'],
+                'description' => $card['description'],
+                'order' => $card['order'],
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Cards created successfully');
     }
 }

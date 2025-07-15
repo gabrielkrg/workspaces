@@ -226,15 +226,16 @@ watch(() => form.end_time, (newTime) => {
 <template>
     <Dialog>
         <DialogTrigger as-child>
-            <Button variant="default"
-                :class="cn('rounded-full cursor-pointer px-2 py-2', timerStore.hasActiveTimer ? 'bg-red-500 text-white dark:text-dark hover:text-white hover:dark:text-black' : '')">
-                <Timer class="size-5" />
-                <span v-if="timerStore.hasActiveTimer" class="text-xs bg-red-500 text-white px-2 py-1 rounded-full">
+            <Button
+                class="cursor-pointer px-4 py-1 font-bold text-white text-sm transition duration-200 hover:brightness-110"
+                style="background: linear-gradient(90deg, #4B0082 0%, #90EE90 100%);">
+                <span v-if="timerStore.hasActiveTimer">
                     {{ timerStore.formattedTime }}
                 </span>
                 <span v-else>
                     Timer
                 </span>
+                <Timer class="size-5" />
             </Button>
         </DialogTrigger>
         <DialogContent class="sm:max-w-[425px]">
