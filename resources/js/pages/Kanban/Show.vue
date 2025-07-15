@@ -150,19 +150,19 @@ watchDebounced(
     <EditCard :card="selectedCard" :clients="clients" @unselect="selectedCard = null" @update="updateColumnCards" />
 
     <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-hidden">
-      <div class="flex justify-start items-center gap-3 px-4 ">
-        <h1 class="text-lg font-bold text-black dark:text-white">
+      <div class="flex justify-start items-center gap-3 flex-wrap">
+        <h1 class="text-lg font-bold text-black dark:text-white ">
           {{ kanban.name }}
         </h1>
 
         <EditKanban :kanban="kanban" />
+        <GenerateWithAi :kanban="kanban" :columns="columns" @submit="updateColumnCards" />
 
-        <div class="grid grid-cols-3 w-full max-w-sm gap-1.5">
+        <div class="grid grid-cols-3 w-full md:max-w-md gap-1.5">
           <Label for="search" class="col-span-1 hidden">Search</Label>
           <Input id="search" type="search" placeholder="Search" v-model="filtersForm.search" class="col-span-full" />
         </div>
 
-        <GenerateWithAi :kanban="kanban" :columns="columns" @submit="updateColumnCards" />
       </div>
 
       <div class="flex h-full gap-4 overflow-x-auto">

@@ -28,6 +28,9 @@ const emit = defineEmits(['submit'])
 
 const cards = ref([])
 
+const isOpen = ref(false)
+const generatingAi = ref(false)
+
 const generateWithAiForm = ref({
     content: ''
 })
@@ -88,8 +91,7 @@ const reset = () => {
     bulkCardsForm.cards = []
 }
 
-const isOpen = ref(false)
-const generatingAi = ref(false)
+
 </script>
 
 <template>

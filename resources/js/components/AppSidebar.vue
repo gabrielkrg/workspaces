@@ -14,15 +14,16 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Tasks',
-        href: '/tasks',
-        icon: ListTodo,
-    },
-    {
         title: 'Kanban',
         href: '/kanban',
         icon: SquareKanban,
     },
+    {
+        title: 'Tasks',
+        href: '/tasks',
+        icon: ListTodo,
+    },
+
     {
         title: 'Tags',
         href: '/tags',
