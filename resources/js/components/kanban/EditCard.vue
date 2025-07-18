@@ -217,7 +217,7 @@ onMounted(async () => {
                 </div>
 
                 <div class="flex flex-wrap space-y-2 justify-between gap-2">
-                    <div class="order-2 md:order-1">
+                    <div class="">
                         <Dialog class="">
                             <DialogTrigger as-child>
                                 <Button variant="destructive">
@@ -250,7 +250,7 @@ onMounted(async () => {
                         </Dialog>
                     </div>
 
-                    <div class="flex justify-end gap-2 order-1 md:order-2">
+                    <div class="flex justify-end gap-2">
                         <SheetClose asChild>
                             <Button variant="outline" type="button" class="cursor-pointer">Cancel</Button>
                         </SheetClose>
