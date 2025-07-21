@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Calendar, ListTodo } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users } from 'lucide-vue-next';
 
 interface Task {
     id: number;
@@ -32,9 +34,8 @@ const totalTasks = computed(() => props.card.tasks.length);
 </script>
 
 <template>
-    <div
-        class="cursor-pointer rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow bg-sidebar dark:text-white text-black">
-        <div class="flex gap-2 flex-col">
+    <Card class="cursor-pointer gap-2">
+        <CardHeader class="flex flex-col space-y-1 pb-2">
             <div v-if="card.tags.length > 0" class="flex items-center gap-2 flex-wrap">
                 <div v-for="tag in card.tags" :key="tag.id">
                     <div class="flex rounded bg-gray-400 px-1 text-xs font-normal text-white capitalize"
@@ -43,25 +44,28 @@ const totalTasks = computed(() => props.card.tasks.length);
                     </div>
                 </div>
             </div>
-            <h4 class="font-medium ellipsis">{{ card.title }}</h4>
-        </div>
+            <CardTitle class="font-medium ellipsis">
+                {{ card.title }}
+            </CardTitle>
+        </CardHeader>
+        <CardContent>
+            <p class="text-sm text-sidebar-accent-foreground ellipsis">{{ card.description }}</p>
 
-        <p class="text-sm text-sidebar-accent-foreground ellipsis">{{ card.description }}</p>
+            <div class="flex flex-col gap-1 mt-2">
+                <div class="flex items-center gap-2" v-if="card.tasks && card.tasks.length > 0">
+                    <ListTodo class="w-4 h-4" />
+                    <p class="text-sm text-sidebar-accent-foreground">
+                        {{ doneTasks }}/{{ totalTasks }}
+                    </p>
+                </div>
 
-        <div class="flex flex-col gap-1 mt-2">
-            <div class="flex items-center gap-2" v-if="card.tasks && card.tasks.length > 0">
-                <ListTodo class="w-4 h-4" />
-                <p class="text-sm text-sidebar-accent-foreground">
-                    {{ doneTasks }}/{{ totalTasks }}
-                </p>
+                <div class="flex items-center gap-2">
+                    <Calendar class="w-4 h-4" />
+                    <p class="text-sm text-sidebar-accent-foreground">
+                        {{ card.created_at_formatted }}
+                    </p>
+                </div>
             </div>
-
-            <div class="flex items-center gap-2">
-                <Calendar class="w-4 h-4" />
-                <p class="text-sm text-sidebar-accent-foreground">
-                    {{ card.created_at_formatted }}
-                </p>
-            </div>
-        </div>
-    </div>
+        </CardContent>
+    </Card>
 </template>

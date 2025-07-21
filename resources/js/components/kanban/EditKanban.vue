@@ -93,7 +93,7 @@ const updateColumnOrder = () => {
     <Sheet v-model:open="isOpen">
         <SheetTrigger asChild>
             <Button class="cursor-pointer" size="icon" title="Edit">
-                <Pencil class="text-white dark:text-black" />
+                <Pencil />
             </Button>
         </SheetTrigger>
         <SheetContent>
