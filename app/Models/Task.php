@@ -13,7 +13,16 @@ class Task extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'description', 'repeat', 'highlight', 'done', 'delete_after', 'user_id', 'workspace_id', 'client_id', 'kanban_id'
+        'title',
+        'description',
+        'repeat',
+        'highlight',
+        'done',
+        'delete_after',
+        'user_id',
+        'workspace_id',
+        'client_id',
+        'kanban_id'
     ];
 
     protected $guarded = [];
@@ -23,6 +32,15 @@ class Task extends Model
         'delete_after' => 'boolean',
         'highlight' => 'boolean',
     ];
+
+    protected $appends = [
+        'updated_at_formatted',
+    ];
+
+    public function getUpdatedAtFormattedAttribute()
+    {
+        return $this->updated_at->format('d/m/Y - H:i');
+    }
 
     public function user()
     {

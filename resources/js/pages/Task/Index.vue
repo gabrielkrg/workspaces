@@ -454,8 +454,16 @@ watch(
                                     </div>
                                 </div>
                             </div>
+
                             <SheetFooter>
-                                <Button type="submit" class="cursor-pointer"> Save </Button>
+                                <div class="flex justify-end gap-2">
+                                    <SheetClose asChild>
+                                        <Button variant="outline" type="button" class="cursor-pointer">Cancel</Button>
+                                    </SheetClose>
+
+                                    <Button type="submit" :disabled="form.processing"
+                                        class="cursor-pointer">Save</Button>
+                                </div>
                             </SheetFooter>
                         </form>
                     </SheetContent>
@@ -692,7 +700,15 @@ watch(
                                                 </div>
                                             </div>
                                             <SheetFooter>
-                                                <Button type="submit"> Save changes </Button>
+                                                <div class="flex justify-end gap-2">
+                                                    <SheetClose asChild>
+                                                        <Button variant="outline" type="button"
+                                                            class="cursor-pointer">Cancel</Button>
+                                                    </SheetClose>
+
+                                                    <Button type="submit" :disabled="updateForm.processing"
+                                                        class="cursor-pointer">Save</Button>
+                                                </div>
                                             </SheetFooter>
                                         </form>
                                     </SheetContent>

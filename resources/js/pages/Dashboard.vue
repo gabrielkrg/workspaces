@@ -1,12 +1,24 @@
 <script setup lang="ts">
-import Bar from '@/components/charts/Bar.vue';
-import Doughnut from '@/components/charts/Doughnut.vue';
-import LatestChanges from '@/components/LatestChanges.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import HeadingSmall from '@/components/HeadingSmall.vue';
+import { Head } from '@inertiajs/vue3';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
+import RecentActivity from '@/components/RecentActivity.vue';
+import { Kanban, ListTodo, Ticket, Users } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
+import Bar from '@/components/charts/Bar.vue';
+import Doughnut from '@/components/charts/Doughnut.vue';
+
+
+
+interface Workspace {
+    cards_count: number;
+    tasks_count: number;
+    tickets_count: number;
+    clients_count: number;
+}
+
 
 const props = defineProps({
     user: {
@@ -92,6 +104,7 @@ const workspcesLineData = {
         },
     ],
 };
+
 </script>
 
 <template>
@@ -99,85 +112,95 @@ const workspcesLineData = {
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex-col gap-4 rounded-xl p-4">
-            <HeadingSmall title="Overview" description="Here you have to total number of tasks, tickets and clients"
-                class="mb-5 text-center" />
-
-            <div class="grid auto-rows-min gap-4 md:grid-cols-4">
-                <Link :href="route('tasks.index')">
-                <Card class="hover:bg-sidebar-border/70 dark:hover:bg-sidebar-border">
-                    <CardHeader>
-                        <CardTitle>Tasks</CardTitle>
+        <div class="flex-1 space-y-4 p-8 pt-6">
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Link :href="route('kanban.index')">
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">
+                            Cards
+                        </CardTitle>
+                        <Kanban class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <p class="text-2xl font-bold">{{ workspace?.tasks_count }}</p>
+                        <div class="text-2xl font-bold">
+                            {{ workspace.cards_count }}
+                        </div>
                     </CardContent>
                 </Card>
                 </Link>
 
-                <Link :href="route('kanban.index')">
-                <Card class="hover:bg-sidebar-border/70 dark:hover:bg-sidebar-border">
-                    <CardHeader>
-                        <CardTitle>Cards</CardTitle>
+                <Link :href="route('tasks.index')">
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">
+                            Tasks
+                        </CardTitle>
+                        <ListTodo class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <p class="text-2xl font-bold">{{ workspace?.cards_count }}</p>
+                        <div class="text-2xl font-bold">
+                            {{ workspace.tasks_count }}
+                        </div>
                     </CardContent>
                 </Card>
                 </Link>
 
                 <Link :href="route('tickets.index')">
-                <Card class="hover:bg-sidebar-border/70 dark:hover:bg-sidebar-border">
-                    <CardHeader>
-                        <CardTitle>Tickets</CardTitle>
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">
+                            Tickets
+                        </CardTitle>
+                        <Ticket class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <p class="text-2xl font-bold">{{ workspace?.tickets_count }}</p>
+                        <div class="text-2xl font-bold">
+                            {{ workspace.tickets_count }}
+                        </div>
                     </CardContent>
                 </Card>
                 </Link>
 
                 <Link :href="route('clients.index')">
-                <Card class="hover:bg-sidebar-border/70 dark:hover:bg-sidebar-border">
-                    <CardHeader>
-                        <CardTitle>Clients</CardTitle>
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">
+                            Clients
+                        </CardTitle>
+                        <Users class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <p class="text-2xl font-bold">{{ workspace?.clients_count }}</p>
+                        <div class="text-2xl font-bold">
+                            {{ workspace.clients_count }}
+                        </div>
                     </CardContent>
                 </Card>
                 </Link>
-
             </div>
-        </div>
-
-
-        <div class="flex-col gap-4 rounded-xl p-4">
 
             <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div>
-                    <LatestChanges />
-                </div>
-                <div>
-                    <Bar :title="'Workspaces tasks'"
-                        :description="'Here you have to total number of tasks per workspace'"
-                        :chartData="workspacesBarData" />
-                </div>
-                <div>
-                    <Doughnut :chartData="workspacesData" :title="'Workspaces tasks'"
-                        :description="'Here you have to total number of tasks per workspace'" />
-                </div>
-                <!-- <div>
-                    <Line
-                        :title="'Workspaces tasks'"
-                        :description="'Here you have to total number of tasks per workspace'"
-                        :chartData="workspcesLineData"
-                    />
-                </div> -->
-                <!-- <div>
-                    <Radar :title="'Workspaces tasks'" :description="'Here you have to total number of tasks per workspace'" />
-                </div> -->
+                <Card>
+                    <CardHeader class="flex flex-col items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">
+                            Recent Activity
+                        </CardTitle>
+                        <CardDescription>
+                            Here you have to total number of tasks per workspace
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <RecentActivity />
+                    </CardContent>
+                </Card>
+
+                <Bar :title="'Workspaces tasks'" :description="'Here you have to total number of tasks per workspace'"
+                    :chartData="workspacesBarData" />
+
+                <Doughnut :chartData="workspacesData" :title="'Workspaces tasks'"
+                    :description="'Here you have to total number of tasks per workspace'" />
             </div>
         </div>
+
     </AppLayout>
 </template>

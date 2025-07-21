@@ -5,13 +5,14 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Label } from '@/components/ui/label';
-import { Pencil, Trash2, GripVertical } from 'lucide-vue-next';
+import { Pencil, Trash2, GripVertical, EllipsisVertical } from 'lucide-vue-next';
 import draggable from 'vuedraggable';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface Column {
     id?: number;
@@ -176,7 +177,6 @@ const updateColumnOrder = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div class="flex flex-wrap items-end justify-between gap-4">
-                <div></div>
                 <Sheet>
                     <SheetTrigger as-child>
                         <Button variant="default" class="cursor-pointer"> Create </Button>
@@ -241,117 +241,134 @@ const updateColumnOrder = () => {
             </div>
 
             <!-- Kanbans List -->
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3" v-if="kanbans.length > 0">
-                <Card v-for="kanban in kanbans" :key="kanban.id" class="cursor-pointer"
-                    @click="navigateToKanban(kanban)"
-                    :class="cn('hover:bg-sidebar-border/70 dark:hover:bg-sidebar-border')">
-                    <CardHeader>
-                        <CardTitle class="flex items-center justify-between">
-                            <div class="flex flex-col">
-                                <h3 class="text-lg font-medium">{{ kanban.name }}</h3>
-                                <p class="text-sm font-light">
-                                    <span class="font-medium capitalize text-sidebar-accent-foreground">Card{{
-                                        kanban.cards_count === 1 ? '' : 's' }}:
-                                    </span>
-                                    {{ kanban.cards_count }}
-                                </p>
-                            </div>
-                            <div class="flex gap-2" @click.stop>
-                                <!-- Edit Button -->
-                                <Sheet>
-                                    <SheetTrigger asChild @click="startEditing(kanban)">
-                                        <Button class="cursor-pointer" size="icon" title="Edit">
-                                            <Pencil class="text-white dark:text-black" />
-                                        </Button>
-                                    </SheetTrigger>
-                                    <SheetContent>
-                                        <form @submit.prevent="updateKanban(kanban)">
-                                            <SheetHeader>
-                                                <SheetTitle>Edit Kanban</SheetTitle>
-                                                <SheetDescription>
-                                                    Update the kanban details. Click save when you're done.
-                                                </SheetDescription>
-                                            </SheetHeader>
-                                            <div class="grid gap-4 p-4">
-                                                <div class="grid grid-cols-4 items-center gap-4">
-                                                    <Label for="edit-name" class="text-right">Name</Label>
-                                                    <Input id="edit-name" v-model="formUpdateKanban.name"
-                                                        class="col-span-4" />
-                                                    <span class="text-sm text-red-500 col-span-full"
-                                                        v-if="formUpdateKanban.errors.name">
-                                                        {{ formUpdateKanban.errors.name }}
-                                                    </span>
-                                                </div>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4" v-if="kanbans.length > 0">
+                <Card v-for="kanban in kanbans" :key="kanban.id" class="cursor-pointer gap-2"
+                    @click="navigateToKanban(kanban)">
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">
+                            Kanban
+                        </CardTitle>
+                        <div class="flex gap-2" @click.stop>
+                            <Popover class="relative">
+                                <PopoverTrigger as-child>
+                                    <button type="button"
+                                        class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md">
+                                        <EllipsisVertical class="text-gray-900 dark:text-white" />
+                                    </button>
+                                </PopoverTrigger>
 
-                                                <div class="grid grid-cols-4 items-center gap-4">
-                                                    <Label for="edit-columns" class="text-right">Columns</Label>
-                                                    <div class="col-span-4">
-                                                        <draggable v-model="formUpdateKanban.columns" :item-key="'id'"
-                                                            handle=".handle" class="flex flex-col gap-2"
-                                                            @change="updateColumnOrder">
-                                                            <template #item="{ element: column, index }">
-                                                                <div class="flex items-center gap-2">
-                                                                    <div class="cursor-move px-2 handle">
-                                                                        <GripVertical class="h-4 w-4 text-gray-400" />
+                                <PopoverContent
+                                    :class="cn('bg-sidebar absolute -top-10 right-5 z-50 w-40 rounded p-0 shadow')"
+                                    :sideOffset="0" :align="'center'">
+                                    <!-- Edit Button -->
+                                    <Sheet>
+                                        <SheetTrigger asChild>
+                                            <div @click="startEditing(kanban)"
+                                                class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
+                                                Edit
+                                            </div>
+                                        </SheetTrigger>
+                                        <SheetContent>
+                                            <form @submit.prevent="updateKanban(kanban)">
+                                                <SheetHeader>
+                                                    <SheetTitle>Edit Kanban</SheetTitle>
+                                                    <SheetDescription>
+                                                        Update the kanban details. Click save when you're done.
+                                                    </SheetDescription>
+                                                </SheetHeader>
+                                                <div class="grid gap-4 p-4">
+                                                    <div class="grid grid-cols-4 items-center gap-4">
+                                                        <Label for="edit-name" class="text-right">Name</Label>
+                                                        <Input id="edit-name" v-model="formUpdateKanban.name"
+                                                            class="col-span-4" />
+                                                        <span class="text-sm text-red-500 col-span-full"
+                                                            v-if="formUpdateKanban.errors.name">
+                                                            {{ formUpdateKanban.errors.name }}
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="grid grid-cols-4 items-center gap-4">
+                                                        <Label for="edit-columns" class="text-right">Columns</Label>
+                                                        <div class="col-span-4">
+                                                            <draggable v-model="formUpdateKanban.columns"
+                                                                :item-key="'id'" handle=".handle"
+                                                                class="flex flex-col gap-2" @change="updateColumnOrder">
+                                                                <template #item="{ element: column, index }">
+                                                                    <div class="flex items-center gap-2">
+                                                                        <div class="cursor-move px-2 handle">
+                                                                            <GripVertical
+                                                                                class="h-4 w-4 text-gray-400" />
+                                                                        </div>
+                                                                        <div class="flex-1">
+                                                                            <Input v-model="column.name"
+                                                                                class="bg-gray-100" />
+                                                                        </div>
+                                                                        <Button variant="destructive" type="button"
+                                                                            size="icon"
+                                                                            @click="updateRemoveColumn(index)">
+                                                                            <Trash2 class="h-4 w-4" />
+                                                                        </Button>
                                                                     </div>
-                                                                    <div class="flex-1">
-                                                                        <Input v-model="column.name"
-                                                                            class="bg-gray-100" />
-                                                                    </div>
-                                                                    <Button variant="destructive" type="button"
-                                                                        size="icon" @click="updateRemoveColumn(index)">
-                                                                        <Trash2 class="h-4 w-4" />
-                                                                    </Button>
-                                                                </div>
-                                                            </template>
-                                                        </draggable>
-                                                        <div class="mt-2 flex gap-2">
-                                                            <Input id="edit-new-column" v-model="newColumnName"
-                                                                placeholder="Add new column..."
-                                                                @keyup.enter="updateAddColumn(newColumnName)" />
-                                                            <Button type="button"
-                                                                @click="updateAddColumn(newColumnName)">
-                                                                Add
-                                                            </Button>
+                                                                </template>
+                                                            </draggable>
+                                                            <div class="mt-2 flex gap-2">
+                                                                <Input id="edit-new-column" v-model="newColumnName"
+                                                                    placeholder="Add new column..."
+                                                                    @keyup.enter="updateAddColumn(newColumnName)" />
+                                                                <Button type="button"
+                                                                    @click="updateAddColumn(newColumnName)">
+                                                                    Add
+                                                                </Button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <SheetFooter>
-                                                <Button type="submit" class="cursor-pointer">Save changes</Button>
-                                            </SheetFooter>
-                                        </form>
-                                    </SheetContent>
-                                </Sheet>
+                                                <SheetFooter>
+                                                    <Button type="submit" class="cursor-pointer">Save changes</Button>
+                                                </SheetFooter>
+                                            </form>
+                                        </SheetContent>
+                                    </Sheet>
 
-                                <!-- Delete Button -->
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="destructive" size="icon" title="Delete"
-                                            :class="cn('cursor-pointer')">
-                                            <Trash2 class="h-4 w-4" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete the kanban
-                                                "{{ kanban.name }}" and all of its data.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel class="cursor-pointer">Cancel</AlertDialogCancel>
-                                            <Button variant="destructive" type="button" @click="deleteKanban(kanban)"
-                                                :class="cn('cursor-pointer')">
+                                    <!-- Delete Button -->
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <div
+                                                class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900">
                                                 Delete
-                                            </Button>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </div>
-                        </CardTitle>
+                                            </div>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This action cannot be undone. This will permanently delete the
+                                                    kanban
+                                                    "{{ kanban.name }}" and all of its data.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel class="cursor-pointer">Cancel</AlertDialogCancel>
+                                                <Button variant="destructive" type="button"
+                                                    @click="deleteKanban(kanban)" :class="cn('cursor-pointer')">
+                                                    Delete
+                                                </Button>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </PopoverContent>
+                            </Popover>
+
+                        </div>
                     </CardHeader>
+                    <CardContent>
+                        <div class="text-2xl font-bold">
+                            {{ kanban.name }}
+                        </div>
+                        <p class="text-xs text-muted-foreground">
+                            {{ kanban.cards_count }} cards
+                        </p>
+                    </CardContent>
                 </Card>
             </div>
             <div v-else class="flex h-32 items-center justify-center rounded-lg border">

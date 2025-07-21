@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Label } from '@/components/ui/label';
 import KanbanCard from '@/components/kanban/KanbanCard.vue';
 import CreateCard from '@/components/kanban/CreateCard.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users } from 'lucide-vue-next';
 import draggable from 'vuedraggable';
 
 interface Column {
@@ -54,19 +55,21 @@ const handleCardSelect = (card: Card) => {
 </script>
 
 <template>
-    <div
-        class="flex h-full md:max-h-[calc(100vh-11rem)] w-72 flex-shrink-0 flex-col p-4 bg-sidebar-accent border-sidebar-border rounded-xl border">
-        <div class="mb-4 flex items-center justify-between">
-            <h3 class="font-semibold text-black dark:text-white">{{ column.name }}</h3>
-            <CreateCard :column_id="column.id" :kanban_id="kanbanId" :clients="clients" @update="$emit('update')" />
-        </div>
-        <div class="flex flex-1 flex-col gap-2 overflow-y-auto pr-2">
+    <Card class="flex h-full md:max-h-[calc(100vh-11rem)] w-72 gap-2">
+        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle class="text-sm font-medium">
+                {{ column.name }}
+            </CardTitle>
+            <CreateCard :column_id="column.id" :kanban_id="kanbanId" :clients="clients" @update="$emit('update')"
+                class="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent class="flex flex-1 flex-col gap-2 overflow-y-auto p-2">
             <draggable :list="column.cards" :group="{ name: 'cards' }" item-key="id" class="flex flex-1 flex-col gap-2"
                 @change="handleCardMove">
                 <template #item="{ element }">
                     <KanbanCard :card="element" class="cursor-pointer" @click="handleCardSelect(element)" />
                 </template>
             </draggable>
-        </div>
-    </div>
+        </CardContent>
+    </Card>
 </template>

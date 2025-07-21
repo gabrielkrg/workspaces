@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HeadingSmall from '@/components/HeadingSmall.vue';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip } from 'chart.js';
 import { Bar } from 'vue-chartjs';
 
@@ -58,10 +58,19 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 </script>
 
 <template>
-    <div class="flex flex-col text-center" v-if="chartData.datasets.length > 0">
-        <HeadingSmall :title="title" :description="description" class="mb-5" />
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative flex rounded-xl border p-5">
-            <Bar :data="chartData" :options="chartOptions" />
-        </div>
-    </div>
+    <Card>
+        <CardHeader class="flex flex-col items-center justify-between space-y-0 pb-2">
+            <CardTitle class="text-sm font-medium">
+                {{ title }}
+            </CardTitle>
+            <CardDescription>
+                {{ description }}
+            </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <div>
+                <Bar :data="chartData" :options="chartOptions" />
+            </div>
+        </CardContent>
+    </Card>
 </template>

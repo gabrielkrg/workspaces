@@ -149,22 +149,25 @@ watchDebounced(
   <AppLayout :breadcrumbs="breadcrumbs">
     <EditCard :card="selectedCard" :clients="clients" @unselect="selectedCard = null" @update="updateColumnCards" />
 
-    <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-hidden">
-      <div class="flex justify-start items-center gap-3 flex-wrap">
+    <div class="flex p-4 justify-between gap-3 flex-wrap">
+      <div class="flex items-center gap-3 flex-wrap">
         <h1 class="text-lg font-bold text-black dark:text-white ">
           {{ kanban.name }}
         </h1>
 
         <EditKanban :kanban="kanban" />
-        <GenerateWithAi :kanban="kanban" :columns="columns" @submit="updateColumnCards" />
 
-        <div class="grid grid-cols-3 w-full md:max-w-md gap-1.5">
+        <div class="lg:w-[700px] w-auto">
           <Label for="search" class="col-span-1 hidden">Search</Label>
-          <Input id="search" type="search" placeholder="Search" v-model="filtersForm.search" class="col-span-full" />
+          <Input id="search" type="search" placeholder="Search" v-model="filtersForm.search" />
         </div>
-
       </div>
 
+      <GenerateWithAi :kanban="kanban" :columns="columns" @submit="updateColumnCards" />
+    </div>
+
+
+    <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-hidden">
       <div class="flex h-full gap-4 overflow-x-auto">
         <KanbanColumn v-for="column in columns" :key="column.id" :column="column" :kanban-id="kanban.id"
           :clients="clients" @card-move="handleCardMove" @card-select="handleCardSelect"

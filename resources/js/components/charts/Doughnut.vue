@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HeadingSmall from '@/components/HeadingSmall.vue';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from 'chart.js';
 import { defineProps } from 'vue';
 import { Doughnut } from 'vue-chartjs';
@@ -32,10 +32,19 @@ const props = defineProps({
 </script>
 
 <template>
-    <div class="flex flex-col text-center">
-        <HeadingSmall :title="title" :description="description" class="mb-5" />
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative flex rounded-xl border p-5">
-            <Doughnut :data="chartData" :options="chartOptions" />
-        </div>
-    </div>
+    <Card>
+        <CardHeader class="flex flex-col items-center justify-between space-y-0 pb-2">
+            <CardTitle class="text-sm font-medium">
+                {{ title }}
+            </CardTitle>
+            <CardDescription>
+                {{ description }}
+            </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <div>
+                <Doughnut :data="chartData" :options="chartOptions" />
+            </div>
+        </CardContent>
+    </Card>
 </template>
