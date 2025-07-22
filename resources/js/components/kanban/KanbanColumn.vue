@@ -55,7 +55,7 @@ const handleCardSelect = (card: Card) => {
 </script>
 
 <template>
-    <Card class="flex h-full md:max-h-[calc(100vh-11rem)] w-72 gap-2">
+    <Card class="flex h-full md:max-h-[calc(100vh-11rem)] w-72 gap-2 bg-sidebar-accent">
         <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle class="text-sm font-medium">
                 {{ column.name }}

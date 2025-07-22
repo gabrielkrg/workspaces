@@ -34,7 +34,7 @@ const totalTasks = computed(() => props.card.tasks.length);
 </script>
 
 <template>
-    <Card class="cursor-pointer gap-2 bg-sidebar-accent p-5">
+    <Card class="cursor-pointer gap-2 p-5">
         <CardHeader class="flex flex-col space-y-1 p-0">
             <div v-if="card.tags.length > 0" class="flex items-center gap-2 flex-wrap">
                 <div v-for="tag in card.tags" :key="tag.id">
