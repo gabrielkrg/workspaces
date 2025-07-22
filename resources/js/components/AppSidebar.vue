@@ -4,7 +4,7 @@ import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Clock, LayoutGrid, ListTodo, NotebookText, SquareKanban, Tags, Ticket, Users } from 'lucide-vue-next';
+import { Clock, Folder, LayoutGrid, ListTodo, NotebookText, SquareKanban, Tags, Ticket, Users } from 'lucide-vue-next';
 import NavWorkspace from './NavWorkspace.vue';
 
 const mainNavItems: NavItem[] = [
@@ -29,11 +29,6 @@ const mainNavItems: NavItem[] = [
         href: '/tags',
         icon: Tags,
     },
-    // {
-    //     title: 'Calendar',
-    //     href: '/calendar',
-    //     icon: CalendarFold,
-    // },
     {
         title: 'Notes',
         href: '/notes',

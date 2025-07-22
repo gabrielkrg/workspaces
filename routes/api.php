@@ -8,8 +8,9 @@ use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\AiController;
 
 Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
+    // Workspaces
     Route::get('/workspaces', [WorkspaceController::class, 'index'])->name('api.workspaces');
-    Route::get('/tasks', [TaskController::class, 'getWorkspaceTasks'])->name('api.workspace.tasks');
+    Route::get('/tasks', [WorkspaceController::class, 'getWorkspaceTasks'])->name('api.workspace.tasks');
 
     // Tasks
     Route::get('/tasks/heatmap', [TaskController::class, 'heatmap'])->name('tasks.heatmap');

@@ -1,24 +1,24 @@
 <?php
 
-use App\Http\Controllers\CalendarController;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EventController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TaskController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TimeTrackingController;
 use App\Http\Controllers\ClientController;
 
-Route::get('/', function () {
-    return redirect()->route('dashboard');
-})->middleware(['auth', 'verified'])->name('home');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('dashboard');
+    })->name('home');
 
-Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
 
 Route::middleware(['auth'])->group(function () {
 
@@ -33,9 +33,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('tags', [TagController::class, 'store'])->name('tags.store');
     Route::put('tags/{tag}', [TagController::class, 'update'])->name('tags.update');
     Route::delete('tags/{tag}', [TagController::class, 'delete'])->name('tags.delete');
-
-    // Calendar
-    Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
 
     // Tickets
     Route::get('tickets', [TicketController::class, 'index'])->name('tickets.index');
@@ -74,11 +71,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('cards/{card}', [CardController::class, 'delete'])->name('cards.delete');
     Route::post('cards/{card}/tasks', [CardController::class, 'attachTask'])->name('cards.attach.task');
     Route::get('cards/{card}/tasks', [CardController::class, 'getTasks'])->name('cards.get.tasks');
-
     Route::post('bulk-cards', [KanbanController::class, 'bulkCards'])->name('cards.bulk');
-
-    // Events
-    Route::get('events', [EventController::class, 'index'])->name('events.index');
 
     // Notes
     Route::get('notes', [NoteController::class, 'index'])->name('notes.index');

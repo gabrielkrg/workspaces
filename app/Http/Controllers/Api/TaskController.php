@@ -4,23 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Task;
-use App\Models\Workspace;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
 
 class TaskController extends Controller
 {
-    public function getWorkspaceTasks(): JsonResponse
-    {
-        $user = Auth::user();
-        $workspace = Workspace::findOrFail($user->workspace_id);
-        $tasks = Task::where('workspace_id', $workspace->id)->get();
-
-        return response()->json($tasks);
-    }
-
-    public function heatmap()
+    public function heatmap(): JsonResponse
     {
         $user = Auth::user();
 
@@ -40,7 +29,7 @@ class TaskController extends Controller
         return response()->json($tasks);
     }
 
-    public function latestChanges()
+    public function latestChanges(): JsonResponse
     {
         $user = Auth::user();
         $workspaceIds = $user->workspaces()->pluck('workspaces.id');
@@ -53,5 +42,4 @@ class TaskController extends Controller
 
         return response()->json($tasks);
     }
-
 }
