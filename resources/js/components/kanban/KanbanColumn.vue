@@ -2,7 +2,6 @@
 import KanbanCard from '@/components/kanban/KanbanCard.vue';
 import CreateCard from '@/components/kanban/CreateCard.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users } from 'lucide-vue-next';
 import draggable from 'vuedraggable';
 
 interface Column {
@@ -55,7 +54,7 @@ const handleCardSelect = (card: Card) => {
 </script>
 
 <template>
-    <Card class="flex h-full md:max-h-[calc(100vh-11rem)] w-72 gap-2 bg-sidebar-accent">
+    <Card class="h-full md:max-h-[calc(100vh-12rem)] w-72 min-w-72 gap-2 bg-sidebar-accent">
         <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle class="text-sm font-medium">
                 {{ column.name }}

@@ -167,12 +167,10 @@ watchDebounced(
     </div>
 
 
-    <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-hidden">
-      <div class="flex h-full gap-4 overflow-x-auto">
-        <KanbanColumn v-for="column in columns" :key="column.id" :column="column" :kanban-id="kanban.id"
-          :clients="clients" @card-move="handleCardMove" @card-select="handleCardSelect"
-          @update="updateColumnCards(column.id)" />
-      </div>
+    <div class="flex h-full gap-4 overflow-x-auto p-4">
+      <KanbanColumn v-for="column in columns" :key="column.id" :column="column" :kanban-id="kanban.id"
+        :clients="clients" @card-move="handleCardMove" @card-select="handleCardSelect"
+        @update="updateColumnCards(column.id)" class="flex-shrink-0" />
     </div>
   </AppLayout>
 </template>
