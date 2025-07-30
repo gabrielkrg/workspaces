@@ -66,7 +66,7 @@ const submitCards = () => {
     if (cards.value.length === 0) return
 
     bulkCardsForm.cards = cards.value.map(card => ({
-        title: card.name,
+        title: card.title,
         description: card.description,
         order: 0,
     }))
@@ -141,10 +141,10 @@ const reset = () => {
 
                 <div v-for="(card, index) in cards" :key="index" class="grid gap-4 border-b pb-4">
                     <div class="grid grid-cols-4 items-center gap-4">
-                        <Label :for="`name-${index}`" class="text-right">
+                        <Label :for="`title-${index}`" class="text-right">
                             Title
                         </Label>
-                        <Input :id="`name-${index}`" v-model="cards[index].name" class="col-span-3" />
+                        <Input :id="`title-${index}`" v-model="cards[index].title" class="col-span-3" />
                     </div>
                     <div class="grid grid-cols-4 items-center gap-4">
                         <Label :for="`description-${index}`" class="text-right">
