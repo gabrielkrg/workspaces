@@ -34,6 +34,7 @@ class ResetRepeatingTasks extends Command
             if ($now->format('H:i') === '00:00') {
                 Task::where('workspace_id', $workspace->id)
                     ->where('repeat', 'daily')
+                    ->where('done', true)
                     ->update(['done' => false]);
             }
 
@@ -41,6 +42,7 @@ class ResetRepeatingTasks extends Command
             if ($now->isMonday() && $now->format('H:i') === '00:00') {
                 Task::where('workspace_id', $workspace->id)
                     ->where('repeat', 'weekly')
+                    ->where('done', true)
                     ->update(['done' => false]);
             }
 
@@ -48,6 +50,7 @@ class ResetRepeatingTasks extends Command
             if ($now->isSameDay($now->copy()->startOfMonth()) && $now->format('H:i') === '00:00') {
                 Task::where('workspace_id', $workspace->id)
                     ->where('repeat', 'monthly')
+                    ->where('done', true)
                     ->update(['done' => false]);
             }
         }
