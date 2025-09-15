@@ -11,6 +11,7 @@ use App\Http\Controllers\CardController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TimeTrackingController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\RosterController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', function () {
@@ -27,6 +28,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::put('tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('tasks/{task}', [TaskController::class, 'delete'])->name('tasks.delete');
+
+    // Rosters
+    Route::get('lists', [RosterController::class, 'index'])->name('rosters.index');
+    Route::post('lists', [RosterController::class, 'store'])->name('rosters.store');
 
     // Tags
     Route::get('tags', [TagController::class, 'index'])->name('tags.index');

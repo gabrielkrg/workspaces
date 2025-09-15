@@ -23,7 +23,11 @@ const mainNavItems: NavItem[] = [
         href: '/tasks',
         icon: ListTodo,
     },
-
+    {
+        title: 'Lists',
+        href: '/lists',
+        icon: ListTodo,
+    },
     {
         title: 'Tags',
         href: '/tags',

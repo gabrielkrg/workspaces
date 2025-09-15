@@ -74,7 +74,7 @@ class TaskController extends Controller
         $tags = $workspace->tags()->orderBy('name', 'asc')->get();
         $clients = $workspace->clients()->orderBy('name', 'asc')->get();
 
-        return Inertia::render('Task/Index', [
+        return Inertia::render('TaskNew/Index', [
             'tasks' => $tasks,
             'tags' => $tags,
             'clients' => $clients,
@@ -167,6 +167,7 @@ class TaskController extends Controller
 
     public function delete(Task $task)
     {
+        dd($task);
         $workspace = Workspace::findOrFail($task->workspace_id);
 
         $this->authorize('update', $workspace);

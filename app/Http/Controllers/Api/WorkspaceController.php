@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
 use App\Models\Workspace;
 use App\Models\Task;
+use App\Models\Client;
+use App\Models\Tag;
 
 class WorkspaceController extends Controller
 {
@@ -25,5 +27,23 @@ class WorkspaceController extends Controller
         $tasks = Task::where('workspace_id', $workspace->id)->get();
 
         return response()->json($tasks);
+    }
+
+    public function getWorkspaceClients(): JsonResponse
+    {
+        $user = Auth::user();
+        $workspace = Workspace::findOrFail($user->workspace_id);
+        $clients = Client::where('workspace_id', $workspace->id)->get();
+
+        return response()->json($clients);
+    }
+
+    public function getWorkspaceTags(): JsonResponse
+    {
+        $user = Auth::user();
+        $workspace = Workspace::findOrFail($user->workspace_id);
+        $tags = Tag::where('workspace_id', $workspace->id)->get();
+
+        return response()->json($tags);
     }
 }
