@@ -18,7 +18,7 @@ class AiController extends Controller
             'Authorization' => 'Bearer ' . env('AI_API_TOKEN'),
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
-        ])->post('https://ai.gabrielk.dev/api/ai/01980fd9-01d7-71f2-816b-4ce99b7e6151', [
+        ])->post('https://ai.gabrielk.dev/api/ai/019970a8-679d-70bb-a6c9-29cdc4d2d4ea', [
             'content' => $validated['content'],
         ]);
 
