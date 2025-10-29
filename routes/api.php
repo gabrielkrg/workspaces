@@ -7,9 +7,10 @@ use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\AiController;
 
-Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     // Workspaces
     Route::get('/workspaces', [WorkspaceController::class, 'index'])->name('api.workspaces');
+
     Route::get('/tasks', [WorkspaceController::class, 'getWorkspaceTasks'])->name('api.workspace.tasks');
 
     // Tasks
@@ -17,7 +18,7 @@ Route::middleware(['auth:sanctum'])->prefix('api')->group(function () {
     Route::get('/tasks/latest', [TaskController::class, 'latestChanges'])->name('tasks.latest');
 
     // Time Tracking
-    Route::get('time-tracking/trackables', [TimeTrackingController::class, 'trackables'])->name('time-tracking.trackables');
+    Route::get('time-tracking/trackables', [TimeTrackingController::class, 'trackables'])->name('api.time-tracking.trackables');
 
     // Tags
     Route::get('/tags', [TagController::class, 'index'])->name('api.tags');

@@ -149,7 +149,7 @@ watch(() => isRunning.value, (newIsRunning) => {
 
 const loadTrackables = async (type: string) => {
     try {
-        const response = await axios.get(route('time-tracking.trackables'), {
+        const response = await axios.get(route('api.time-tracking.trackables'), {
             params: {
                 trackable_type: type,
             },

@@ -178,7 +178,7 @@ const formatDateForInput = (dateString: string | null) => {
 
 watch(trackableType, async () => {
     form.trackable_type = trackableType.value;
-    const response = await axios.get(route('time-tracking.trackables'), {
+    const response = await axios.get(route('api.time-tracking.trackables'), {
         params: {
             trackable_type: trackableType.value,
         },
