@@ -53,7 +53,7 @@ const generateWithAi = async () => {
                 },
             );
 
-            cards.value = response.data || [];
+            cards.value = response.data.parsed || [];
         } catch (error) {
             console.error(error)
         } finally {
