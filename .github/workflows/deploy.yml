@@ -21,8 +21,8 @@ jobs:
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}      
-          username: ${{ secrets.SSH_USER }}  
-          key: ${{ secrets.SSH_PRIVATE_KEY }} 
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }} 
           port: ${{ secrets.SSH_PORT }}                              
           script: |
             cd ${{ env.APP_DIR }} # APP_DIR can remain in env if your script needs it
