@@ -1,59 +1,54 @@
-name: deploy 
+name: Deploy to Production
 
 on:
   push:
     branches:
-      - master
+      - master 
 
 jobs:
   deploy:
-    name: Deploy on server
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Or your desired runner
+    environment: production # Use GitHub Environments for secrets and deployments
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PORT: 22
+      SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      APP_DIR: /var/www/workspace
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up SSH key
-        uses: webfactory/ssh-agent@v0.5.3
+      # (Optional) If your server doesn't have Node/NPM/Composer already
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '18' # Or your desired Node.js version
+      # - name: Setup PHP
+      #   uses: shivammathur/setup-php@v2
+      #   with:
+      #     php-version: '8.2' # Or your desired PHP version
+      #     extensions: mbstring, pdo_mysql, zip # Common extensions
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USER }}
+          key: ${{ env.SSH_KEY }}
+          port: ${{ env.SSH_PORT }}
+          script: |
+            cd ${{ env.APP_DIR }}
 
-      - name: Run deployment commands on server
-        run: |
-          ssh -o StrictHostKeyChecking=no github_actions@${{ secrets.SERVER_IP }} << 'EOF'
-            set -e  # Exit on error
-            echo "Starting deployment process..."
-            
-            # Add GitHub to known_hosts
-            echo "Adding GitHub to known_hosts..."
-            mkdir -p ~/.ssh
-            ssh-keyscan github.com >> ~/.ssh/known_hosts
-            
-            # Define o repositório como seguro para evitar erros de "dubious ownership"
-            echo "Configuring git safe directory..."
-            git config --global --add safe.directory ${{ secrets.PATH_PROJECT }}
+            # Ensure the deploy.sh script is executable on the server
+            # (You might want to commit it with +x or chmod it during setup)
+            chmod +x deploy.sh
 
-            # Acessa o diretório do projeto
-            echo "Changing to project directory..."
-            cd ${{ secrets.PATH_PROJECT }} || { echo "Failed to change directory"; exit 1; }
+            # Run the deployment script
+            ./deploy.sh
 
-            # Atualiza o código
-            echo "Pulling latest changes..."
-            git pull origin master || { echo "Failed to pull changes"; exit 1; }
-
-            # Instala dependências PHP
-            echo "Installing PHP dependencies..."
-            composer install --no-interaction --prefer-dist --optimize-autoloader || { echo "Failed to install PHP dependencies"; exit 1; }
-
-            # Executa as migrations forçadas
-            echo "Running database migrations..."
-            php artisan migrate --force || { echo "Failed to run migrations"; exit 1; }
-
-            # Instala e compila os assets do front-end
-            echo "Installing and building frontend assets..."
-            npm install || { echo "Failed to install npm dependencies"; exit 1; }
-            npm run build || { echo "Failed to build frontend assets"; exit 1; }
-
-            echo "Deployment completed successfully!"
-          EOF
+            # Important: After deployment, restart your PHP-FPM service
+            # or web server if necessary, to pick up new code and configs.
+            sudo service php8.2-fpm reload # Adjust service name for your PHP version
+            # sudo systemctl restart nginx # Or apache
