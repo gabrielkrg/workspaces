@@ -36,5 +36,5 @@ jobs:
 
             # Important: After deployment, restart your PHP-FPM service
             # or web server if necessary, to pick up new code and configs.
-            sudo service php8.3-fpm reload # Adjust service name for your PHP version
+            # sudo service php8.3-fpm reload # Adjust service name for your PHP version
             # sudo systemctl restart nginx # Or apache
