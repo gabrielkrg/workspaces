@@ -7,7 +7,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@import 'default.css';
+@import './default.css';
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
