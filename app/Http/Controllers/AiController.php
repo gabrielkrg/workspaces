@@ -19,7 +19,7 @@ class AiController extends Controller
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
         ])->post('https://agents.gabrielk.dev/api/gemini/generate/single', [
-            'agent_uuid' => '019ac050-c91b-7311-aae1-496ef3094239',
+            'agent_uuid' => '019afd16-a1f0-7193-8e4b-bb09e4bb6310',
             'content' => $validated['content'],
         ]);
 
