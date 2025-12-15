@@ -17,6 +17,37 @@ class CardController extends Controller
 {
     use AuthorizesRequests;
 
+    /**
+     * Gera uma cor hexadecimal aleatória no formato #RRGGBB.
+     */
+    private function generateHexColor(): string
+    {
+        return sprintf('#%06X', mt_rand(0, 0xFFFFFF));
+    }
+
+    /**
+     * Retorna uma tag existente ou cria uma nova com cor gerada,
+     * sem alterar a cor das tags que já existem.
+     */
+    private function firstOrCreateTagWithColor(string $tagName, $user): Tag
+    {
+        $tag = Tag::where('name', $tagName)
+            ->where('user_id', $user->id)
+            ->where('workspace_id', $user->workspace_id)
+            ->first();
+
+        if ($tag) {
+            return $tag;
+        }
+
+        return Tag::create([
+            'name' => $tagName,
+            'user_id' => $user->id,
+            'workspace_id' => $user->workspace_id,
+            'color' => $this->generateHexColor(),
+        ]);
+    }
+
     public function store(Request $request, Kanban $kanban)
     {
         $validated = $request->validate([
@@ -28,7 +59,6 @@ class CardController extends Controller
             'tags.*' => 'string|max:50',
             'client_id' => 'nullable|exists:clients,id',
         ]);
-
 
         $user = Auth::user();
         $workspace = Workspace::findOrFail($user->workspace_id);
@@ -43,11 +73,7 @@ class CardController extends Controller
 
         if (!empty($request->tags)) {
             $tagIds = collect($request->tags)->map(function ($tagName) use ($user) {
-                return Tag::firstOrCreate([
-                    'name' => $tagName,
-                    'user_id' => $user->id,
-                    'workspace_id' => $user->workspace_id,
-                ])->id;
+                return $this->firstOrCreateTagWithColor($tagName, $user)->id;
             });
 
             $card->tags()->attach($tagIds);
@@ -82,11 +108,7 @@ class CardController extends Controller
         if (array_key_exists('tags', $validated)) {
             // create tags if they don't exist
             $tagIds = collect($validated['tags'])->map(function ($tagName) use ($user) {
-                return Tag::firstOrCreate([
-                    'name' => $tagName,
-                    'user_id' => $user->id,
-                    'workspace_id' => $user->workspace_id,
-                ])->id;
+                return $this->firstOrCreateTagWithColor($tagName, $user)->id;
             });
 
             $card->tags()->sync($tagIds);
@@ -140,11 +162,7 @@ class CardController extends Controller
 
         if (!empty($request->tags)) {
             $tagIds = collect($request->tags)->map(function ($tagName) use ($user) {
-                return Tag::firstOrCreate([
-                    'name' => $tagName,
-                    'user_id' => $user->id,
-                    'workspace_id' => $user->workspace_id,
-                ])->id;
+                return $this->firstOrCreateTagWithColor($tagName, $user)->id;
             });
 
             $task->tags()->attach($tagIds);

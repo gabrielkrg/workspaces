@@ -3,6 +3,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
 import Timer from '@/components/Timer.vue';
+import AppearanceDropdown from '@/components/AppearanceDropdown.vue';
 
 withDefaults(defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
@@ -21,7 +22,10 @@ withDefaults(defineProps<{
                     <Breadcrumbs :breadcrumbs="breadcrumbs" />
                 </template>
             </div>
-            <Timer />
+            <div class="flex items-center gap-2">
+                <Timer />
+                <AppearanceDropdown />
+            </div>
         </div>
     </header>
 </template>
