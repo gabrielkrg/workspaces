@@ -38,7 +38,7 @@ const totalTasks = computed(() => props.card.tasks.length);
         <CardHeader class="flex flex-col space-y-1 p-0">
             <div v-if="card.tags.length > 0" class="flex items-center gap-2 flex-wrap">
                 <div v-for="tag in card.tags" :key="tag.id">
-                    <div class="flex rounded bg-gray-400 px-1 text-xs font-normal text-white capitalize"
+                    <div class="flex rounded bg-primary px-1 text-xs font-normal text-primary-foreground capitalize"
                         :style="tag.color ? { backgroundColor: tag.color } : { backgroundColor: '#9ca3af' }">
                         {{ tag.name }}
                     </div>
