@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Check, Trash2 } from 'lucide-vue-next';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { router, useForm } from '@inertiajs/vue3';
+import TasksCardEdit from '@/components/kanban/tasksCardEdit.vue';
 import axios from 'axios';
 
 interface Card {
@@ -69,9 +70,6 @@ const deleteTask = (taskId: number) => {
         }
     });
 }
-
-
-
 </script>
 
 <template>
@@ -94,36 +92,39 @@ const deleteTask = (taskId: number) => {
                     </h3>
                 </div>
 
-                <Dialog>
-                    <DialogTrigger as-child>
-                        <Button variant="destructive" type="button" size="icon">
-                            <Trash2 class="w-4 h-4" />
-                        </Button>
-                    </DialogTrigger>
+                <div class="flex items-center gap-2">
+                    <TasksCardEdit :task="task" @update="updateCardTasks(card)" />
+                    <Dialog>
+                        <DialogTrigger as-child>
+                            <Button variant="destructive" type="button" size="icon">
+                                <Trash2 class="w-4 h-4" />
+                            </Button>
+                        </DialogTrigger>
 
-                    <DialogContent>
-                        <form class="space-y-6" @submit.prevent="deleteTask(task.id)">
-                            <DialogHeader class="space-y-3">
-                                <DialogTitle>Are you sure you want to delete this task?
-                                </DialogTitle>
-                                <DialogDescription>
-                                    Once your task is deleted, there's no way to recover
-                                    it.
-                                </DialogDescription>
-                            </DialogHeader>
+                        <DialogContent>
+                            <form class="space-y-6" @submit.prevent="deleteTask(task.id)">
+                                <DialogHeader class="space-y-3">
+                                    <DialogTitle>Are you sure you want to delete this task?
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        Once your task is deleted, there's no way to recover
+                                        it.
+                                    </DialogDescription>
+                                </DialogHeader>
 
-                            <DialogFooter class="gap-2">
-                                <DialogClose as-child>
-                                    <Button variant="secondary" type="button">Cancel</Button>
-                                </DialogClose>
+                                <DialogFooter class="gap-2">
+                                    <DialogClose as-child>
+                                        <Button variant="secondary" type="button">Cancel</Button>
+                                    </DialogClose>
 
-                                <Button variant="destructive" :disabled="form.processing" type="submit">
-                                    Delete task
-                                </Button>
-                            </DialogFooter>
-                        </form>
-                    </DialogContent>
-                </Dialog>
+                                    <Button variant="destructive" :disabled="form.processing" type="submit">
+                                        Delete task
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </div>
         </div>
 

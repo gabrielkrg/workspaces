@@ -27,6 +27,8 @@ const tags = ref<any[]>([]);
 const openSearchTerm = ref(false)
 const searchTerm = ref('')
 
+const isOpen = ref(false)
+
 const { contains } = useFilter({ sensitivity: 'base' })
 
 const filteredTags = computed(() => {
@@ -56,6 +58,7 @@ const createCard = () => {
         }
     });
 }
+
 onMounted(async () => {
     const response = await axios.get(route('api.tags'));
     tags.value = response.data;
@@ -64,7 +67,7 @@ onMounted(async () => {
 
 <template>
     <Sheet>
-        <SheetTrigger as-child>
+        <SheetTrigger as-child @click="isOpen = true">
             <div
                 class="cursor-pointer p-2 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md">
                 <Plus class="h-5 w-5" />

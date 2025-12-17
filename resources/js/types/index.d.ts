@@ -44,3 +44,23 @@ export interface User {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+
+export interface Task {
+    id: number;
+    title: string;
+    description: string;
+    done: boolean;
+    created_at: string;
+    updated_at: string;
+    repeat: string;
+    client_id: number;
+    delete_after: boolean;
+    tags: [];
+}
+
+export interface Tag {
+    id: number;
+    name: string;
+    color: string;
+}

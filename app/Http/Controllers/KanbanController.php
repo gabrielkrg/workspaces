@@ -47,7 +47,7 @@ class KanbanController extends Controller
                 $query->orderBy('order');
             },
             'columns.cards' => function ($query) use ($request) {
-                $query->orderBy('created_at', 'desc')->with('tasks')->with('tags');
+                $query->orderBy('created_at', 'desc')->with('tasks.tags')->with('tags');
             }
         ]);
 

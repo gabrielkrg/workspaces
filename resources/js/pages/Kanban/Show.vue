@@ -9,6 +9,7 @@ import KanbanColumn from '@/components/kanban/KanbanColumn.vue';
 import EditCard from '@/components/kanban/EditCard.vue';
 import EditKanban from '@/components/kanban/EditKanban.vue';
 import GenerateWithAi from '@/components/GenerateWithAi.vue';
+import QuickActions from '@/pages/Kanban/components/QuickActions.vue';
 
 import { watchDebounced } from '@vueuse/core';
 import { router, useForm } from '@inertiajs/vue3';
@@ -172,5 +173,7 @@ watchDebounced(
         :clients="clients" @card-move="handleCardMove" @card-select="handleCardSelect"
         @update="updateColumnCards(column.id)" class="flex-shrink-0" />
     </div>
+
+
   </AppLayout>
 </template>

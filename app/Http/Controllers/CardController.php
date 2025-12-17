@@ -175,7 +175,7 @@ class CardController extends Controller
 
     public function getTasks(Card $card): JsonResponse
     {
-        $tasks = $card->tasks()->get();
+        $tasks = $card->tasks()->with('tags')->get();
 
         return response()->json([
             'tasks' => $tasks,

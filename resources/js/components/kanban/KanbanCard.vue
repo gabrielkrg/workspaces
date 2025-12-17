@@ -2,7 +2,6 @@
 import { Calendar, ListTodo } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users } from 'lucide-vue-next';
 
 interface Task {
     id: number;
@@ -31,6 +30,7 @@ const props = defineProps<{
 
 const doneTasks = computed(() => props.card.tasks.filter((task: Task) => task.done).length);
 const totalTasks = computed(() => props.card.tasks.length);
+
 </script>
 
 <template>
