@@ -14,5 +14,5 @@ defineProps<Props>();
 </script>
 
 <template>
-    <Box class="size-8" />
+    <Box :class="className" />
 </template>

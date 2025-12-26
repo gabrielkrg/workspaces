@@ -5,6 +5,7 @@ import { type SharedData, type User } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 import { Box, ChevronsUpDown } from 'lucide-vue-next';
 import WorkspaceMenuContent from './WorkspaceMenuContent.vue';
+import AppLogoIcon from './AppLogoIcon.vue';
 
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
@@ -16,19 +17,18 @@ const { isMobile, state } = useSidebar();
     <SidebarMenu>
         <SidebarMenuItem>
             <DropdownMenu>
-                <DropdownMenuTrigger as-child>
+                <DropdownMenuTrigger asChild>
                     <SidebarMenuButton size="lg"
                         class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                        <div class="size-9 overflow-hidden rounded-lg bg-muted flex items-center justify-center">
-                            <Box class="size-6" />
+                        <div
+                            class="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                            <AppLogoIcon class="size-4" />
                         </div>
-                        <div class="grid flex-1 text-left text-sm leading-tight">
-                            <span class="text-xs text-sidebar-accent-foreground">
-                                Workspace
-                            </span>
-                            <span class="mb-0.5 truncate leading-none font-semibold">{{ user.workspace.name }}</span>
+                        <div class="flex flex-col gap-0.5 leading-none">
+                            <span class="font-medium">Workspace</span>
+                            <span>{{ user.workspace.name || '???' }}</span>
                         </div>
-                        <ChevronsUpDown class="ml-auto size-4" />
+                        <ChevronsUpDown class="ml-auto" />
                     </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent class="w-(--reka-dropdown-menu-trigger-width) min-w-56 rounded-lg"
