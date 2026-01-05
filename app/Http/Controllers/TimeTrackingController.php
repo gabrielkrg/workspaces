@@ -8,10 +8,11 @@ use App\Models\TimeTracking;
 use App\Models\Workspace;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Carbon\Carbon;
 
 class TimeTrackingController extends Controller
 {
-    use AuthorizesRequests; 
+    use AuthorizesRequests;
 
     public function index()
     {
@@ -44,7 +45,8 @@ class TimeTrackingController extends Controller
             'end_time' => 'nullable|date',
         ]);
 
-        TimeTracking::create(array_merge($validated, [
+        TimeTracking::create(
+            array_merge($validated, [
                 'user_id' => $user->id,
                 'workspace_id' => $user->workspace->id,
             ])
@@ -66,12 +68,12 @@ class TimeTrackingController extends Controller
             'trackable_type' => 'required|string|max:255',
             'start_time' => 'required|date',
             'end_time' => 'required|date',
-            'duration' => 'nullable|integer',
+            'is_running' => 'required|boolean',
         ]);
 
         $timeTracking->update($request->all());
 
-        return redirect()->route('time-tracking.index')->with('success', 'Time tracking updated successfully');
+        return redirect()->back()->with('success', 'Time tracking updated successfully');
     }
 
     public function destroy(TimeTracking $timeTracking)
@@ -85,33 +87,5 @@ class TimeTrackingController extends Controller
         $timeTracking->delete();
 
         return redirect()->route('time-tracking.index')->with('success', 'Time tracking deleted successfully');
-    }
-
-    public function trackables(Request $request)
-    {
-        $user = Auth::user();
-
-        $workspace = Workspace::findOrFail($user->workspace_id);
-
-        $this->authorize('view', $workspace);
-
-        $trackableType = $request->input('trackable_type');
-
-        switch ($trackableType) {
-            case 'App\Models\Ticket':
-                $trackables = $workspace->tickets()->get();
-                break;
-            case 'App\Models\Task':
-                $trackables = $workspace->tasks()->get();
-                break;
-            case 'App\Models\Card':
-                $trackables = $workspace->cards()->get();
-                break;
-            default:
-                $trackables = [];
-                break;
-        }
-
-        return response()->json($trackables);
     }
 }

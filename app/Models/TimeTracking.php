@@ -48,7 +48,7 @@ class TimeTracking extends Model
 
     public function getFormattedEndTimeAttribute()
     {
-        return $this->end_time->format('d/m/Y - H:i');
+        return $this->end_time ? $this->end_time->format('d/m/Y - H:i') : null;
     }
 
     public function trackable()

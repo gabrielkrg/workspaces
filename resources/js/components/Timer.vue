@@ -12,57 +12,47 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
-import { Timer, Play, Pause } from 'lucide-vue-next'
-import { ref, onMounted, watch } from 'vue'
+import { Timer, Play, Pause, RotateCcw } from 'lucide-vue-next'
+import { ref, watch, onMounted } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import axios from 'axios'
-import { useTimerStore } from '@/stores/timer'
 import type { Trackable } from '@/types'
+import { useTimerStore } from '@/stores/timer'
+import { router } from '@inertiajs/vue3'
 
-// Use the Pinia store
-const timerStore = useTimerStore()
+const trackableType = ref('');
+const trackables = ref<Trackable[]>([]);
 
-// Timer state
-const isRunning = ref(false)
-const elapsedTime = ref(0)
-const intervalId = ref<number | null>(null)
+const timerStore = useTimerStore();
 
-// Start or pause timer
-const toggleTimer = () => {
-    if (isRunning.value) {
-        pauseTimer()
-    } else {
-        startTimer()
-    }
+const timeTrackingId = ref<number | null>(null);
+const isDialogOpen = ref(false);
 
-    timerStore.toggleTimer()
-}
+onMounted(async () => {
+    if (timerStore.timeTrackingId) {
+        try {
+            // Usa o ID da store diretamente
+            timeTrackingId.value = timerStore.timeTrackingId
+            const response = await axios.get(route('api.time-tracking.show', timerStore.timeTrackingId))
+            const timeTracking = response.data
 
-// Start timer
-const startTimer = () => {
-    if (!isRunning.value) {
-        isRunning.value = true
-        intervalId.value = setInterval(() => {
-            elapsedTime.value++
-        }, 1000)
-    }
+            // Primeiro define o tipo para carregar os trackables
+            if (timeTracking.trackable_type) {
+                trackableType.value = timeTracking.trackable_type
+                form.trackable_type = timeTracking.trackable_type
+                // Aguarda os trackables serem carregados
+                await loadTrackables(timeTracking.trackable_type)
+            }
 
-}
-
-// Pause timer
-const pauseTimer = () => {
-    if (isRunning.value) {
-        isRunning.value = false
-        if (intervalId.value) {
-            clearInterval(intervalId.value)
-            intervalId.value = null
+            // Depois preenche o formulário com os dados
+            form.start_time = timeTracking.start_time ? new Date(timeTracking.start_time).toISOString().slice(0, 16) : ''
+            form.end_time = timeTracking.end_time ? new Date(timeTracking.end_time).toISOString().slice(0, 16) : ''
+            form.trackable_id = timeTracking.trackable_id || ''
+        } catch (error) {
+            console.error('Error loading time tracking:', error)
         }
     }
-
-    timerStore.setEndTime(new Date().toISOString())
-    timerStore.setStartTime(new Date(new Date().getTime() - elapsedTime.value * 1000).toISOString())
-}
-
+})
 
 const types = [
     {
@@ -75,45 +65,14 @@ const types = [
     }
 ];
 
-const trackableType = ref('');
-const trackables = ref<Trackable[]>([]);
-
 const form = useForm({
     trackable_id: '',
     trackable_type: '',
     start_time: '',
     end_time: '',
+    is_running: false as boolean,
 });
 
-// Initialize form with store values when component mounts
-onMounted(() => {
-    // Restore form state from store
-    if (timerStore.trackableType) {
-        trackableType.value = timerStore.trackableType
-        form.trackable_id = timerStore.trackableId
-        form.trackable_type = timerStore.trackableType
-        form.start_time = timerStore.startTime || ''
-        form.end_time = timerStore.endTime || ''
-
-        // Load trackables if type is set
-        if (timerStore.trackableType) {
-            loadTrackables(timerStore.trackableType)
-        }
-    }
-
-    // Restart timer if it was running
-    if (timerStore.isRunning) {
-        timerStore.startTimer()
-    }
-})
-
-// here I need to watch the timerStore.isRunning and if it is true, I need to set the form.end_time to the current time and the form.start_time to the current time minus the elapsed time
-watch(() => isRunning.value, (newIsRunning) => {
-    if (!newIsRunning) {
-        form.end_time = new Date().toISOString().slice(0, 16)
-        form.start_time = new Date(new Date().getTime() - elapsedTime.value * 1000).toISOString().slice(0, 16)
-    }
-})
 
 const loadTrackables = async (type: string) => {
     try {
@@ -129,19 +88,18 @@ const loadTrackables = async (type: string) => {
 }
 
 const submit = () => {
-    // Use the store values for the form
-    form.trackable_id = timerStore.trackableId
-    form.trackable_type = timerStore.trackableType
-    form.start_time = timerStore.startTime || ''
-    form.end_time = timerStore.endTime || ''
+    form.is_running = timerStore.isRunning;
 
-    form.post(route('time-tracking.store'), {
+    form.put(route('time-tracking.update', timeTrackingId.value as number), {
         onSuccess: () => {
-            timerStore.resetTimer()
             form.reset()
 
             trackableType.value = ''
             trackables.value = []
+            timeTrackingId.value = null
+
+            timerStore.resetTimer()
+            isDialogOpen.value = false
         },
         onError: () => {
             console.log('error')
@@ -149,8 +107,67 @@ const submit = () => {
     })
 }
 
+const reset = () => {
+
+    if (!timeTrackingId.value) {
+
+        console.log(timeTrackingId.value)
+        return;
+    }
+
+
+    timerStore.resetTimer()
+    form.reset()
+    trackableType.value = ''
+    trackables.value = []
+
+
+    router.delete(route('time-tracking.destroy', timeTrackingId.value as number), {
+        onSuccess: () => {
+            timeTrackingId.value = null
+            isDialogOpen.value = false
+            router.get(route('time-tracking.index'), {
+                preserveState: true,
+                replace: true,
+            });
+        }
+    })
+}
+
+const start = async () => {
+    try {
+        const response = await axios.post(route('api.time-tracking.start'), {
+            trackable_id: form.trackable_id,
+            trackable_type: form.trackable_type,
+        })
+
+        const id = response.data.id
+        timeTrackingId.value = id
+        timerStore.setTimeTrackingId(id)
+        timerStore.startTimer()
+
+        // Busca os dados completos do time tracking
+        const showResponse = await axios.get(route('api.time-tracking.show', id))
+        const timeTracking = showResponse.data
+
+        // Primeiro define o tipo para carregar os trackables
+        if (timeTracking.trackable_type) {
+            trackableType.value = timeTracking.trackable_type
+            form.trackable_type = timeTracking.trackable_type
+            // Aguarda os trackables serem carregados
+            await loadTrackables(timeTracking.trackable_type)
+        }
+
+        // Depois preenche o formulário com os dados retornados
+        form.start_time = timeTracking.start_time ? new Date(timeTracking.start_time).toISOString().slice(0, 16) : ''
+        form.end_time = timeTracking.end_time ? new Date(timeTracking.end_time).toISOString().slice(0, 16) : ''
+        form.trackable_id = timeTracking.trackable_id || ''
+    } catch (error) {
+        console.error('Error starting time tracking:', error)
+    }
+}
+
 watch(trackableType, async () => {
-    timerStore.setTrackable(trackableType.value, '')
     form.trackable_type = trackableType.value
     if (trackableType.value) {
         await loadTrackables(trackableType.value)
@@ -159,50 +176,36 @@ watch(trackableType, async () => {
     }
 });
 
-// Watch for trackable selection changes
-watch(() => form.trackable_id, (newId) => {
-    if (newId) {
-        const selectedTrackable = trackables.value.find(t => t.id === newId)
-        timerStore.setTrackable(trackableType.value, newId, selectedTrackable || null)
-    }
-})
+watch(() => timerStore.isRunning, (isRunning) => {
+    if (!isRunning && form.start_time) {
+        // Quando pausa, calcula o end_time baseado no start_time + elapsedTime
+        // Converte o datetime-local para Date considerando o timezone local
+        const startTimeStr = form.start_time.replace('T', ' ')
+        const [datePart, timePart] = startTimeStr.split(' ')
+        const [year, month, day] = datePart.split('-').map(Number)
+        const [hours, minutes] = timePart.split(':').map(Number)
 
-// Watch for start/end time changes
-watch(() => form.start_time, (newTime) => {
-    if (newTime) {
-        timerStore.setStartTime(newTime)
-    }
-})
+        const startTime = new Date(year, month - 1, day, hours, minutes, 0)
+        const endTime = new Date(startTime.getTime() + (timerStore.elapsedTime * 1000))
 
-watch(() => form.end_time, (newTime) => {
-    if (newTime) {
-        timerStore.setEndTime(newTime)
-    }
-})
+        // Formata para datetime-local (YYYY-MM-DDTHH:mm)
+        const endYear = endTime.getFullYear()
+        const endMonth = String(endTime.getMonth() + 1).padStart(2, '0')
+        const endDay = String(endTime.getDate()).padStart(2, '0')
+        const endHours = String(endTime.getHours()).padStart(2, '0')
+        const endMinutes = String(endTime.getMinutes()).padStart(2, '0')
 
-// onUnmounted(() => {
-//     // Don't cleanup the timer when component unmounts
-//     // Let the store handle the timer state
-//     // Only cleanup if the timer is actually stopped
-//     if (!timerStore.isRunning) {
-//         timerStore.cleanup()
-//     }
-// })
+        form.end_time = `${endYear}-${endMonth}-${endDay}T${endHours}:${endMinutes}`
+    }
+});
+
 
 </script>
 
 <template>
-    <Dialog>
+    <Dialog v-model="isDialogOpen">
         <DialogTrigger as-child>
-            <Button
-                class="cursor-pointer px-4 py-1 font-bold text-white text-sm transition duration-200 hover:brightness-110"
-                style="background: linear-gradient(90deg, #4B0082 0%, #90EE90 100%);">
-                <span v-if="timerStore.hasActiveTimer">
-                    {{ timerStore.formattedTime }}
-                </span>
-                <span v-else>
-                    Timer
-                </span>
+            <Button variant="secondary">
                 <Timer class="size-5" />
             </Button>
         </DialogTrigger>
@@ -250,44 +253,61 @@ watch(() => form.end_time, (newTime) => {
                         </span>
                     </div>
 
-                    <div class="col-span-full">
-                        <p class="text-2xl font-bold">{{ timerStore.formattedTime }}</p>
-                    </div>
+                    <div v-if="timerStore.timeTrackingId">
+                        <div class="grid gap-4">
+                            <div class="grid grid-cols-4 items-center gap-4">
+                                <Label for="start_time" class="text-right col-span-full">Start Time</Label>
+                                <Input id="start_time" v-model="form.start_time" type="datetime-local"
+                                    class="col-span-4" />
+                                <span class="text-sm text-red-500 col-span-full" v-if="form.errors.start_time">
+                                    {{ form.errors.start_time }}
+                                </span>
+                            </div>
 
-                    <div v-if="!timerStore.isRunning && timerStore.formattedTime != '00:00:00'"
-                        class="grid gap-4 animate-in fade-in duration-500">
-                        <div class="grid grid-cols-4 items-center gap-4">
-                            <Label for="start_time" class="text-right col-span-full">Start Time</Label>
-                            <Input id="start_time" v-model="form.start_time" type="datetime-local" class="col-span-4" />
-                            <span class="text-sm text-red-500 col-span-full" v-if="form.errors.start_time">
-                                {{ form.errors.start_time }}
-                            </span>
-                        </div>
-
-                        <div class="grid grid-cols-4 items-center gap-4">
-                            <Label for="end_time" class="text-right col-span-full">End Time</Label>
-                            <Input id="end_time" v-model="form.end_time" type="datetime-local" class="col-span-4" />
-                            <span class="text-sm text-red-500 col-span-full" v-if="form.errors.end_time">
-                                {{ form.errors.end_time }}
-                            </span>
+                            <div class="grid grid-cols-4 items-center gap-4">
+                                <Label for="end_time" class="text-right col-span-full">End Time</Label>
+                                <Input id="end_time" v-model="form.end_time" type="datetime-local" class="col-span-4" />
+                                <span class="text-sm text-red-500 col-span-full" v-if="form.errors.end_time">
+                                    {{ form.errors.end_time }}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <DialogFooter class="grid grid-cols-4 gap-2">
-                        <Button type="button" class="col-span-3" variant='outline' @click="toggleTimer">
-                            <Play v-if="!timerStore.isRunning" class="w-4 h-4 mr-2" />
-                            <Pause v-else class="w-4 h-4 mr-2" />
-                            {{ timerStore.isRunning ? 'Pause' : 'Play' }}
-                        </Button>
-                        <Button type="button" variant="destructive" class="col-span-1" @click="timerStore.resetTimer"
-                            :disabled="timerStore.elapsedTime === 0">
-                            Reset
-                        </Button>
-                        <Button type="submit" class="cursor-pointer col-span-full" v-if="!isRunning"
-                            :disable="!isRunning">Save</Button>
+                    <DialogFooter>
+
+                        <div class="flex gap-2">
+                            <div v-if="timerStore.timeTrackingId">
+                                <p class="text-3xl font-bold">{{ timerStore.formattedTime }}</p>
+                                <div class="flex gap-2">
+                                    <Button type="button" @click="timerStore.toggleTimer" variant="secondary">
+                                        <Play v-if="!timerStore.isRunning" class="size-4 mr-2" />
+                                        <Pause v-else class="size-4 mr-2" />
+                                        {{ timerStore.isRunning ? 'Pause' : 'Play' }}
+                                    </Button>
+
+                                    <Button type="button" variant="destructive" @click="reset()">
+                                        <RotateCcw class="size-4 mr-2" />
+                                        Reset
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <Button type="button" @click="start()" v-if="!timerStore.timeTrackingId">
+                                Start
+                            </Button>
+
+                            <div v-if="!timerStore.isRunning && timerStore.timeTrackingId"
+                                class="col-span-full flex gap-2">
+                                <Button type="submit" class="cursor-pointer" :disabled="timerStore.isRunning">
+                                    Save
+                                </Button>
+                            </div>
+                        </div>
                     </DialogFooter>
                 </div>
             </form>
+
         </DialogContent>
     </Dialog>
 </template>
