@@ -8,7 +8,7 @@ import { Line } from 'vue-chartjs';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 // Define props with TypeScript types
-const props = defineProps({
+defineProps({
     title: {
         type: String,
         default: 'Title',

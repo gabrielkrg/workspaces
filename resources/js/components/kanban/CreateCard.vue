@@ -49,7 +49,7 @@ const createCard = () => {
     card.column_id = props.column_id;
 
     card.post(route('cards.store', { kanban: props.kanban_id }), {
-        onSuccess: (response) => {
+        onSuccess: () => {
             card.reset();
             emit('update', props.column_id);
         },

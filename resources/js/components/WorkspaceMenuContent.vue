@@ -3,17 +3,13 @@ import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator } from '@/co
 import { Link, router } from '@inertiajs/vue3';
 import { Box, Settings } from 'lucide-vue-next';
 import DropdownMenuLabel from './ui/dropdown-menu/DropdownMenuLabel.vue';
-
-interface Workspace {
-    id: number;
-    name: string;
-}
+import type { Workspace } from '@/types';
 
 interface Props {
     workspaces: Workspace[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 const setWorkspace = (workspaceId: number) => {
     router.patch(route('workspace.set'), {

@@ -26,7 +26,7 @@ export interface SharedData extends PageProps {
     sidebarOpen: boolean;
 }
 
-interface Workspace {
+export interface Workspace {
     id: number;
     name: string;
 }
@@ -63,4 +63,79 @@ export interface Tag {
     id: number;
     name: string;
     color: string;
+}
+
+export interface KanbanCard {
+    id: number;
+    title: string;
+    description: string;
+    order: number;
+    column_id: number;
+    tasks: Task[];
+    tags: Tag[];
+    client_id?: number;
+    kanban_id?: number;
+    created_at_formatted?: string;
+    column?: KanbanColumn;
+}
+
+export interface KanbanColumn {
+    id: number;
+    name: string;
+    order?: number;
+    cards: KanbanCard[];
+}
+
+export interface Kanban {
+    id: number;
+    name: string;
+    workspace_id: number;
+    user_id: number;
+    created_at: string;
+    updated_at: string;
+    columns: KanbanColumn[];
+    cards_count?: number;
+}
+
+export interface Trackable {
+    id: number;
+    title: string;
+}
+
+export interface TimeTracking {
+    id: number;
+    start_time: string;
+    end_time: string;
+    duration: number;
+    is_running: boolean;
+    trackable_id: number | null;
+    trackable_type: string;
+    formatted_start_time: string;
+    formatted_end_time: string;
+    trackable: Trackable;
+}
+
+export interface Ticket {
+    id: number;
+    title: string;
+    description: string;
+    status: 'open' | 'in_progress' | 'closed' | 'pending';
+    created_at: string;
+    workspace_id: number;
+    user_id: number;
+    client_id: number;
+}
+
+export interface Client {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+}
+
+export interface Note {
+    id?: number;
+    title: string;
+    content: string;
 }

@@ -14,7 +14,6 @@ import { Textarea } from '@/components/ui/textarea';
 // Sheet Components
 import {
     Sheet,
-    SheetClose,
     SheetContent,
     SheetDescription,
     SheetFooter,
@@ -22,18 +21,6 @@ import {
     SheetTitle,
     SheetTrigger
 } from '@/components/ui/sheet';
-
-// Alert Dialog Components
-import {
-    AlertDialog,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger
-} from '@/components/ui/alert-dialog';
 
 // Popover Components
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -56,25 +43,7 @@ import {
     DialogFooter,
     DialogClose
 } from '@/components/ui/dialog';
-
-interface Ticket {
-    id: number;
-    title: string;
-    description: string;
-    status: 'open' | 'in_progress' | 'closed' | 'pending';
-    created_at: string;
-    workspace_id: number;
-    user_id: number;
-    client_id: number;
-}
-
-interface Client {
-    id: number;
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-}
+import type { Ticket, Client } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -83,7 +52,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const props = defineProps<{
+defineProps<{
     tickets: Ticket[];
     clients: Client[];
 }>();

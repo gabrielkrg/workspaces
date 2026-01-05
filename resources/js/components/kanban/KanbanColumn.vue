@@ -3,51 +3,28 @@ import KanbanCard from '@/components/kanban/KanbanCard.vue';
 import CreateCard from '@/components/kanban/CreateCard.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import draggable from 'vuedraggable';
-
-interface Column {
-    id: number;
-    name: string;
-    cards: Card[];
-}
-
-interface Card {
-    id: number;
-    title: string;
-    description: string;
-    order: number;
-    column_id: number;
-    tasks: Task[];
-    column: Column;
-    tags: string[];
-}
-
-interface Task {
-    id: number;
-    title: string;
-    description: string;
-    done: boolean;
-}
+import type { KanbanColumn, KanbanCard as KanbanCardType } from '@/types';
 
 interface Props {
-    column: Column;
+    column: KanbanColumn;
     kanbanId: number;
     clients: any[];
 }
 
 interface Emits {
-    (e: 'cardMove', event: { added?: { element: Card; newIndex: number } }): void;
-    (e: 'cardSelect', card: Card): void;
+    (e: 'cardMove', event: { added?: { element: KanbanCardType; newIndex: number } }): void;
+    (e: 'cardSelect', card: KanbanCardType): void;
     (e: 'update'): void;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const handleCardMove = (event: { added?: { element: Card; newIndex: number } }) => {
+const handleCardMove = (event: { added?: { element: KanbanCardType; newIndex: number } }) => {
     emit('cardMove', event);
 };
 
-const handleCardSelect = (card: Card) => {
+const handleCardSelect = (card: KanbanCardType) => {
     emit('cardSelect', card);
 };
 

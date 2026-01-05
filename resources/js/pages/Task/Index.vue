@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { Check, ChevronDown, EllipsisVertical, Highlighter, Kanban, Timer } from 'lucide-vue-next';
+import { Check, ChevronDown, EllipsisVertical, Highlighter, Kanban } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { useFilter } from 'reka-ui'
 import {
@@ -144,9 +144,6 @@ const deleteTask = (taskId) => {
     });
 };
 
-const startTimer = (taskId: number) => {
-    console.log(taskId);
-};
 
 const filtersForm = useForm({
     search: props.filters?.search || '',

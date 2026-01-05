@@ -2,30 +2,10 @@
 import { Calendar, ListTodo } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-interface Task {
-    id: number;
-    title: string;
-    description: string;
-    done: boolean;
-}
-
-interface Tag {
-    id: number;
-    name: string;
-    color: string;
-}
-
-interface Card {
-    id: number;
-    title: string;
-    description: string;
-    tasks: Task[];
-    tags: Tag[];
-}
+import type { KanbanCard, Task } from '@/types';
 
 const props = defineProps<{
-    card: Card;
+    card: KanbanCard;
 }>();
 
 const doneTasks = computed(() => props.card.tasks.filter((task: Task) => task.done).length);

@@ -8,7 +8,7 @@ import { Doughnut } from 'vue-chartjs';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Define props with TypeScript types
-const props = defineProps({
+defineProps({
     title: {
         type: String,
         default: 'Title',

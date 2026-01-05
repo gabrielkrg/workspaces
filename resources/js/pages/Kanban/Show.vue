@@ -9,58 +9,18 @@ import KanbanColumn from '@/components/kanban/KanbanColumn.vue';
 import EditCard from '@/components/kanban/EditCard.vue';
 import EditKanban from '@/components/kanban/EditKanban.vue';
 import GenerateWithAi from '@/components/GenerateWithAi.vue';
-import QuickActions from '@/pages/Kanban/components/QuickActions.vue';
 
 import { watchDebounced } from '@vueuse/core';
 import { router, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ref } from 'vue';
-
-interface Kanban {
-  id: number;
-  name: string;
-  workspace_id: number;
-  user_id: number;
-  created_at: string;
-  updated_at: string;
-  columns: Column[];
-}
-
-interface Column {
-  id: number;
-  name: string;
-  cards: Card[];
-}
-
-interface Card {
-  id: number;
-  title: string;
-  description: string;
-  order: number;
-  column_id: number;
-  tasks: Task[];
-  column: Column;
-  tags: string[];
-}
-
-interface Task {
-  id: number;
-  title: string;
-  description: string;
-  done: boolean;
-}
-
-interface Tag {
-  id: number;
-  name: string;
-  color: string;
-}
+import type { Kanban, Tag } from '@/types';
 
 const props = defineProps<{
   kanban: Kanban;
   tags: Tag[];
   clients: any[];
-  filters: Object;
+  filters: object;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [

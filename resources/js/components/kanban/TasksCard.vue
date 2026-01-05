@@ -8,21 +8,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { router, useForm } from '@inertiajs/vue3';
 import TasksCardEdit from '@/components/kanban/tasksCardEdit.vue';
 import axios from 'axios';
-
-interface Card {
-    id: number;
-    title: string;
-    description: string;
-    column_id: number;
-    order: number;
-    tags: string[];
-    client_id: number;
-    kanban_id: number;
-    tasks: any[];
-}
+import type { KanbanCard } from '@/types';
 
 const props = defineProps<{
-    card: Card;
+    card: KanbanCard;
 }>();
 
 

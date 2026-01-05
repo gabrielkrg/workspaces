@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,21 +15,10 @@ import { Combobox, ComboboxAnchor, ComboboxInput, ComboboxList, ComboboxEmpty, C
 import { TagsInput, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText } from '@/components/ui/tags-input';
 import { useFilter } from 'reka-ui';
 import axios from 'axios';
-
-interface Card {
-    id: number;
-    title: string;
-    description: string;
-    column_id: number;
-    order: number;
-    tags: string[];
-    client_id: number;
-    tasks: any[];
-    kanban_id: number;
-}
+import type { KanbanCard } from '@/types';
 
 const props = defineProps<{
-    card: Card | null;
+    card: KanbanCard | null;
     clients: any[];
 }>();
 
@@ -64,7 +53,7 @@ const updateCard = () => {
 
     form.put(route('cards.update', props.card.id), {
         preserveScroll: true,
-        onSuccess: (response) => {
+        onSuccess: () => {
             emit('update', form.column_id);
             isOpen.value = false;
             form.reset();

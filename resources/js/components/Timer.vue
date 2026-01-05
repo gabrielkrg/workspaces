@@ -13,29 +13,11 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog'
 import { Timer, Play, Pause } from 'lucide-vue-next'
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import axios from 'axios'
 import { useTimerStore } from '@/stores/timer'
-import { cn } from '@/lib/utils'
-
-interface TimeTracking {
-    id: number;
-    start_time: string;
-    end_time: string;
-    duration: number;
-    is_running: boolean;
-    trackable_id: number | null;
-    trackable_type: string;
-    formatted_start_time: string;
-    formatted_end_time: string;
-    trackable: Trackable;
-}
-
-interface Trackable {
-    id: number;
-    title: string;
-}
+import type { Trackable } from '@/types'
 
 // Use the Pinia store
 const timerStore = useTimerStore()
@@ -44,15 +26,6 @@ const timerStore = useTimerStore()
 const isRunning = ref(false)
 const elapsedTime = ref(0)
 const intervalId = ref<number | null>(null)
-
-// Format time as HH:MM:SS
-const formattedTime = computed(() => {
-    const hours = Math.floor(elapsedTime.value / 3600)
-    const minutes = Math.floor((elapsedTime.value % 3600) / 60)
-    const seconds = elapsedTime.value % 60
-
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-})
 
 // Start or pause timer
 const toggleTimer = () => {
@@ -90,11 +63,6 @@ const pauseTimer = () => {
     timerStore.setStartTime(new Date(new Date().getTime() - elapsedTime.value * 1000).toISOString())
 }
 
-// Reset timer
-const resetTimer = () => {
-    pauseTimer()
-    elapsedTime.value = 0
-}
 
 const types = [
     {

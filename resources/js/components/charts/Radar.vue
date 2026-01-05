@@ -6,7 +6,7 @@ import { Radar } from 'vue-chartjs';
 // Register the necessary components from Chart.js
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
-const props = defineProps({
+defineProps({
     title: {
         type: String,
         default: 'Title',

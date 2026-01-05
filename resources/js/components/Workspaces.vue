@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { SquareStack } from 'lucide-vue-next';
-
 import WorkspaceInfo from '@/components/WorkspaceInfo.vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';

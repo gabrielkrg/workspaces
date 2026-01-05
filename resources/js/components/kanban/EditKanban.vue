@@ -8,17 +8,7 @@ import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import draggable from 'vuedraggable';
 
-interface Column {
-    id?: number;
-    name: string;
-    order: number;
-}
-
-interface Kanban {
-    id: number;
-    name: string;
-    columns: Column[];
-}
+import type { Kanban } from '@/types';
 
 const props = defineProps<{
     kanban: Kanban;

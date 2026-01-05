@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { router } from '@inertiajs/vue3'; // Se estiver usando Inertia!
-import { ref } from 'vue';
 
 const props = defineProps({
     token: String,
 });
-
-const workspaceName = ref('Nome do Workspace');
 
 const acceptInvite = () => {
     router.get(route('workspace.invite.accept', { token: props.token }));

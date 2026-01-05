@@ -313,7 +313,7 @@ watch(
                         <form class="space-y-4" @submit.prevent="update">
                             <CardContent class="space-y-6 divide-y">
                                 <div class="flex flex-col flex-wrap items-start justify-between pb-6 md:flex-row md:items-center"
-                                    v-for="(user, index) in updateForm.users" :key="user.id">
+                                    v-for="user in updateForm.users" :key="user.id">
                                     <div class="flex items-center gap-3">
                                         <Avatar>
                                             <AvatarImage v-if="showAvatar" :src="user.avatar" :alt="user.name" />

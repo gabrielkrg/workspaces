@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -21,9 +21,6 @@ import { EllipsisVertical } from 'lucide-vue-next';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { ChromePicker } from 'vue-color';
 
-const color = defineModel({
-    default: '#68CCCA',
-});
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -109,7 +106,7 @@ const deleteTag = (tagId) => {
     });
 };
 
-const filtersForm = useForm({
+useForm({
     search: props.filters?.search || '',
     tag: props.filters?.tag || '',
     done: props.filters?.done || '',

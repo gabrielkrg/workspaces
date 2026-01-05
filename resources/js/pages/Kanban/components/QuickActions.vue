@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuGroup, DropdownMenuTrigger, DropdownMenuShortcut, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSubContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuGroup, DropdownMenuTrigger, DropdownMenuShortcut } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { PocketKnife } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
 import QuickCard from './QuickCard.vue';
 
-const props = defineProps<{
+defineProps<{
     column_id: number;
     kanban_id: number;
 }>();

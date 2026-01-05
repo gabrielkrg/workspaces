@@ -9,7 +9,7 @@ import { TagsInput, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInpu
 import { cn } from '@/lib/utils';
 import { type Task, type Tag } from '@/types';
 import { Pencil } from 'lucide-vue-next';
-import { router, useForm } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { useFilter } from 'reka-ui';
 import { computed, onMounted, ref } from 'vue';
 import { Textarea } from '@/components/ui/textarea';

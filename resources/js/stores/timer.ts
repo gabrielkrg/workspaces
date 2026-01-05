@@ -6,16 +6,6 @@ interface Trackable {
     title: string
 }
 
-interface TimerState {
-    isRunning: boolean
-    elapsedTime: number
-    startTime: string | null
-    endTime: string | null
-    trackableType: string
-    trackableId: string | number
-    trackable: Trackable | null
-}
-
 export const useTimerStore = defineStore('timer', () => {
     // State
     const isRunning = ref(false)

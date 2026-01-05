@@ -2,7 +2,7 @@
 // Vue and Inertia core imports
 import { ref, watch } from 'vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type TimeTracking } from '@/types';
 import { parseISO, differenceInSeconds } from 'date-fns';
 
 // UI Components - Layout
@@ -13,7 +13,6 @@ import {
     Sheet,
     SheetContent,
     SheetDescription,
-    SheetClose,
     SheetFooter,
     SheetHeader,
     SheetTitle,
@@ -59,24 +58,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-interface TimeTracking {
-    id: number;
-    start_time: string;
-    end_time: string;
-    duration: number;
-    is_running: boolean;
-    trackable_id: number | null;
-    trackable_type: string;
-    formatted_start_time: string;
-    formatted_end_time: string;
-    trackable: Trackable;
-}
-
-interface Trackable {
-    id: number;
-    title: string;
-}
-const props = defineProps<{
+defineProps<{
     timeTrackings: TimeTracking[];
     types: { label: string, model: string }[];
 }>();

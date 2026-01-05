@@ -7,36 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Label } from '@/components/ui/label';
-import { Pencil, Trash2, GripVertical, EllipsisVertical } from 'lucide-vue-next';
+import { Trash2, GripVertical, EllipsisVertical } from 'lucide-vue-next';
 import draggable from 'vuedraggable';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import type { Kanban, Tag } from '@/types';
 
-interface Column {
-    id?: number;
-    name: string;
-    order: number;
-}
-
-interface Kanban {
-    id: number;
-    name: string;
-    workspace_id: number;
-    user_id: number;
-    created_at: string;
-    updated_at: string;
-    columns: Column[];
-    cards_count: number;
-}
-
-interface Tag {
-    id: number;
-    name: string;
-}
-
-const props = defineProps<{
+defineProps<{
     kanbans: Kanban[];
     tags: Tag[];
 }>();

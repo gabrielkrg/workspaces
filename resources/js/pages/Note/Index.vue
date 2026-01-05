@@ -24,19 +24,11 @@ import {
     DialogTitle,
     DialogDescription,
     DialogFooter,
-    DialogClose
 } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableEmpty, TableHeader, TableRow } from '@/components/ui/table';
-import TableHead from '@/components/ui/table/TableHead.vue';
 import { EllipsisVertical } from 'lucide-vue-next';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PropType, ref, computed } from 'vue';
-
-interface Note {
-    id?: number;
-    title: string;
-    content: string;
-}
+import type { Note } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
