@@ -31,28 +31,46 @@ const isDialogOpen = ref(false);
 onMounted(async () => {
     if (timerStore.timeTrackingId) {
         try {
-            // Usa o ID da store diretamente
             timeTrackingId.value = timerStore.timeTrackingId
             const response = await axios.get(route('api.time-tracking.show', timerStore.timeTrackingId))
             const timeTracking = response.data
+
+            // Atualiza o store com os dados do servidor
+            timerStore.setTimerData({
+                id: timeTracking.id,
+                start_time: timeTracking.start_time,
+                is_running: timeTracking.is_running,
+                elapsed_time: timeTracking.elapsed_time
+            })
 
             // Primeiro define o tipo para carregar os trackables
             if (timeTracking.trackable_type) {
                 trackableType.value = timeTracking.trackable_type
                 form.trackable_type = timeTracking.trackable_type
-                // Aguarda os trackables serem carregados
                 await loadTrackables(timeTracking.trackable_type)
             }
 
-            // Depois preenche o formulário com os dados
-            form.start_time = timeTracking.start_time ? new Date(timeTracking.start_time).toISOString().slice(0, 16) : ''
-            form.end_time = timeTracking.end_time ? new Date(timeTracking.end_time).toISOString().slice(0, 16) : ''
+            // Converte para formato local datetime-local
+            form.start_time = formatToLocalDatetime(timeTracking.start_time)
+            form.end_time = formatToLocalDatetime(timeTracking.end_time)
             form.trackable_id = timeTracking.trackable_id || ''
         } catch (error) {
             console.error('Error loading time tracking:', error)
         }
     }
 })
+
+// Helper para formatar data para datetime-local
+const formatToLocalDatetime = (dateString: string | null): string => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+}
 
 const types = [
     {
@@ -108,19 +126,14 @@ const submit = () => {
 }
 
 const reset = () => {
-
     if (!timeTrackingId.value) {
-
-        console.log(timeTrackingId.value)
         return;
     }
-
 
     timerStore.resetTimer()
     form.reset()
     trackableType.value = ''
     trackables.value = []
-
 
     router.delete(route('time-tracking.destroy', timeTrackingId.value as number), {
         onSuccess: () => {
@@ -141,29 +154,68 @@ const start = async () => {
             trackable_type: form.trackable_type,
         })
 
-        const id = response.data.id
-        timeTrackingId.value = id
-        timerStore.setTimeTrackingId(id)
-        timerStore.startTimer()
+        const timeTracking = response.data
+        timeTrackingId.value = timeTracking.id
 
-        // Busca os dados completos do time tracking
-        const showResponse = await axios.get(route('api.time-tracking.show', id))
-        const timeTracking = showResponse.data
+        // Atualiza o store com os dados do servidor
+        timerStore.setTimerData({
+            id: timeTracking.id,
+            start_time: timeTracking.start_time,
+            is_running: timeTracking.is_running,
+            elapsed_time: timeTracking.elapsed_time || 0
+        })
 
         // Primeiro define o tipo para carregar os trackables
         if (timeTracking.trackable_type) {
             trackableType.value = timeTracking.trackable_type
             form.trackable_type = timeTracking.trackable_type
-            // Aguarda os trackables serem carregados
             await loadTrackables(timeTracking.trackable_type)
         }
 
-        // Depois preenche o formulário com os dados retornados
-        form.start_time = timeTracking.start_time ? new Date(timeTracking.start_time).toISOString().slice(0, 16) : ''
-        form.end_time = timeTracking.end_time ? new Date(timeTracking.end_time).toISOString().slice(0, 16) : ''
+        // Preenche o formulário com os dados retornados
+        form.start_time = formatToLocalDatetime(timeTracking.start_time)
+        form.end_time = formatToLocalDatetime(timeTracking.end_time)
         form.trackable_id = timeTracking.trackable_id || ''
     } catch (error) {
         console.error('Error starting time tracking:', error)
+    }
+}
+
+const toggleTimer = async () => {
+    if (!timeTrackingId.value) return
+
+    try {
+        if (timerStore.isRunning) {
+            // Pause: chama API para registrar end_time
+            const response = await axios.post(route('api.time-tracking.pause', timeTrackingId.value))
+            const timeTracking = response.data
+
+            timerStore.setTimerData({
+                id: timeTracking.id,
+                start_time: timeTracking.start_time,
+                is_running: timeTracking.is_running,
+                elapsed_time: timeTracking.elapsed_time
+            })
+
+            form.end_time = formatToLocalDatetime(timeTracking.end_time)
+        } else {
+            // Resume: chama API que ajusta start_time e limpa end_time
+            const response = await axios.post(route('api.time-tracking.resume', timeTrackingId.value))
+            const timeTracking = response.data
+
+            timerStore.setTimerData({
+                id: timeTracking.id,
+                start_time: timeTracking.start_time,
+                is_running: timeTracking.is_running,
+                elapsed_time: timeTracking.elapsed_time
+            })
+
+            // Atualiza start_time no form pois o backend ajusta ele ao resumir
+            form.start_time = formatToLocalDatetime(timeTracking.start_time)
+            form.end_time = ''
+        }
+    } catch (error) {
+        console.error('Error toggling timer:', error)
     }
 }
 
@@ -176,37 +228,16 @@ watch(trackableType, async () => {
     }
 });
 
-watch(() => timerStore.isRunning, (isRunning) => {
-    if (!isRunning && form.start_time) {
-        // Quando pausa, calcula o end_time baseado no start_time + elapsedTime
-        // Converte o datetime-local para Date considerando o timezone local
-        const startTimeStr = form.start_time.replace('T', ' ')
-        const [datePart, timePart] = startTimeStr.split(' ')
-        const [year, month, day] = datePart.split('-').map(Number)
-        const [hours, minutes] = timePart.split(':').map(Number)
-
-        const startTime = new Date(year, month - 1, day, hours, minutes, 0)
-        const endTime = new Date(startTime.getTime() + (timerStore.elapsedTime * 1000))
-
-        // Formata para datetime-local (YYYY-MM-DDTHH:mm)
-        const endYear = endTime.getFullYear()
-        const endMonth = String(endTime.getMonth() + 1).padStart(2, '0')
-        const endDay = String(endTime.getDate()).padStart(2, '0')
-        const endHours = String(endTime.getHours()).padStart(2, '0')
-        const endMinutes = String(endTime.getMinutes()).padStart(2, '0')
-
-        form.end_time = `${endYear}-${endMonth}-${endDay}T${endHours}:${endMinutes}`
-    }
-});
-
-
 </script>
 
 <template>
     <Dialog v-model="isDialogOpen">
         <DialogTrigger as-child>
-            <Button variant="secondary">
+            <Button variant="outline" class="gap-2">
                 <Timer class="size-5" />
+                <span v-if="timerStore.timeTrackingId" class="font-mono text-sm">
+                    {{ timerStore.formattedTime }}
+                </span>
             </Button>
         </DialogTrigger>
         <DialogContent class="sm:max-w-[425px]">
@@ -280,7 +311,7 @@ watch(() => timerStore.isRunning, (isRunning) => {
                             <div v-if="timerStore.timeTrackingId">
                                 <p class="text-3xl font-bold">{{ timerStore.formattedTime }}</p>
                                 <div class="flex gap-2">
-                                    <Button type="button" @click="timerStore.toggleTimer" variant="secondary">
+                                    <Button type="button" @click="toggleTimer" variant="secondary">
                                         <Play v-if="!timerStore.isRunning" class="size-4 mr-2" />
                                         <Pause v-else class="size-4 mr-2" />
                                         {{ timerStore.isRunning ? 'Pause' : 'Play' }}

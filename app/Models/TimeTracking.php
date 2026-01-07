@@ -24,6 +24,7 @@ class TimeTracking extends Model
     protected $appends = [
         'formatted_start_time',
         'formatted_end_time',
+        'elapsed_time',
     ];
 
     public static $types = [
@@ -49,6 +50,21 @@ class TimeTracking extends Model
     public function getFormattedEndTimeAttribute()
     {
         return $this->end_time ? $this->end_time->format('d/m/Y - H:i') : null;
+    }
+
+    public function getElapsedTimeAttribute(): int
+    {
+        if (!$this->start_time) {
+            return 0;
+        }
+
+        $end = $this->is_running ? now() : $this->end_time;
+
+        if (!$end) {
+            return 0;
+        }
+
+        return $this->start_time->diffInSeconds($end);
     }
 
     public function trackable()

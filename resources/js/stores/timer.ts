@@ -5,21 +5,18 @@ const STORAGE_KEY = 'timer_store'
 
 interface TimerState {
     isRunning: boolean
-    elapsedTime: number
-    startTimestamp: number | null
-    lastSaveTime: number | null
     timeTrackingId: number | null
+    startTime: string | null
 }
 
 export const useTimerStore = defineStore('timer', () => {
     // State
     const isRunning = ref(false)
+    const timeTrackingId = ref<number | null>(null)
+    const startTime = ref<string | null>(null)
     const elapsedTime = ref(0)
-    const startTimestamp = ref<number | null>(null)
-    const lastSaveTime = ref<number | null>(null)
     const intervalId = ref<number | null>(null)
     const isInitializing = ref(true)
-    const timeTrackingId = ref<number | null>(null)
 
     // Load from localStorage on init
     const loadFromStorage = () => {
@@ -29,28 +26,14 @@ export const useTimerStore = defineStore('timer', () => {
         if (stored) {
             try {
                 const state: TimerState = JSON.parse(stored)
+                isRunning.value = state.isRunning || false
+                timeTrackingId.value = state.timeTrackingId || null
+                startTime.value = state.startTime || null
 
-                // Se estava rodando, calcular tempo decorrido desde o último save
-                if (state.isRunning && state.lastSaveTime) {
-                    const now = Date.now()
-                    const timeSinceLastSave = Math.floor((now - state.lastSaveTime) / 1000)
-                    elapsedTime.value = state.elapsedTime + timeSinceLastSave
-                    startTimestamp.value = state.startTimestamp
-                    lastSaveTime.value = now
-                    timeTrackingId.value = state.timeTrackingId || null
-                    isRunning.value = true
-                    // Inicia o timer sem criar novo startTimestamp
-                    intervalId.value = setInterval(() => {
-                        elapsedTime.value++
-                    }, 1000) as unknown as number
-                    // Inicia o saveInterval também
-                    startSaveInterval()
-                } else {
-                    elapsedTime.value = state.elapsedTime || 0
-                    isRunning.value = state.isRunning || false
-                    startTimestamp.value = state.startTimestamp
-                    lastSaveTime.value = state.lastSaveTime
-                    timeTrackingId.value = state.timeTrackingId || null
+                // Se estava rodando, calcular elapsed time e iniciar o display
+                if (state.isRunning && state.startTime) {
+                    updateElapsedTime()
+                    startDisplayInterval()
                 }
             } catch (e) {
                 console.error('Error loading timer from storage:', e)
@@ -62,45 +45,49 @@ export const useTimerStore = defineStore('timer', () => {
     const saveToStorage = () => {
         if (typeof window === 'undefined') return
 
-        lastSaveTime.value = Date.now()
         const state: TimerState = {
             isRunning: isRunning.value,
-            elapsedTime: elapsedTime.value,
-            startTimestamp: startTimestamp.value,
-            lastSaveTime: lastSaveTime.value,
-            timeTrackingId: timeTrackingId.value
+            timeTrackingId: timeTrackingId.value,
+            startTime: startTime.value
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
     }
 
-    // Salva periodicamente quando está rodando (a cada 5 segundos)
-    let saveInterval: number | null = null
-    const startSaveInterval = () => {
-        if (saveInterval !== null) return
-        saveInterval = setInterval(() => {
-            if (isRunning.value) {
-                saveToStorage()
-            }
-        }, 5000) as unknown as number
-    }
-
-    const stopSaveInterval = () => {
-        if (saveInterval !== null) {
-            clearInterval(saveInterval)
-            saveInterval = null
-        }
-    }
-
-    // Watch apenas para isRunning, startTimestamp e timeTrackingId (não elapsedTime)
-    watch([isRunning, startTimestamp, timeTrackingId], () => {
+    // Watch para salvar mudanças
+    watch([isRunning, timeTrackingId, startTime], () => {
         if (isInitializing.value) return
         saveToStorage()
-        if (isRunning.value) {
-            startSaveInterval()
-        } else {
-            stopSaveInterval()
-        }
     })
+
+    // Calcula o tempo decorrido baseado no startTime do servidor
+    const updateElapsedTime = () => {
+        if (!startTime.value) {
+            elapsedTime.value = 0
+            return
+        }
+
+        const start = new Date(startTime.value).getTime()
+        const now = Date.now()
+        elapsedTime.value = Math.floor((now - start) / 1000)
+    }
+
+    // Inicia o intervalo apenas para atualizar o display
+    const startDisplayInterval = () => {
+        if (intervalId.value !== null) return
+
+        updateElapsedTime()
+        intervalId.value = setInterval(() => {
+            updateElapsedTime()
+        }, 1000) as unknown as number
+    }
+
+    // Para o intervalo de display
+    const stopDisplayInterval = () => {
+        if (intervalId.value !== null) {
+            clearInterval(intervalId.value)
+            intervalId.value = null
+        }
+    }
 
     // Computed
     const formattedTime = computed(() => {
@@ -112,46 +99,40 @@ export const useTimerStore = defineStore('timer', () => {
     })
 
     // Actions
-    const startTimer = () => {
-        if (!isRunning.value) {
-            isRunning.value = true
-            // Se não tem startTimestamp, é um novo start - cria timestamp
-            // Se tem startTimestamp, está retomando após refresh - mantém o original
-            if (!startTimestamp.value) {
-                startTimestamp.value = Date.now()
-            }
-            intervalId.value = setInterval(() => {
-                elapsedTime.value++
-            }, 1000) as unknown as number
+    const setTimerData = (data: { id: number, start_time: string, is_running: boolean, elapsed_time?: number }) => {
+        timeTrackingId.value = data.id
+        startTime.value = data.start_time
+        isRunning.value = data.is_running
+
+        if (data.elapsed_time !== undefined) {
+            elapsedTime.value = data.elapsed_time
+        } else {
+            updateElapsedTime()
         }
+
+        if (data.is_running) {
+            startDisplayInterval()
+        } else {
+            stopDisplayInterval()
+        }
+    }
+
+    const startTimer = () => {
+        isRunning.value = true
+        startDisplayInterval()
     }
 
     const pauseTimer = () => {
-        if (isRunning.value) {
-            isRunning.value = false
-            if (intervalId.value !== null) {
-                clearInterval(intervalId.value)
-                intervalId.value = null
-            }
-            // Mantém o startTimestamp para poder retomar depois
-        }
-    }
-
-    const toggleTimer = () => {
-        if (isRunning.value) {
-            pauseTimer()
-        } else {
-            startTimer()
-        }
+        isRunning.value = false
+        stopDisplayInterval()
     }
 
     const resetTimer = () => {
-        pauseTimer()
-        stopSaveInterval()
-        elapsedTime.value = 0
-        startTimestamp.value = null
-        lastSaveTime.value = null
+        stopDisplayInterval()
+        isRunning.value = false
         timeTrackingId.value = null
+        startTime.value = null
+        elapsedTime.value = 0
         localStorage.removeItem(STORAGE_KEY)
     }
 
@@ -161,11 +142,7 @@ export const useTimerStore = defineStore('timer', () => {
 
     // Cleanup
     const cleanup = () => {
-        if (intervalId.value !== null) {
-            clearInterval(intervalId.value)
-            intervalId.value = null
-        }
-        stopSaveInterval()
+        stopDisplayInterval()
     }
 
     // Initialize on store creation
@@ -177,16 +154,17 @@ export const useTimerStore = defineStore('timer', () => {
         isRunning,
         elapsedTime,
         timeTrackingId,
+        startTime,
 
         // Computed
         formattedTime,
 
         // Actions
+        setTimerData,
         startTimer,
         pauseTimer,
-        toggleTimer,
         resetTimer,
         setTimeTrackingId,
         cleanup
     }
-}) 
+})
