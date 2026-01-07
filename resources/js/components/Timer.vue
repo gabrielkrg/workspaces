@@ -12,6 +12,17 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Timer, Play, Pause, RotateCcw } from 'lucide-vue-next'
 import { ref, watch, onMounted } from 'vue'
 import { useForm } from '@inertiajs/vue3'
@@ -117,6 +128,7 @@ const submit = () => {
             timeTrackingId.value = null
 
             timerStore.resetTimer()
+
             isDialogOpen.value = false
         },
         onError: () => {
@@ -139,10 +151,6 @@ const reset = () => {
         onSuccess: () => {
             timeTrackingId.value = null
             isDialogOpen.value = false
-            router.get(route('time-tracking.index'), {
-                preserveState: true,
-                replace: true,
-            });
         }
     })
 }
@@ -235,106 +243,136 @@ watch(trackableType, async () => {
         <DialogTrigger as-child>
             <Button variant="outline" class="gap-2">
                 <Timer class="size-5" />
-                <span v-if="timerStore.timeTrackingId" class="font-mono text-sm">
+                <span v-if="timerStore.timeTrackingId" class="font-mono text-sm"
+                    :class="{ 'text-green-500': timerStore.isRunning }">
                     {{ timerStore.formattedTime }}
                 </span>
             </Button>
         </DialogTrigger>
-        <DialogContent class="sm:max-w-[425px]">
+        <DialogContent class="sm:max-w-[400px]">
             <DialogHeader>
-                <DialogTitle>Timer</DialogTitle>
+                <DialogTitle class="flex items-center gap-2">
+                    <Timer class="size-5" />
+                    Time Tracker
+                </DialogTitle>
                 <DialogDescription>
-                    Start a timer for your task.
+                    Track time spent on your tasks
                 </DialogDescription>
             </DialogHeader>
 
             <form @submit.prevent="submit">
-                <div class="grid gap-4">
-                    <div class="flex flex-col gap-4">
-                        <Label for="title" class="text-right">Type</Label>
-                        <Select v-model="trackableType" class="">
-                            <SelectTrigger id="role" class="w-full">
-                                <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                            <SelectContent position="popper">
-                                <SelectItem v-for="type in types" :key="type.label" :value="type.model">
-                                    {{ type.label }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <span class="text-sm text-red-500 col-span-full" v-if="form.errors.trackable_type">
-                            {{ form.errors.trackable_type }}
+                <div class="flex flex-col gap-6">
+                    <!-- Timer Display -->
+                    <div v-if="timerStore.timeTrackingId" class="text-center py-6">
+                        <p class="text-5xl font-mono font-bold tabular-nums"
+                            :class="timerStore.isRunning ? 'text-green-500' : 'text-muted-foreground'">
+                            {{ timerStore.formattedTime }}
+                        </p>
+                        <span class="text-sm text-muted-foreground mt-2 block">
+                            {{ timerStore.isRunning ? 'Running' : 'Paused' }}
                         </span>
                     </div>
 
-                    <div class="flex flex-col gap-4" v-if="trackableType">
-                        <Label for="trackable_id" class="text-right">Item</Label>
-                        <Select v-model="form.trackable_id" class="" :disabled="!trackableType">
-                            <SelectTrigger id="role" class="w-full">
-                                <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                            <SelectContent position="popper">
-                                <SelectItem v-for="trackable in trackables" :key="trackable.id" :value="trackable.id">
-                                    {{ trackable.title }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <span class="text-sm text-red-500 col-span-full" v-if="form.errors.trackable_id">
-                            {{ form.errors.trackable_id }}
-                        </span>
-                    </div>
+                    <!-- Timer Controls -->
+                    <div v-if="timerStore.timeTrackingId" class="flex justify-center gap-3">
+                        <Button type="button" @click="toggleTimer" class="min-w-[120px]">
+                            <Play v-if="!timerStore.isRunning" class="size-4 mr-2" />
+                            <Pause v-else class="size-4 mr-2" />
+                            {{ timerStore.isRunning ? 'Pause' : 'Resume' }}
+                        </Button>
 
-                    <div v-if="timerStore.timeTrackingId">
-                        <div class="grid gap-4">
-                            <div class="grid grid-cols-4 items-center gap-4">
-                                <Label for="start_time" class="text-right col-span-full">Start Time</Label>
-                                <Input id="start_time" v-model="form.start_time" type="datetime-local"
-                                    class="col-span-4" />
-                                <span class="text-sm text-red-500 col-span-full" v-if="form.errors.start_time">
-                                    {{ form.errors.start_time }}
-                                </span>
-                            </div>
-
-                            <div class="grid grid-cols-4 items-center gap-4">
-                                <Label for="end_time" class="text-right col-span-full">End Time</Label>
-                                <Input id="end_time" v-model="form.end_time" type="datetime-local" class="col-span-4" />
-                                <span class="text-sm text-red-500 col-span-full" v-if="form.errors.end_time">
-                                    {{ form.errors.end_time }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <DialogFooter>
-
-                        <div class="flex gap-2">
-                            <div v-if="timerStore.timeTrackingId">
-                                <p class="text-3xl font-bold">{{ timerStore.formattedTime }}</p>
-                                <div class="flex gap-2">
-                                    <Button type="button" @click="toggleTimer" variant="secondary">
-                                        <Play v-if="!timerStore.isRunning" class="size-4 mr-2" />
-                                        <Pause v-else class="size-4 mr-2" />
-                                        {{ timerStore.isRunning ? 'Pause' : 'Play' }}
-                                    </Button>
-
-                                    <Button type="button" variant="destructive" @click="reset()">
-                                        <RotateCcw class="size-4 mr-2" />
-                                        Reset
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <Button type="button" @click="start()" v-if="!timerStore.timeTrackingId">
-                                Start
-                            </Button>
-
-                            <div v-if="!timerStore.isRunning && timerStore.timeTrackingId"
-                                class="col-span-full flex gap-2">
-                                <Button type="submit" class="cursor-pointer" :disabled="timerStore.isRunning">
-                                    Save
+                        <AlertDialog>
+                            <AlertDialogTrigger as-child>
+                                <Button type="button" variant="outline">
+                                    <RotateCcw class="size-4" />
                                 </Button>
-                            </div>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Reset Timer</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This will delete the current time tracking entry. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction @click="reset()">Reset</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
+
+                    <!-- Form Fields -->
+                    <div class="flex flex-col gap-4">
+                        <div class="flex flex-col gap-2">
+                            <Label for="type">Type</Label>
+                            <Select v-model="trackableType">
+                                <SelectTrigger id="type" class="w-full">
+                                    <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                                <SelectContent position="popper">
+                                    <SelectItem v-for="type in types" :key="type.label" :value="type.model">
+                                        {{ type.label }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <span class="text-xs text-red-500" v-if="form.errors.trackable_type">
+                                {{ form.errors.trackable_type }}
+                            </span>
                         </div>
+
+                        <div class="flex flex-col gap-2" v-if="trackableType">
+                            <Label for="trackable_id">Item</Label>
+                            <Select v-model="form.trackable_id" :disabled="!trackableType">
+                                <SelectTrigger id="trackable_id" class="w-full">
+                                    <SelectValue placeholder="Select item" />
+                                </SelectTrigger>
+                                <SelectContent position="popper">
+                                    <SelectItem v-for="trackable in trackables" :key="trackable.id"
+                                        :value="trackable.id">
+                                        {{ trackable.title }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <span class="text-xs text-red-500" v-if="form.errors.trackable_id">
+                                {{ form.errors.trackable_id }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Time Fields -->
+                    <div v-if="timerStore.timeTrackingId && !timerStore.isRunning"
+                        class="flex flex-col gap-4 pt-4 border-t">
+                        <p class="text-xs text-muted-foreground">Adjust times if needed</p>
+
+                        <div class="flex flex-col gap-2">
+                            <Label for="start_time">Start Time</Label>
+                            <Input id="start_time" v-model="form.start_time" type="datetime-local" class="w-full" />
+                            <span class="text-xs text-red-500" v-if="form.errors.start_time">
+                                {{ form.errors.start_time }}
+                            </span>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <Label for="end_time">End Time</Label>
+                            <Input id="end_time" v-model="form.end_time" type="datetime-local" class="w-full" />
+                            <span class="text-xs text-red-500" v-if="form.errors.end_time">
+                                {{ form.errors.end_time }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <DialogFooter class="flex-col gap-2 sm:flex-col">
+                        <Button v-if="!timerStore.timeTrackingId" type="button" @click="start()" class="w-full"
+                            :disabled="!trackableType || !form.trackable_id">
+                            <Play class="size-4 mr-2" />
+                            Start Timer
+                        </Button>
+
+                        <Button v-if="!timerStore.isRunning && timerStore.timeTrackingId" type="submit" class="w-full">
+                            Save Entry
+                        </Button>
                     </DialogFooter>
                 </div>
             </form>
