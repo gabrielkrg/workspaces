@@ -6,17 +6,17 @@ const STORAGE_KEY = 'timer_store'
 interface TimerState {
     isRunning: boolean
     timeTrackingId: number | null
-    startTime: string | null
+    elapsedTime: number
 }
 
 export const useTimerStore = defineStore('timer', () => {
     // State
     const isRunning = ref(false)
     const timeTrackingId = ref<number | null>(null)
-    const startTime = ref<string | null>(null)
     const elapsedTime = ref(0)
     const intervalId = ref<number | null>(null)
     const isInitializing = ref(true)
+    const lastUpdateTime = ref<number | null>(null)
 
     // Load from localStorage on init
     const loadFromStorage = () => {
@@ -28,11 +28,16 @@ export const useTimerStore = defineStore('timer', () => {
                 const state: TimerState = JSON.parse(stored)
                 isRunning.value = state.isRunning || false
                 timeTrackingId.value = state.timeTrackingId || null
-                startTime.value = state.startTime || null
+                elapsedTime.value = state.elapsedTime || 0
 
-                // Se estava rodando, calcular elapsed time e iniciar o display
-                if (state.isRunning && state.startTime) {
-                    updateElapsedTime()
+                // Se estava rodando, calcular tempo decorrido desde último save
+                if (state.isRunning && lastUpdateTime.value) {
+                    const now = Date.now()
+                    const timeSinceLastUpdate = Math.floor((now - lastUpdateTime.value) / 1000)
+                    elapsedTime.value += timeSinceLastUpdate
+                    startDisplayInterval()
+                } else if (state.isRunning) {
+                    // Se não tem lastUpdateTime mas estava rodando, inicia o intervalo
                     startDisplayInterval()
                 }
             } catch (e) {
@@ -45,40 +50,48 @@ export const useTimerStore = defineStore('timer', () => {
     const saveToStorage = () => {
         if (typeof window === 'undefined') return
 
+        lastUpdateTime.value = Date.now()
         const state: TimerState = {
             isRunning: isRunning.value,
             timeTrackingId: timeTrackingId.value,
-            startTime: startTime.value
+            elapsedTime: elapsedTime.value
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
     }
 
     // Watch para salvar mudanças
-    watch([isRunning, timeTrackingId, startTime], () => {
+    watch([isRunning, timeTrackingId], () => {
         if (isInitializing.value) return
         saveToStorage()
     })
 
-    // Calcula o tempo decorrido baseado no startTime do servidor
-    const updateElapsedTime = () => {
-        if (!startTime.value) {
-            elapsedTime.value = 0
-            return
-        }
-
-        const start = new Date(startTime.value).getTime()
-        const now = Date.now()
-        elapsedTime.value = Math.floor((now - start) / 1000)
+    // Salva periodicamente quando está rodando
+    let saveInterval: number | null = null
+    const startSaveInterval = () => {
+        if (saveInterval !== null) return
+        saveInterval = setInterval(() => {
+            if (isRunning.value) {
+                saveToStorage()
+            }
+        }, 5000) as unknown as number
     }
 
-    // Inicia o intervalo apenas para atualizar o display
+    const stopSaveInterval = () => {
+        if (saveInterval !== null) {
+            clearInterval(saveInterval)
+            saveInterval = null
+        }
+    }
+
+    // Inicia o intervalo para incrementar o display
     const startDisplayInterval = () => {
         if (intervalId.value !== null) return
 
-        updateElapsedTime()
         intervalId.value = setInterval(() => {
-            updateElapsedTime()
+            elapsedTime.value++
         }, 1000) as unknown as number
+
+        startSaveInterval()
     }
 
     // Para o intervalo de display
@@ -87,13 +100,15 @@ export const useTimerStore = defineStore('timer', () => {
             clearInterval(intervalId.value)
             intervalId.value = null
         }
+        stopSaveInterval()
     }
 
     // Computed
     const formattedTime = computed(() => {
-        const hours = Math.floor(elapsedTime.value / 3600)
-        const minutes = Math.floor((elapsedTime.value % 3600) / 60)
-        const seconds = elapsedTime.value % 60
+        const totalSeconds = Math.abs(elapsedTime.value)
+        const hours = Math.floor(totalSeconds / 3600)
+        const minutes = Math.floor((totalSeconds % 3600) / 60)
+        const seconds = totalSeconds % 60
 
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
     })
@@ -101,13 +116,11 @@ export const useTimerStore = defineStore('timer', () => {
     // Actions
     const setTimerData = (data: { id: number, start_time: string, is_running: boolean, elapsed_time?: number }) => {
         timeTrackingId.value = data.id
-        startTime.value = data.start_time
         isRunning.value = data.is_running
 
-        if (data.elapsed_time !== undefined) {
+        // Usa o elapsed_time do servidor (já calculado corretamente com timezone)
+        if (data.elapsed_time !== undefined && data.elapsed_time >= 0) {
             elapsedTime.value = data.elapsed_time
-        } else {
-            updateElapsedTime()
         }
 
         if (data.is_running) {
@@ -131,8 +144,8 @@ export const useTimerStore = defineStore('timer', () => {
         stopDisplayInterval()
         isRunning.value = false
         timeTrackingId.value = null
-        startTime.value = null
         elapsedTime.value = 0
+        lastUpdateTime.value = null
         localStorage.removeItem(STORAGE_KEY)
     }
 
@@ -154,7 +167,6 @@ export const useTimerStore = defineStore('timer', () => {
         isRunning,
         elapsedTime,
         timeTrackingId,
-        startTime,
 
         // Computed
         formattedTime,
