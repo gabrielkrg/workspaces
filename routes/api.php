@@ -18,13 +18,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/tasks/latest', [TaskController::class, 'latestChanges'])->name('tasks.latest');
 
     // Time Tracking
+    Route::get('time-tracking/active', [TimeTrackingController::class, 'active'])->name('api.time-tracking.active');
     Route::get('time-tracking/trackables', [TimeTrackingController::class, 'trackables'])->name('api.time-tracking.trackables');
     Route::get('time-tracking/trackables-types', [TimeTrackingController::class, 'trackablesTypes'])->name('api.time-tracking.trackables-types');
     Route::post('time-tracking/start', [TimeTrackingController::class, 'start'])->name('api.time-tracking.start');
     Route::post('time-tracking/{timeTracking}/pause', [TimeTrackingController::class, 'pause'])->name('api.time-tracking.pause');
     Route::post('time-tracking/{timeTracking}/resume', [TimeTrackingController::class, 'resume'])->name('api.time-tracking.resume');
     Route::post('time-tracking/{timeTracking}/reset', [TimeTrackingController::class, 'reset'])->name('api.time-tracking.reset');
-    Route::get('time-tracking/{timeTracking}', [TimeTrackingController::class, 'show'])->name('api.time-tracking.show');
 
     // Tags
     Route::get('/tags', [TagController::class, 'index'])->name('api.tags');

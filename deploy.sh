@@ -93,7 +93,7 @@ check_status "Optimize clear"
 #$PHP_ARTISAN config:cache
 #$PHP_ARTISAN route:cache
 #$PHP_ARTISAN view:cache
-#heck_status "Config cache"
+#check_status "Config cache"
 
 # 8. (Optional) Symlink Storage
 #    Ensure storage is linked if it's not done via other means

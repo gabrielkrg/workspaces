@@ -41,11 +41,13 @@ const timeTrackingId = ref<number | null>(null);
 const isDialogOpen = ref(false);
 
 onMounted(async () => {
-    if (timerStore.timeTrackingId) {
-        try {
-            timeTrackingId.value = timerStore.timeTrackingId
-            const response = await axios.get(route('api.time-tracking.show', timerStore.timeTrackingId))
-            const timeTracking = response.data
+    try {
+        // Sempre busca do banco de dados para sincronizar entre dispositivos
+        const response = await axios.get(route('api.time-tracking.active'))
+        const timeTracking = response.data
+
+        if (timeTracking) {
+            timeTrackingId.value = timeTracking.id
 
             // Atualiza o store com os dados do servidor
             timerStore.setTimerData({
@@ -66,10 +68,12 @@ onMounted(async () => {
             form.start_time = timeTracking.start_time_local || ''
             form.end_time = timeTracking.end_time_local || ''
             form.trackable_id = timeTracking.trackable_id || ''
-
-        } catch (error) {
-            console.error('Error loading time tracking:', error)
+        } else {
+            // Não existe timer ativo no banco, limpa o store local
+            timerStore.resetTimer()
         }
+    } catch (error) {
+        console.error('Error loading active time tracking:', error)
     }
 })
 

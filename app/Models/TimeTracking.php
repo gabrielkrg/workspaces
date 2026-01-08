@@ -80,11 +80,12 @@ class TimeTracking extends Model
         }
 
         // Garante que o workspace seja carregado para obter o timezone
-        $workspace = $this->relationLoaded('workspace') 
-            ? $this->workspace 
+        $workspace = $this->relationLoaded('workspace')
+            ? $this->workspace
             : Workspace::find($this->workspace_id);
-        
+
         $timezone = $workspace?->time_zone ?? config('app.timezone');
+
         return $this->start_time->setTimezone($timezone)->format('Y-m-d\TH:i');
     }
 
@@ -98,10 +99,10 @@ class TimeTracking extends Model
         }
 
         // Garante que o workspace seja carregado para obter o timezone
-        $workspace = $this->relationLoaded('workspace') 
-            ? $this->workspace 
+        $workspace = $this->relationLoaded('workspace')
+            ? $this->workspace
             : Workspace::find($this->workspace_id);
-        
+
         $timezone = $workspace?->time_zone ?? config('app.timezone');
         return $this->end_time->setTimezone($timezone)->format('Y-m-d\TH:i');
     }

@@ -22,6 +22,43 @@ class TimeTrackingController extends Controller
         ]);
     }
 
+    /**
+     * Get the active or last paused time tracking for the current user
+     */
+    public function active(): JsonResponse
+    {
+        $user = Auth::user();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
+
+        $this->authorize('view', $workspace);
+
+        // Primeiro tenta encontrar um timer ativo (is_running = true)
+        $timeTracking = TimeTracking::where('user_id', $user->id)
+            ->where('workspace_id', $workspace->id)
+            ->where('is_running', true)
+            ->with('workspace')
+            ->first();
+
+        // Se não encontrar ativo, busca o último pausado (com end_time mas não finalizado)
+        if (!$timeTracking) {
+            $timeTracking = TimeTracking::where('user_id', $user->id)
+                ->where('workspace_id', $workspace->id)
+                ->where('is_running', false)
+                ->whereNotNull('start_time')
+                ->whereNotNull('end_time')
+                ->with('workspace')
+                ->orderBy('updated_at', 'desc')
+                ->first();
+        }
+
+        if (!$timeTracking) {
+            return response()->json(null);
+        }
+
+        return response()->json($timeTracking);
+    }
+
     public function trackables(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -69,16 +106,12 @@ class TimeTrackingController extends Controller
             'trackable_type' => 'required|string|max:255',
         ]);
 
-        // Usa o timezone do workspace
-        $timezone = $workspace->time_zone ?? config('app.timezone');
-        $now = Carbon::now($timezone);
-
         $timeTracking = TimeTracking::create([
             'user_id' => $user->id,
             'workspace_id' => $workspace->id,
             'trackable_id' => $request->trackable_id,
             'trackable_type' => $request->trackable_type,
-            'start_time' => $now,
+            'start_time' => Carbon::now('UTC'),
             'is_running' => true,
         ]);
 
@@ -99,12 +132,8 @@ class TimeTrackingController extends Controller
 
         $this->authorize('update', $workspace);
 
-        // Usa o timezone do workspace
-        $timezone = $workspace->time_zone ?? config('app.timezone');
-        $now = Carbon::now($timezone);
-
         $timeTracking->update([
-            'end_time' => $now,
+            'end_time' => Carbon::now('UTC'),
             'is_running' => false,
         ]);
 
@@ -119,9 +148,7 @@ class TimeTrackingController extends Controller
 
         $this->authorize('update', $workspace);
 
-        // Usa o timezone do workspace
-        $timezone = $workspace->time_zone ?? config('app.timezone');
-        $now = Carbon::now($timezone);
+        $now = Carbon::now('UTC');
 
         // Calcula o tempo decorrido antes da pausa (end_time - start_time)
         // e ajusta o start_time para compensar o tempo pausado
@@ -159,16 +186,5 @@ class TimeTrackingController extends Controller
         ]);
 
         return response()->json($timeTracking->fresh()->load('workspace'));
-    }
-
-    public function show(TimeTracking $timeTracking): JsonResponse
-    {
-        $user = Auth::user();
-
-        $workspace = Workspace::findOrFail($user->workspace_id);
-
-        $this->authorize('view', $workspace);
-
-        return response()->json($timeTracking->load('workspace'));
     }
 }
