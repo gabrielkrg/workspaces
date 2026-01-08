@@ -147,8 +147,6 @@ export const useTimerStore = defineStore('timer', () => {
         elapsedTime.value = 0
         lastUpdateTime.value = null
         localStorage.removeItem(STORAGE_KEY)
-
-        console.log(isRunning.value, timeTrackingId.value, elapsedTime.value, lastUpdateTime.value, 'resetTimer')
     }
 
     const setTimeTrackingId = (id: number | null) => {
