@@ -46,6 +46,8 @@ onMounted(async () => {
         const response = await axios.get(route('api.time-tracking.active'))
         const timeTracking = response.data
 
+        console.log(timeTracking)
+
         if (timeTracking) {
             timeTrackingId.value = timeTracking.id
 
@@ -69,7 +71,6 @@ onMounted(async () => {
             form.end_time = timeTracking.end_time_local || ''
             form.trackable_id = timeTracking.trackable_id || ''
         } else {
-            // Não existe timer ativo no banco, limpa o store local
             timerStore.resetTimer()
         }
     } catch (error) {

@@ -22,7 +22,7 @@ class TimeTrackingController extends Controller
 
         $this->authorize('view', $workspace);
 
-        $timeTrackings = TimeTracking::where('workspace_id', $workspace->id)->with('trackable')->get();
+        $timeTrackings = TimeTracking::where('workspace_id', $workspace->id)->with('trackable')->orderBy('updated_at', 'desc')->get();
 
         return Inertia::render('TimeTracking/Index', [
             'timeTrackings' => $timeTrackings,

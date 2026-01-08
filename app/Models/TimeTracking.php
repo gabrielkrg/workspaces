@@ -25,6 +25,8 @@ class TimeTracking extends Model
     protected $appends = [
         'formatted_start_time',
         'formatted_end_time',
+        'formatted_start_time_local',
+        'formatted_end_time_local',
         'elapsed_time',
         'start_time_local',
         'end_time_local',
@@ -71,6 +73,18 @@ class TimeTracking extends Model
     }
 
     /**
+     * Get workspace timezone
+     */
+    protected function getWorkspaceTimezone(): string
+    {
+        $workspace = $this->relationLoaded('workspace')
+            ? $this->workspace
+            : Workspace::find($this->workspace_id);
+
+        return $workspace?->time_zone ?? config('app.timezone');
+    }
+
+    /**
      * Get start_time formatted for datetime-local input in workspace timezone
      */
     public function getStartTimeLocalAttribute(): ?string
@@ -79,14 +93,7 @@ class TimeTracking extends Model
             return null;
         }
 
-        // Garante que o workspace seja carregado para obter o timezone
-        $workspace = $this->relationLoaded('workspace')
-            ? $this->workspace
-            : Workspace::find($this->workspace_id);
-
-        $timezone = $workspace?->time_zone ?? config('app.timezone');
-
-        return $this->start_time->setTimezone($timezone)->format('Y-m-d\TH:i');
+        return $this->start_time->copy()->setTimezone($this->getWorkspaceTimezone())->format('Y-m-d\TH:i');
     }
 
     /**
@@ -98,13 +105,31 @@ class TimeTracking extends Model
             return null;
         }
 
-        // Garante que o workspace seja carregado para obter o timezone
-        $workspace = $this->relationLoaded('workspace')
-            ? $this->workspace
-            : Workspace::find($this->workspace_id);
+        return $this->end_time->copy()->setTimezone($this->getWorkspaceTimezone())->format('Y-m-d\TH:i');
+    }
 
-        $timezone = $workspace?->time_zone ?? config('app.timezone');
-        return $this->end_time->setTimezone($timezone)->format('Y-m-d\TH:i');
+    /**
+     * Get start_time formatted for display in workspace timezone
+     */
+    public function getFormattedStartTimeLocalAttribute(): ?string
+    {
+        if (!$this->start_time) {
+            return null;
+        }
+
+        return $this->start_time->copy()->setTimezone($this->getWorkspaceTimezone())->format('d/m/Y - H:i');
+    }
+
+    /**
+     * Get end_time formatted for display in workspace timezone
+     */
+    public function getFormattedEndTimeLocalAttribute(): ?string
+    {
+        if (!$this->end_time) {
+            return null;
+        }
+
+        return $this->end_time->copy()->setTimezone($this->getWorkspaceTimezone())->format('d/m/Y - H:i');
     }
 
     public function trackable()

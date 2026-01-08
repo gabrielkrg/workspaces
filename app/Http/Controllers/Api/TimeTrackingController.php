@@ -40,18 +40,6 @@ class TimeTrackingController extends Controller
             ->with('workspace')
             ->first();
 
-        // Se não encontrar ativo, busca o último pausado (com end_time mas não finalizado)
-        if (!$timeTracking) {
-            $timeTracking = TimeTracking::where('user_id', $user->id)
-                ->where('workspace_id', $workspace->id)
-                ->where('is_running', false)
-                ->whereNotNull('start_time')
-                ->whereNotNull('end_time')
-                ->with('workspace')
-                ->orderBy('updated_at', 'desc')
-                ->first();
-        }
-
         if (!$timeTracking) {
             return response()->json(null);
         }
