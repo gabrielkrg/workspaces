@@ -30,6 +30,7 @@ import axios from 'axios'
 import type { Trackable } from '@/types'
 import { useTimerStore } from '@/stores/timer'
 import { router } from '@inertiajs/vue3'
+import { cn } from '@/lib/utils'
 
 
 const trackableType = ref('');
@@ -45,8 +46,6 @@ onMounted(async () => {
         // Sempre busca do banco de dados para sincronizar entre dispositivos
         const response = await axios.get(route('api.time-tracking.active'))
         const timeTracking = response.data
-
-        console.log(timeTracking)
 
         if (timeTracking) {
             timeTrackingId.value = timeTracking.id
@@ -244,9 +243,8 @@ watch(trackableType, async () => {
             </Button>
         </DialogTrigger>
         <DialogContent class="sm:max-w-[400px]">
-            <DialogHeader>
-                <DialogTitle class="flex items-center gap-2">
-                    <Timer class="size-5" />
+            <DialogHeader :class="cn('text-center sm:text-center')">
+                <DialogTitle>
                     Time Tracker
                 </DialogTitle>
                 <DialogDescription>
@@ -258,7 +256,7 @@ watch(trackableType, async () => {
                 <div class="flex flex-col gap-6">
                     <!-- Timer Display -->
                     <div v-if="timerStore.timeTrackingId" class="text-center py-6">
-                        <p class="text-5xl font-mono font-bold tabular-nums"
+                        <p class="text-4xl font-mono font-bold tabular-nums"
                             :class="timerStore.isRunning ? 'text-green-500' : 'text-muted-foreground'">
                             {{ timerStore.formattedTime }}
                         </p>
@@ -361,11 +359,11 @@ watch(trackableType, async () => {
                         <Button v-if="!timerStore.timeTrackingId" type="button" @click="start()" class="w-full"
                             :disabled="!trackableType || !form.trackable_id">
                             <Play class="size-4 mr-2" />
-                            Start Timer
+                            Start
                         </Button>
 
                         <Button v-if="!timerStore.isRunning && timerStore.timeTrackingId" type="submit" class="w-full">
-                            Save Entry
+                            Save
                         </Button>
                     </DialogFooter>
                 </div>
