@@ -88,7 +88,7 @@ class TimeTrackingController extends Controller
             ], 500);
         }
 
-        return response()->json($timeTracking);
+        return response()->json($timeTracking->fresh()->load('workspace'));
     }
 
     public function pause(TimeTracking $timeTracking): JsonResponse
@@ -108,7 +108,7 @@ class TimeTrackingController extends Controller
             'is_running' => false,
         ]);
 
-        return response()->json($timeTracking->fresh());
+        return response()->json($timeTracking->fresh()->load('workspace'));
     }
 
     public function resume(TimeTracking $timeTracking): JsonResponse
@@ -141,7 +141,7 @@ class TimeTrackingController extends Controller
             ]);
         }
 
-        return response()->json($timeTracking->fresh());
+        return response()->json($timeTracking->fresh()->load('workspace'));
     }
 
     public function reset(TimeTracking $timeTracking): JsonResponse
@@ -158,7 +158,7 @@ class TimeTrackingController extends Controller
             'is_running' => false,
         ]);
 
-        return response()->json($timeTracking->fresh());
+        return response()->json($timeTracking->fresh()->load('workspace'));
     }
 
     public function show(TimeTracking $timeTracking): JsonResponse
@@ -169,6 +169,6 @@ class TimeTrackingController extends Controller
 
         $this->authorize('view', $workspace);
 
-        return response()->json($timeTracking);
+        return response()->json($timeTracking->load('workspace'));
     }
 }

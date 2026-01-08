@@ -31,6 +31,7 @@ import type { Trackable } from '@/types'
 import { useTimerStore } from '@/stores/timer'
 import { router } from '@inertiajs/vue3'
 
+
 const trackableType = ref('');
 const trackables = ref<Trackable[]>([]);
 
@@ -61,27 +62,16 @@ onMounted(async () => {
                 await loadTrackables(timeTracking.trackable_type)
             }
 
-            // Converte para formato local datetime-local
-            form.start_time = formatToLocalDatetime(timeTracking.start_time)
-            form.end_time = formatToLocalDatetime(timeTracking.end_time)
+            // Usa os campos já formatados pelo servidor no timezone do workspace
+            form.start_time = timeTracking.start_time_local || ''
+            form.end_time = timeTracking.end_time_local || ''
             form.trackable_id = timeTracking.trackable_id || ''
+
         } catch (error) {
             console.error('Error loading time tracking:', error)
         }
     }
 })
-
-// Helper para formatar data para datetime-local
-const formatToLocalDatetime = (dateString: string | null): string => {
-    if (!dateString) return ''
-    const date = new Date(dateString)
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const hours = String(date.getHours()).padStart(2, '0')
-    const minutes = String(date.getMinutes()).padStart(2, '0')
-    return `${year}-${month}-${day}T${hours}:${minutes}`
-}
 
 const types = [
     {
@@ -101,7 +91,6 @@ const form = useForm({
     end_time: '',
     is_running: false as boolean,
 });
-
 
 const loadTrackables = async (type: string) => {
     try {
@@ -180,9 +169,9 @@ const start = async () => {
             await loadTrackables(timeTracking.trackable_type)
         }
 
-        // Preenche o formulário com os dados retornados
-        form.start_time = formatToLocalDatetime(timeTracking.start_time)
-        form.end_time = formatToLocalDatetime(timeTracking.end_time)
+        // Preenche o formulário com os dados retornados (já formatados pelo servidor)
+        form.start_time = timeTracking.start_time_local || ''
+        form.end_time = timeTracking.end_time_local || ''
         form.trackable_id = timeTracking.trackable_id || ''
     } catch (error) {
         console.error('Error starting time tracking:', error)
@@ -205,7 +194,7 @@ const toggleTimer = async () => {
                 elapsed_time: timeTracking.elapsed_time
             })
 
-            form.end_time = formatToLocalDatetime(timeTracking.end_time)
+            form.end_time = timeTracking.end_time_local || ''
         } else {
             // Resume: chama API que ajusta start_time e limpa end_time
             const response = await axios.post(route('api.time-tracking.resume', timeTrackingId.value))
@@ -219,7 +208,7 @@ const toggleTimer = async () => {
             })
 
             // Atualiza start_time no form pois o backend ajusta ele ao resumir
-            form.start_time = formatToLocalDatetime(timeTracking.start_time)
+            form.start_time = timeTracking.start_time_local || ''
             form.end_time = ''
         }
     } catch (error) {

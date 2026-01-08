@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Workspace;
 use Illuminate\Database\Eloquent\Model;
 
 class TimeTracking extends Model
@@ -25,6 +26,8 @@ class TimeTracking extends Model
         'formatted_start_time',
         'formatted_end_time',
         'elapsed_time',
+        'start_time_local',
+        'end_time_local',
     ];
 
     public static $types = [
@@ -65,6 +68,42 @@ class TimeTracking extends Model
         }
 
         return $this->start_time->diffInSeconds($end);
+    }
+
+    /**
+     * Get start_time formatted for datetime-local input in workspace timezone
+     */
+    public function getStartTimeLocalAttribute(): ?string
+    {
+        if (!$this->start_time) {
+            return null;
+        }
+
+        // Garante que o workspace seja carregado para obter o timezone
+        $workspace = $this->relationLoaded('workspace') 
+            ? $this->workspace 
+            : Workspace::find($this->workspace_id);
+        
+        $timezone = $workspace?->time_zone ?? config('app.timezone');
+        return $this->start_time->setTimezone($timezone)->format('Y-m-d\TH:i');
+    }
+
+    /**
+     * Get end_time formatted for datetime-local input in workspace timezone
+     */
+    public function getEndTimeLocalAttribute(): ?string
+    {
+        if (!$this->end_time) {
+            return null;
+        }
+
+        // Garante que o workspace seja carregado para obter o timezone
+        $workspace = $this->relationLoaded('workspace') 
+            ? $this->workspace 
+            : Workspace::find($this->workspace_id);
+        
+        $timezone = $workspace?->time_zone ?? config('app.timezone');
+        return $this->end_time->setTimezone($timezone)->format('Y-m-d\TH:i');
     }
 
     public function trackable()

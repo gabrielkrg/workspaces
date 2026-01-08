@@ -46,6 +46,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => fn () => $request->user()?->load('workspaces', 'workspace'),
             ],
+            'workspaceTimezone' => fn () => $request->user()?->workspace?->time_zone ?? config('app.timezone'),
             'ziggy' => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
