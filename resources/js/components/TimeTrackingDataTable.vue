@@ -135,7 +135,7 @@ const columns: ColumnDef<TimeTracking>[] = [
                 () => ['Start Time', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
             );
         },
-        cell: ({ row }) => row.original.formatted_start_time_local,
+        cell: ({ row }) => row.original.formatted_start_time,
     },
     {
         accessorKey: 'end_time',
@@ -149,7 +149,7 @@ const columns: ColumnDef<TimeTracking>[] = [
                 () => ['End Time', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
             );
         },
-        cell: ({ row }) => row.original.formatted_end_time_local,
+        cell: ({ row }) => row.original.formatted_end_time,
     },
     {
         id: 'duration',
