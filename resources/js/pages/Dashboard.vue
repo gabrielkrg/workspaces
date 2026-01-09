@@ -5,6 +5,7 @@ import { Head } from '@inertiajs/vue3';
 
 import { Kanban, ListTodo, Ticket, Users } from 'lucide-vue-next';
 import DashboardStatCard from '@/components/DashboardStatCard.vue';
+import TimeTrackingChart from '@/components/TimeTrackingChart.vue';
 
 defineProps({
     user: {
@@ -32,7 +33,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex-1 space-y-4 p-8 pt-6">
+        <div class="flex-1 space-y-6 p-8 pt-6">
+            <div>
+                <h2 class='text-2xl font-bold tracking-tight'>Dashboard</h2>
+                <p class='text-muted-foreground'>
+                    Here&apos;s a overview of your workspace!
+                </p>
+            </div>
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <DashboardStatCard :href="route('kanban.index')" title="Cards" :value="workspace.cards_count"
                     :icon="Kanban" />
@@ -46,6 +53,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <DashboardStatCard :href="route('clients.index')" title="Clients" :value="workspace.clients_count"
                     :icon="Users" />
             </div>
+
+            <!-- Time Tracking Chart -->
+            <TimeTrackingChart />
         </div>
 
     </AppLayout>

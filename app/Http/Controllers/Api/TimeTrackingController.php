@@ -175,4 +175,111 @@ class TimeTrackingController extends Controller
 
         return response()->json($timeTracking->fresh()->load('workspace'));
     }
+
+    /**
+     * Get time tracking stats for charts
+     */
+    public function stats(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        $workspace = Workspace::findOrFail($user->workspace_id);
+
+        $this->authorize('view', $workspace);
+
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'trackable_type' => 'nullable|string',
+        ]);
+
+        $startDate = $request->input('start_date')
+            ? Carbon::parse($request->input('start_date'))->startOfDay()
+            : Carbon::now()->subDays(30)->startOfDay();
+
+        $endDate = $request->input('end_date')
+            ? Carbon::parse($request->input('end_date'))->endOfDay()
+            : Carbon::now()->endOfDay();
+
+        // Check if it's a single day (today view)
+        $isSingleDay = $startDate->isSameDay($endDate);
+
+        $query = TimeTracking::where('workspace_id', $workspace->id)
+            ->whereNotNull('start_time')
+            ->whereNotNull('end_time')
+            ->where('start_time', '>=', $startDate)
+            ->where('start_time', '<=', $endDate);
+
+        if ($request->input('trackable_type') && $request->input('trackable_type') !== 'all') {
+            $query->where('trackable_type', $request->input('trackable_type'));
+        }
+
+        $timeTrackings = $query->get();
+
+        $periodStats = [];
+        $typeStats = [];
+
+        foreach ($timeTrackings as $tracking) {
+            $duration = $tracking->start_time->diffInSeconds($tracking->end_time);
+
+            // Group by hour for single day, by date for multiple days
+            if ($isSingleDay) {
+                $key = $tracking->start_time->format('H:00');
+            } else {
+                $key = $tracking->start_time->format('Y-m-d');
+            }
+
+            if (!isset($periodStats[$key])) {
+                $periodStats[$key] = 0;
+            }
+            $periodStats[$key] += $duration;
+
+            // Stats por tipo
+            $type = $tracking->trackable_type;
+            if (!isset($typeStats[$type])) {
+                $typeStats[$type] = 0;
+            }
+            $typeStats[$type] += $duration;
+        }
+
+        // Fill in missing periods
+        $filledStats = [];
+
+        if ($isSingleDay) {
+            // Fill hours 00:00 to 23:00
+            for ($hour = 0; $hour < 24; $hour++) {
+                $key = sprintf('%02d:00', $hour);
+                $filledStats[$key] = $periodStats[$key] ?? 0;
+            }
+        } else {
+            // Fill days
+            $period = Carbon::parse($startDate)->daysUntil($endDate);
+            foreach ($period as $date) {
+                $key = $date->format('Y-m-d');
+                $filledStats[$key] = $periodStats[$key] ?? 0;
+            }
+        }
+
+        // Convert seconds to hours
+        $hours = [];
+        foreach ($filledStats as $key => $seconds) {
+            $hours[$key] = round($seconds / 3600, 2);
+        }
+
+        $typeHours = [];
+        foreach ($typeStats as $type => $seconds) {
+            $label = collect(TimeTracking::$types)->firstWhere('model', $type)['label'] ?? $type;
+            $typeHours[$label] = round($seconds / 3600, 2);
+        }
+
+        $totalHours = round(array_sum($periodStats) / 3600, 2);
+
+        return response()->json([
+            'daily' => $hours,
+            'by_type' => $typeHours,
+            'total_hours' => $totalHours,
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d'),
+            'is_hourly' => $isSingleDay,
+        ]);
+    }
 }

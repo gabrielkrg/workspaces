@@ -19,6 +19,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Time Tracking
     Route::get('time-tracking/active', [TimeTrackingController::class, 'active'])->name('api.time-tracking.active');
+    Route::get('time-tracking/stats', [TimeTrackingController::class, 'stats'])->name('api.time-tracking.stats');
     Route::get('time-tracking/trackables', [TimeTrackingController::class, 'trackables'])->name('api.time-tracking.trackables');
     Route::get('time-tracking/trackables-types', [TimeTrackingController::class, 'trackablesTypes'])->name('api.time-tracking.trackables-types');
     Route::post('time-tracking/start', [TimeTrackingController::class, 'start'])->name('api.time-tracking.start');
