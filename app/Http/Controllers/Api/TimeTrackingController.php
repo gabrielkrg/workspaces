@@ -194,14 +194,11 @@ class TimeTrackingController extends Controller
 
         $startDate = $request->input('start_date')
             ? Carbon::parse($request->input('start_date'))->startOfDay()
-            : Carbon::now()->subDays(30)->startOfDay();
+            : Carbon::now()->subDays(7)->startOfDay();
 
         $endDate = $request->input('end_date')
             ? Carbon::parse($request->input('end_date'))->endOfDay()
             : Carbon::now()->endOfDay();
-
-        // Check if it's a single day (today view)
-        $isSingleDay = $startDate->isSameDay($endDate);
 
         $query = TimeTracking::where('workspace_id', $workspace->id)
             ->whereNotNull('start_time')
@@ -221,19 +218,14 @@ class TimeTrackingController extends Controller
         foreach ($timeTrackings as $tracking) {
             $duration = $tracking->start_time->diffInSeconds($tracking->end_time);
 
-            // Group by hour for single day, by date for multiple days
-            if ($isSingleDay) {
-                $key = $tracking->start_time->format('H:00');
-            } else {
-                $key = $tracking->start_time->format('Y-m-d');
-            }
+            $key = $tracking->start_time->format('Y-m-d');
 
             if (!isset($periodStats[$key])) {
                 $periodStats[$key] = 0;
             }
             $periodStats[$key] += $duration;
 
-            // Stats por tipo
+            // Stats by type
             $type = $tracking->trackable_type;
             if (!isset($typeStats[$type])) {
                 $typeStats[$type] = 0;
@@ -241,22 +233,12 @@ class TimeTrackingController extends Controller
             $typeStats[$type] += $duration;
         }
 
-        // Fill in missing periods
+        // Fill in missing days
         $filledStats = [];
-
-        if ($isSingleDay) {
-            // Fill hours 00:00 to 23:00
-            for ($hour = 0; $hour < 24; $hour++) {
-                $key = sprintf('%02d:00', $hour);
-                $filledStats[$key] = $periodStats[$key] ?? 0;
-            }
-        } else {
-            // Fill days
-            $period = Carbon::parse($startDate)->daysUntil($endDate);
-            foreach ($period as $date) {
-                $key = $date->format('Y-m-d');
-                $filledStats[$key] = $periodStats[$key] ?? 0;
-            }
+        $period = Carbon::parse($startDate)->daysUntil($endDate);
+        foreach ($period as $date) {
+            $key = $date->format('Y-m-d');
+            $filledStats[$key] = $periodStats[$key] ?? 0;
         }
 
         // Convert seconds to hours
@@ -279,7 +261,6 @@ class TimeTrackingController extends Controller
             'total_hours' => $totalHours,
             'start_date' => $startDate->format('Y-m-d'),
             'end_date' => $endDate->format('Y-m-d'),
-            'is_hourly' => $isSingleDay,
         ]);
     }
 }

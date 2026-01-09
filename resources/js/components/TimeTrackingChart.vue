@@ -11,7 +11,7 @@ import { Clock, TrendingUp, CalendarIcon } from 'lucide-vue-next'
 
 const loading = ref(false)
 const trackableType = ref('all')
-const selectedRange = ref(1)
+const selectedRange = ref(7)
 const startDate = ref('')
 const endDate = ref('')
 const isSelectingEnd = ref(false)
@@ -23,7 +23,6 @@ const stats = ref<{
     total_hours: number
     start_date: string
     end_date: string
-    is_hourly?: boolean
 } | null>(null)
 
 const types = [
@@ -87,20 +86,13 @@ const areaChartOptions = computed(() => ({
     xaxis: {
         categories: stats.value
             ? Object.keys(stats.value.daily).map(key => {
-                if (stats.value?.is_hourly) {
-                    const hour = parseInt(key.split(':')[0])
-                    const ampm = hour >= 12 ? 'PM' : 'AM'
-                    const hour12 = hour % 12 || 12
-                    return `${hour12}${ampm}`
-                } else {
-                    const d = new Date(key + 'T00:00:00')
-                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                }
+                const d = new Date(key + 'T00:00:00')
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
             })
             : [],
         labels: {
             style: { colors: colors.value.mutedForeground },
-            rotate: stats.value?.is_hourly ? 0 : -45,
+            rotate: -45,
         },
         axisBorder: { show: false },
         axisTicks: { show: false },
@@ -172,17 +164,10 @@ const fetchStats = async () => {
 const setDateRange = (days: number) => {
     selectedRange.value = days
     const today = new Date()
-
-    if (days === 1) {
-        startDate.value = today.toISOString().split('T')[0]
-        endDate.value = today.toISOString().split('T')[0]
-    } else {
-        const start = new Date()
-        start.setDate(start.getDate() - days)
-        startDate.value = start.toISOString().split('T')[0]
-        endDate.value = today.toISOString().split('T')[0]
-    }
-
+    const start = new Date()
+    start.setDate(start.getDate() - days)
+    startDate.value = start.toISOString().split('T')[0]
+    endDate.value = today.toISOString().split('T')[0]
     fetchStats()
 }
 
@@ -244,7 +229,7 @@ const percentageChange = computed(() => {
 
 onMounted(() => {
     updateColors()
-    setDateRange(1)
+    setDateRange(7)
 
     const observer = new MutationObserver(() => {
         updateColors()
@@ -269,8 +254,8 @@ watch([trackableType], () => {
                     <div>
                         <CardTitle>Time Tracking Activity</CardTitle>
                         <CardDescription>
-                            {{ selectedRange === 1 ? 'Showing time tracked for today' : selectedRange === 0 ?
-                                'Custom date range' : `Showing time tracked for the last ${selectedRange} days` }}
+                            {{ selectedRange === 0 ? 'Custom date range' : `Showing time tracked for the last
+                            ${selectedRange} days` }}
                         </CardDescription>
                     </div>
 
@@ -312,10 +297,6 @@ watch([trackableType], () => {
 
             <CardContent class="pt-0">
                 <div class="flex items-center justify-end gap-1 mb-4">
-                    <Button @click="setDateRange(1)" :variant="selectedRange === 1 ? 'default' : 'ghost'" size="sm"
-                        class="h-7 text-xs px-2">
-                        Today
-                    </Button>
                     <Button @click="setDateRange(7)" :variant="selectedRange === 7 ? 'default' : 'ghost'" size="sm"
                         class="h-7 text-xs px-2">
                         7d
