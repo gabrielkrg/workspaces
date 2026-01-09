@@ -3,7 +3,6 @@
 import { ref, watch } from 'vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { type BreadcrumbItem, type TimeTracking, type Trackable } from '@/types';
-import { parseISO } from 'date-fns';
 
 // UI Components - Layout
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -18,6 +17,7 @@ import {
     SheetTitle,
     SheetTrigger
 } from '@/components/ui/sheet';
+// Note: Some sheet components used by Create sheet, Edit sheet uses EditTimeTrackingSheet component
 
 // UI Components - Dialog
 import {
@@ -45,6 +45,7 @@ import {
 
 // Custom Components
 import TimeTrackingDataTable from '@/components/TimeTrackingDataTable.vue';
+import EditTimeTrackingSheet from '@/components/EditTimeTrackingSheet.vue';
 
 // Third-party libraries
 import axios from 'axios';
@@ -81,50 +82,12 @@ const submit = () => {
     });
 };
 
-const updateForm = useForm({
-    start_time: '',
-    end_time: '',
-    trackable_id: null as number | null,
-    trackable_type: '',
-});
-
 const trackableType = ref('');
 const trackables = ref<Trackable[]>([]);
 const selectedTimeTracking = ref<TimeTracking | null>(null);
 
-const selectTimeTracking = (timeTracking: TimeTracking) => {
-    if (!timeTracking.trackable) {
-        return;
-    }
-
-    selectedTimeTracking.value = timeTracking;
-    trackableType.value = timeTracking.trackable_type;
-
-    updateForm.start_time = formatDateForInput(timeTracking.start_time);
-    updateForm.end_time = formatDateForInput(timeTracking.end_time);
-
-    updateForm.trackable_id = timeTracking.trackable_id || null;
-    updateForm.trackable_type = timeTracking.trackable_type;
-};
-
-const updateTimeTracking = () => {
-    if (!selectedTimeTracking.value) return;
-
-    updateForm.put(route('time-tracking.update', selectedTimeTracking.value.id), {
-        onSuccess: () => {
-            selectedTimeTracking.value = null;
-            isEditSheetOpen.value = false;
-
-            router.get(route('time-tracking.index'), {
-                preserveState: true,
-                replace: true,
-            });
-        },
-    });
-};
-
 const deleteTimeTracking = (id: number) => {
-    updateForm.delete(route('time-tracking.destroy', id), {
+    router.delete(route('time-tracking.destroy', id), {
         onSuccess: () => {
             selectedTimeTracking.value = null;
 
@@ -134,12 +97,6 @@ const deleteTimeTracking = (id: number) => {
             });
         },
     });
-};
-
-const formatDateForInput = (dateString: string | null) => {
-    if (!dateString) return '';
-    const date = parseISO(dateString);
-    return date.toISOString().slice(0, 16);
 };
 
 watch(trackableType, async () => {
@@ -158,8 +115,16 @@ const isDeleteDialogOpen = ref(false);
 const timeTrackingToDelete = ref<number | null>(null);
 
 const handleEdit = (timeTracking: TimeTracking) => {
-    selectTimeTracking(timeTracking);
+    selectedTimeTracking.value = timeTracking;
     isEditSheetOpen.value = true;
+};
+
+const onEditSuccess = () => {
+    selectedTimeTracking.value = null;
+    router.get(route('time-tracking.index'), {
+        preserveState: true,
+        replace: true,
+    });
 };
 
 const handleDelete = (id: number) => {
@@ -265,79 +230,8 @@ const confirmDelete = () => {
                 @delete="handleDelete" />
 
             <!-- Edit Sheet -->
-            <Sheet v-model:open="isEditSheetOpen">
-                <SheetContent side="right" class="sm:max-w-[500px]">
-                    <SheetHeader>
-                        <SheetTitle>Edit Time Tracking</SheetTitle>
-                        <SheetDescription>Update time tracking details</SheetDescription>
-                    </SheetHeader>
-
-                    <form v-if="selectedTimeTracking" @submit.prevent="updateTimeTracking" class="space-y-4 mt-4 p-4">
-                        <div class="grid gap-4">
-                            <div class="flex flex-col gap-4">
-                                <Label for="update-trackable-type" class="text-right">Type</Label>
-                                <Select v-model="updateForm.trackable_type" id="update-trackable-type">
-                                    <SelectTrigger id="update-trackable-type-trigger" class="w-full">
-                                        <SelectValue placeholder="Select" />
-                                    </SelectTrigger>
-                                    <SelectContent position="popper">
-                                        <SelectItem v-for="type in types" :key="type.label" :value="type.model">
-                                            {{ type.label }}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <span class="text-sm text-red-500 col-span-full"
-                                    v-if="updateForm.errors.trackable_type">
-                                    {{ updateForm.errors.trackable_type }}
-                                </span>
-                            </div>
-
-                            <div class="flex flex-col gap-4" v-if="updateForm.trackable_type">
-                                <Label for="update-trackable-id" class="text-right">Item</Label>
-                                <Select v-model="updateForm.trackable_id" :disabled="!updateForm.trackable_type"
-                                    id="update-trackable-id">
-                                    <SelectTrigger id="update-trackable-id-trigger" class="w-full">
-                                        <SelectValue placeholder="Select" />
-                                    </SelectTrigger>
-                                    <SelectContent position="popper">
-                                        <SelectItem v-for="trackable in trackables" :key="trackable.id"
-                                            :value="trackable.id">
-                                            {{ trackable.title }}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.trackable_id">
-                                    {{ updateForm.errors.trackable_id }}
-                                </span>
-                            </div>
-
-                            <div class="grid grid-cols-4 items-center gap-4">
-                                <Label for="update-start_time" class="text-right">Start Time</Label>
-                                <Input id="update-start_time" v-model="updateForm.start_time" class="col-span-4"
-                                    type="datetime-local" />
-                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.start_time">
-                                    {{ updateForm.errors.start_time }}
-                                </span>
-                            </div>
-
-                            <div class="grid grid-cols-4 items-center gap-4">
-                                <Label for="update-end_time" class="text-right">End Time</Label>
-                                <Input id="update-end_time" v-model="updateForm.end_time" class="col-span-4"
-                                    type="datetime-local" />
-                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.end_time">
-                                    {{ updateForm.errors.end_time }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="flex justify-end gap-2">
-                            <Button variant="outline" class="cursor-pointer" type="button"
-                                @click="isEditSheetOpen = false">Cancel</Button>
-                            <Button type="submit" class="cursor-pointer">Save Changes</Button>
-                        </div>
-                    </form>
-                </SheetContent>
-            </Sheet>
+            <EditTimeTrackingSheet v-model:open="isEditSheetOpen" :time-tracking="selectedTimeTracking"
+                :types="props.types" @success="onEditSuccess" />
 
             <!-- Delete Confirmation Dialog -->
             <Dialog v-model:open="isDeleteDialogOpen">
