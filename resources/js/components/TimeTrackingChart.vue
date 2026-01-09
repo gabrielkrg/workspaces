@@ -3,14 +3,31 @@ import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import VueApexCharts from 'vue3-apexcharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { Button } from '@/components/ui/button'
 import { Clock, TrendingUp, CalendarIcon } from 'lucide-vue-next'
 
+const types = [
+    { label: 'Task', model: 'App\\Models\\Task' },
+    { label: 'Card', model: 'App\\Models\\Card' },
+    { label: 'Ticket', model: 'App\\Models\\Ticket' },
+]
+
+
 const loading = ref(false)
-const trackableType = ref('all')
+const trackableType = ref<string[]>(
+    types.map(type => type.model)
+)
 const selectedRange = ref(7)
 const startDate = ref('')
 const endDate = ref('')
@@ -18,19 +35,9 @@ const isSelectingEnd = ref(false)
 const calendarOpen = ref(false)
 
 const stats = ref<{
-    daily: Record<string, number>
-    by_type: Record<string, number>
-    total_hours: number
-    start_date: string
-    end_date: string
+    types: { label: string; data: number[] }[],
+    days: string[]
 } | null>(null)
-
-const types = [
-    { label: 'All', model: 'all' },
-    { label: 'Task', model: 'App\\Models\\Task' },
-    { label: 'Card', model: 'App\\Models\\Card' },
-    { label: 'Ticket', model: 'App\\Models\\Ticket' },
-]
 
 // Helper to get computed CSS color value
 const getCssColor = (varName: string): string => {
@@ -63,6 +70,24 @@ const updateColors = () => {
     }
 }
 
+const categories = computed(() => {
+    const types = stats.value?.types
+    if (!types) return []
+
+    const firstType = Object.values(types)[0] as any
+    if (!firstType?.data) return []
+
+    return Object.keys(firstType.data)
+})
+
+function formatDayLabel(date: string): string {
+    const d = new Date(date + 'T00:00:00') // avoid timezone shift
+    return d.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+    })
+}
+
 const areaChartOptions = computed(() => ({
     chart: {
         type: 'area' as const,
@@ -70,6 +95,7 @@ const areaChartOptions = computed(() => ({
         background: 'transparent',
         stacked: true,
     },
+    colors: [colors.value.chart1, colors.value.chart2, colors.value.chart3],
     stroke: {
         curve: 'smooth' as const,
         width: 2,
@@ -84,12 +110,7 @@ const areaChartOptions = computed(() => ({
     },
     dataLabels: { enabled: false },
     xaxis: {
-        categories: stats.value
-            ? Object.keys(stats.value.daily).map(key => {
-                const d = new Date(key + 'T00:00:00')
-                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-            })
-            : [],
+        categories: categories.value.map(formatDayLabel),
         labels: {
             style: { colors: colors.value.mutedForeground },
             rotate: -45,
@@ -103,7 +124,6 @@ const areaChartOptions = computed(() => ({
             formatter: (val: number) => val.toFixed(1) + 'h',
         },
     },
-    colors: [colors.value.chart1, colors.value.chart2],
     tooltip: {
         theme: isDarkTheme.value ? 'dark' : 'light',
         y: { formatter: (val: number) => `${val.toFixed(2)} hours` },
@@ -116,15 +136,29 @@ const areaChartOptions = computed(() => ({
         position: 'top' as const,
         horizontalAlign: 'right' as const,
         labels: { colors: colors.value.foreground },
+        show: false,
     },
 }))
 
 const areaChartSeries = computed(() => {
-    if (!stats.value) return []
-    return [{
-        name: 'Hours',
-        data: Object.values(stats.value.daily),
-    }]
+    const result: { name: string; data: number[] }[] = []
+
+    const types = stats.value?.types
+    if (!types) return result
+
+    const keys = categories.value
+
+    Object.values(types).forEach((type: any) => {
+        result.push({
+            name: type.label,
+            data: keys.map((day) => {
+                // seconds → hours
+                return (type.data[day] ?? 0) / 3600
+            }),
+        })
+    })
+
+    return result
 })
 
 // Format date range for display
@@ -146,11 +180,11 @@ const formattedDateRange = computed(() => {
 const fetchStats = async () => {
     loading.value = true
     try {
-        const params: Record<string, string> = {}
+        const params: Record<string, string | string[]> = {}
 
         if (startDate.value) params.start_date = startDate.value
         if (endDate.value) params.end_date = endDate.value
-        if (trackableType.value !== 'all') params.trackable_type = trackableType.value
+        if (trackableType.value.length > 0) params.trackable_type = trackableType.value
 
         const response = await axios.get(route('api.time-tracking.stats'), { params })
         stats.value = response.data
@@ -202,31 +236,6 @@ const calendarHint = computed(() => {
     return isSelectingEnd.value ? 'Select end date' : 'Select start date'
 })
 
-const dailyAverage = computed(() => {
-    if (!stats.value?.daily) return '0.00'
-    const values = Object.values(stats.value.daily)
-    if (values.length === 0) return '0.00'
-    return (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
-})
-
-const activeDays = computed(() => {
-    if (!stats.value?.daily) return 0
-    return Object.values(stats.value.daily).filter(h => h > 0).length
-})
-
-const percentageChange = computed(() => {
-    if (!stats.value?.daily) return 0
-    const values = Object.values(stats.value.daily)
-    if (values.length < 2) return 0
-
-    const midPoint = Math.floor(values.length / 2)
-    const firstHalf = values.slice(0, midPoint).reduce((a, b) => a + b, 0)
-    const secondHalf = values.slice(midPoint).reduce((a, b) => a + b, 0)
-
-    if (firstHalf === 0) return secondHalf > 0 ? 100 : 0
-    return ((secondHalf - firstHalf) / firstHalf * 100).toFixed(1)
-})
-
 onMounted(() => {
     updateColors()
     setDateRange(7)
@@ -240,7 +249,7 @@ onMounted(() => {
     })
 })
 
-watch([trackableType], () => {
+watch(trackableType, () => {
     fetchStats()
 })
 </script>
@@ -261,18 +270,17 @@ watch([trackableType], () => {
 
                     <!-- Filters -->
                     <div class="flex flex-wrap items-center gap-2">
-                        <Select v-model="trackableType">
-                            <SelectTrigger class="w-[100px] h-8 text-xs">
-                                <SelectValue placeholder="All" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem v-for="type in types" :key="type.model" :value="type.model">
-                                    {{ type.label }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div class="flex items-center justify-end gap-1">
+                            <Button @click="setDateRange(7)" :variant="selectedRange === 7 ? 'default' : 'ghost'"
+                                size="sm" class="h-7 text-xs px-2">
+                                7d
+                            </Button>
+                            <Button @click="setDateRange(30)" :variant="selectedRange === 30 ? 'default' : 'ghost'"
+                                size="sm" class="h-7 text-xs px-2">
+                                30d
+                            </Button>
+                        </div>
 
-                        <!-- Date Range Picker -->
                         <Popover v-model:open="calendarOpen">
                             <PopoverTrigger as-child>
                                 <Button variant="outline" size="sm" class="h-8 text-xs gap-1.5">
@@ -291,20 +299,30 @@ watch([trackableType], () => {
                                 <Calendar @update:model-value="onCalendarSelect" />
                             </PopoverContent>
                         </Popover>
+
+
                     </div>
+
+
                 </div>
             </CardHeader>
 
             <CardContent class="pt-0">
-                <div class="flex items-center justify-end gap-1 mb-4">
-                    <Button @click="setDateRange(7)" :variant="selectedRange === 7 ? 'default' : 'ghost'" size="sm"
-                        class="h-7 text-xs px-2">
-                        7d
-                    </Button>
-                    <Button @click="setDateRange(30)" :variant="selectedRange === 30 ? 'default' : 'ghost'" size="sm"
-                        class="h-7 text-xs px-2">
-                        30d
-                    </Button>
+                <div class="flex items-center  justify-end gap-2 mb-4">
+                    <Select multiple v-model="trackableType">
+                        <SelectTrigger class="w-[180px]">
+                            <SelectValue placeholder="Select types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <div v-for="type in types" :key="type.model">
+                                    <SelectItem :value="type.model">
+                                        {{ type.label }}
+                                    </SelectItem>
+                                </div>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 <VueApexCharts v-if="stats" type="area" height="280" :options="areaChartOptions"
@@ -325,15 +343,15 @@ watch([trackableType], () => {
                 </CardHeader>
                 <CardContent>
                     <div class="flex items-baseline gap-2">
-                        <span class="text-2xl font-bold">{{ stats?.total_hours?.toFixed(1) || '0' }}h</span>
-                        <span v-if="Number(percentageChange) !== 0" class="text-xs flex items-center gap-0.5"
+                        <span class="text-2xl font-bold">123 h</span>
+                        <!-- <span v-if="Number(percentageChange) !== 0" class="text-xs flex items-center gap-0.5"
                             :class="Number(percentageChange) >= 0 ? 'text-green-500' : 'text-red-500'">
                             <TrendingUp v-if="Number(percentageChange) >= 0" class="size-3" />
                             {{ percentageChange }}%
-                        </span>
+                        </span> -->
                     </div>
                     <p class="text-xs text-muted-foreground">
-                        {{ stats?.start_date }} - {{ stats?.end_date }}
+                        <!-- {{ stats?.start_date }} - {{ stats?.end_date }} -->
                     </p>
                 </CardContent>
             </Card>
@@ -345,7 +363,7 @@ watch([trackableType], () => {
                     <Clock class="size-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div class="text-2xl font-bold">{{ dailyAverage }}h</div>
+                    <div class="text-2xl font-bold">123 h</div>
                     <p class="text-xs text-muted-foreground">Per day in period</p>
                 </CardContent>
             </Card>
@@ -357,7 +375,7 @@ watch([trackableType], () => {
                     <Clock class="size-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div class="text-2xl font-bold">{{ activeDays }}</div>
+                    <div class="text-2xl font-bold">123</div>
                     <p class="text-xs text-muted-foreground">Days with tracked time</p>
                 </CardContent>
             </Card>

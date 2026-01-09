@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Workspace;
 use App\Models\TimeTracking;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TimeTrackingController extends Controller
@@ -189,8 +190,21 @@ class TimeTrackingController extends Controller
         $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
-            'trackable_type' => 'nullable|string',
+            'trackable_type' => 'nullable|array',
+            'trackable_type.*' => 'string',
         ]);
+
+
+        $selectedTypes = $request->input('trackable_type', []);
+
+        if (empty($selectedTypes)) {
+            $types = TimeTracking::$types;
+        } else {
+            $types = array_values(array_filter(
+                TimeTracking::$types,
+                fn($type) => in_array($type['model'], $selectedTypes, true)
+            ));
+        }
 
         $startDate = $request->input('start_date')
             ? Carbon::parse($request->input('start_date'))->startOfDay()
@@ -200,67 +214,42 @@ class TimeTrackingController extends Controller
             ? Carbon::parse($request->input('end_date'))->endOfDay()
             : Carbon::now()->endOfDay();
 
-        $query = TimeTracking::where('workspace_id', $workspace->id)
-            ->whereNotNull('start_time')
-            ->whereNotNull('end_time')
-            ->where('start_time', '>=', $startDate)
-            ->where('start_time', '<=', $endDate);
+        $days = collect(
+            CarbonPeriod::create(
+                $startDate->copy()->startOfDay(),
+                $endDate->copy()->startOfDay()
+            )
+        )->map(fn(Carbon $date) => $date->toDateString());
 
-        if ($request->input('trackable_type') && $request->input('trackable_type') !== 'all') {
-            $query->where('trackable_type', $request->input('trackable_type'));
-        }
+        $typesTrackings = [];
 
-        $timeTrackings = $query->get();
+        foreach ($types as $type) {
+            // Base structure
+            $typesTrackings[$type['model']] = [
+                'label' => $type['label'],
+                'data' => $days->mapWithKeys(fn($day) => [$day => 0])->toArray(),
+            ];
 
-        $periodStats = [];
-        $typeStats = [];
+            // Fetch all trackings for this type in one query
+            $trackings = TimeTracking::where('workspace_id', $workspace->id)
+                ->whereNotNull('start_time')
+                ->whereNotNull('end_time')
+                ->whereBetween('start_time', [$startDate, $endDate])
+                ->where('trackable_type', $type['model'])
+                ->get();
 
-        foreach ($timeTrackings as $tracking) {
-            $duration = $tracking->start_time->diffInSeconds($tracking->end_time);
+            // Group by day and sum elapsed_time
+            $groupedByDay = $trackings
+                ->groupBy(fn($tracking) => $tracking->start_time->toDateString())
+                ->map(fn($items) => $items->sum('elapsed_time'));
 
-            $key = $tracking->start_time->format('Y-m-d');
-
-            if (!isset($periodStats[$key])) {
-                $periodStats[$key] = 0;
+            // Merge sums into the pre-filled days
+            foreach ($groupedByDay as $day => $seconds) {
+                $typesTrackings[$type['model']]['data'][$day] = $seconds;
             }
-            $periodStats[$key] += $duration;
-
-            // Stats by type
-            $type = $tracking->trackable_type;
-            if (!isset($typeStats[$type])) {
-                $typeStats[$type] = 0;
-            }
-            $typeStats[$type] += $duration;
         }
 
-        // Fill in missing days
-        $filledStats = [];
-        $period = Carbon::parse($startDate)->daysUntil($endDate);
-        foreach ($period as $date) {
-            $key = $date->format('Y-m-d');
-            $filledStats[$key] = $periodStats[$key] ?? 0;
-        }
 
-        // Convert seconds to hours
-        $hours = [];
-        foreach ($filledStats as $key => $seconds) {
-            $hours[$key] = round($seconds / 3600, 2);
-        }
-
-        $typeHours = [];
-        foreach ($typeStats as $type => $seconds) {
-            $label = collect(TimeTracking::$types)->firstWhere('model', $type)['label'] ?? $type;
-            $typeHours[$label] = round($seconds / 3600, 2);
-        }
-
-        $totalHours = round(array_sum($periodStats) / 3600, 2);
-
-        return response()->json([
-            'daily' => $hours,
-            'by_type' => $typeHours,
-            'total_hours' => $totalHours,
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d'),
-        ]);
+        return response()->json(['types' => $typesTrackings]);
     }
 }

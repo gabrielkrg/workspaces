@@ -85,6 +85,10 @@ const types = [
     {
         label: 'Card',
         model: 'App\\Models\\Card'
+    },
+    {
+        label: 'Ticket',
+        model: 'App\\Models\\Ticket'
     }
 ];
 
