@@ -45,6 +45,15 @@ class TimeTrackingController extends Controller
             'end_time' => 'nullable|date',
         ]);
 
+        // Convert from workspace timezone to UTC for storage
+        $workspaceTimezone = $workspace->time_zone ?? config('app.timezone');
+
+        $validated['start_time'] = Carbon::parse($validated['start_time'], $workspaceTimezone)->setTimezone('UTC');
+
+        if (!empty($validated['end_time'])) {
+            $validated['end_time'] = Carbon::parse($validated['end_time'], $workspaceTimezone)->setTimezone('UTC');
+        }
+
         TimeTracking::create(
             array_merge($validated, [
                 'user_id' => $user->id,
@@ -63,7 +72,7 @@ class TimeTrackingController extends Controller
 
         $this->authorize('update', $workspace);
 
-        $request->validate([
+        $validated = $request->validate([
             'trackable_id' => 'required|integer',
             'trackable_type' => 'required|string|max:255',
             'start_time' => 'required|date',
@@ -71,7 +80,13 @@ class TimeTrackingController extends Controller
             'is_running' => 'required|boolean',
         ]);
 
-        $timeTracking->update($request->all());
+        // Convert from workspace timezone to UTC for storage
+        $workspaceTimezone = $workspace->time_zone ?? config('app.timezone');
+
+        $validated['start_time'] = Carbon::parse($validated['start_time'], $workspaceTimezone)->setTimezone('UTC');
+        $validated['end_time'] = Carbon::parse($validated['end_time'], $workspaceTimezone)->setTimezone('UTC');
+
+        $timeTracking->update($validated);
 
         return redirect()->back()->with('success', 'Time tracking updated successfully');
     }

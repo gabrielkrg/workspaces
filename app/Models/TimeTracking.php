@@ -27,6 +27,8 @@ class TimeTracking extends Model
         'formatted_end_time',
         'start_time_local',
         'end_time_local',
+        'formatted_start_time_local',
+        'formatted_end_time_local',
         'elapsed_time',
     ];
 
@@ -104,6 +106,30 @@ class TimeTracking extends Model
         }
 
         return $this->end_time->copy()->setTimezone($this->getWorkspaceTimezone())->format('Y-m-d\TH:i');
+    }
+
+    /**
+     * Get start_time formatted for display in workspace timezone
+     */
+    public function getFormattedStartTimeLocalAttribute(): ?string
+    {
+        if (!$this->start_time) {
+            return null;
+        }
+
+        return $this->start_time->copy()->setTimezone($this->getWorkspaceTimezone())->format('d/m/Y - H:i');
+    }
+
+    /**
+     * Get end_time formatted for display in workspace timezone
+     */
+    public function getFormattedEndTimeLocalAttribute(): ?string
+    {
+        if (!$this->end_time) {
+            return null;
+        }
+
+        return $this->end_time->copy()->setTimezone($this->getWorkspaceTimezone())->format('d/m/Y - H:i');
     }
 
     public function trackable()

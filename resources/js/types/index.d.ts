@@ -111,9 +111,11 @@ export interface TimeTracking {
     trackable_id: number | null;
     trackable_type: string;
     formatted_start_time: string;
-    formatted_end_time: string;
+    formatted_end_time: string | null;
     start_time_local: string;
     end_time_local: string | null;
+    formatted_start_time_local: string;
+    formatted_end_time_local: string | null;
     trackable: Trackable;
 }
 
