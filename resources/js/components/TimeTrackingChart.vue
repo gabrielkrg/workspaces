@@ -181,8 +181,12 @@ const formattedDateRange = computed(() => {
 })
 
 function decimalHoursToHM(value: number): string {
-    const hours = Math.floor(value)
-    const minutes = Math.round((value - hours) * 60)
+    let hours = Math.floor(value)
+    let minutes = Math.round((value - hours) * 60)
+    if (minutes === 60) {
+        minutes = 0
+        hours++
+    }
 
     return `${hours}h ${minutes.toString().padStart(2, '0')}m`
 }
