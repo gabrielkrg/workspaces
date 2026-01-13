@@ -263,7 +263,7 @@ watch(typeFilter, (newValue) => {
         <!-- Filter -->
         <div class="flex items-center gap-4 p-4 border-b border-sidebar-border/70 dark:border-sidebar-border">
             <div class="flex items-center gap-2">
-                <Label for="type-filter" class="text-sm whitespace-nowrap">Filter by Type:</Label>
+                <Label for="type-filter" class="text-sm whitespace-nowrap sr-only">Filter by Type:</Label>
                 <Select v-model="typeFilter">
                     <SelectTrigger id="type-filter" class="w-[180px]">
                         <SelectValue placeholder="All Types" />
