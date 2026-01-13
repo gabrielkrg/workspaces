@@ -121,12 +121,15 @@ const areaChartOptions = computed(() => ({
     yaxis: {
         labels: {
             style: { colors: colors.value.mutedForeground },
-            formatter: (val: number) => val.toFixed(1) + 'h',
+            formatter: (val: number) => decimalHoursToHM(val)
+
         },
     },
     tooltip: {
         theme: isDarkTheme.value ? 'dark' : 'light',
-        y: { formatter: (val: number) => `${val.toFixed(2)} hours` },
+        y: {
+            formatter: (val: number) => decimalHoursToHM(val),
+        },
     },
     grid: {
         borderColor: colors.value.border,
@@ -176,6 +179,13 @@ const formattedDateRange = computed(() => {
 
     return `${formatDate(startDate.value)} - ${formatDate(endDate.value)}`
 })
+
+function decimalHoursToHM(value: number): string {
+    const hours = Math.floor(value)
+    const minutes = Math.round((value - hours) * 60)
+
+    return `${hours}h ${minutes.toString().padStart(2, '0')}m`
+}
 
 const fetchStats = async () => {
     loading.value = true
@@ -269,7 +279,7 @@ watch(trackableType, () => {
                     </div>
 
                     <!-- Filters -->
-                    <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex items-center gap-2">
                         <div class="flex items-center justify-end gap-1">
                             <Button @click="setDateRange(7)" :variant="selectedRange === 7 ? 'default' : 'ghost'"
                                 size="sm" class="h-7 text-xs px-2">
@@ -281,50 +291,50 @@ watch(trackableType, () => {
                             </Button>
                         </div>
 
-                        <Popover v-model:open="calendarOpen">
-                            <PopoverTrigger as-child>
-                                <Button variant="outline" size="sm" class="h-8 text-xs gap-1.5">
-                                    <CalendarIcon class="size-3.5" />
-                                    {{ formattedDateRange }}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent class="w-auto p-0" align="end">
-                                <div class="p-3 border-b">
-                                    <p class="text-sm font-medium">{{ calendarHint }}</p>
-                                    <p class="text-xs text-muted-foreground">
-                                        {{ startDate && isSelectingEnd ? `From: ${formattedDateRange.split(' - ')[0]}`
-                                            : 'Click to select date range' }}
-                                    </p>
-                                </div>
-                                <Calendar @update:model-value="onCalendarSelect" />
-                            </PopoverContent>
-                        </Popover>
+                        <div class="grid grid-cols-2 gap-2">
+                            <Popover v-model:open="calendarOpen">
+                                <PopoverTrigger as-child>
+                                    <Button variant="outline" size="sm" class="h-8 text-xs gap-1.5">
+                                        <CalendarIcon class="size-3.5" />
+                                        {{ formattedDateRange }}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent class="w-auto p-0" align="end">
+                                    <div class="p-3 border-b">
+                                        <p class="text-sm font-medium">{{ calendarHint }}</p>
+                                        <p class="text-xs text-muted-foreground">
+                                            {{
+                                                startDate && isSelectingEnd ? `From: ${formattedDateRange.split(' -')[0]}` :
+                                                    'Click to select date range'
+                                            }}
+                                        </p>
+                                    </div>
+                                    <Calendar @update:model-value="onCalendarSelect" />
+                                </PopoverContent>
+                            </Popover>
+
+                            <Select multiple v-model="trackableType">
+                                <SelectTrigger class="w-full" size="sm">
+                                    <SelectValue placeholder="Select types" class="text-xs" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <div v-for="type in types" :key="type.model">
+                                            <SelectItem :value="type.model">
+                                                {{ type.label }}
+                                            </SelectItem>
+                                        </div>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
 
                     </div>
-
-
                 </div>
             </CardHeader>
 
             <CardContent class="pt-0">
-                <div class="flex items-center  justify-end gap-2 mb-4">
-                    <Select multiple v-model="trackableType">
-                        <SelectTrigger class="w-[180px]">
-                            <SelectValue placeholder="Select types" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <div v-for="type in types" :key="type.model">
-                                    <SelectItem :value="type.model">
-                                        {{ type.label }}
-                                    </SelectItem>
-                                </div>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                </div>
-
                 <VueApexCharts v-if="stats" type="area" height="280" :options="areaChartOptions"
                     :series="areaChartSeries" />
                 <div v-else class="h-[280px] flex items-center justify-center text-muted-foreground">

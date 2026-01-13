@@ -33,7 +33,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex-1 space-y-6 p-8 pt-6">
+        <div class="flex-1 space-y-6 md:p-8 md:pt-6 p-4 pt-2">
             <div>
                 <h2 class='text-2xl font-bold tracking-tight'>Dashboard</h2>
                 <p class='text-muted-foreground'>
