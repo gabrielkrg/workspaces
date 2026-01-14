@@ -165,23 +165,6 @@ class TimeTrackingController extends Controller
         return response()->json($timeTracking->fresh()->load('workspace'));
     }
 
-    public function reset(TimeTracking $timeTracking): JsonResponse
-    {
-        $user = Auth::user();
-
-        $workspace = Workspace::findOrFail($user->workspace_id);
-
-        $this->authorize('update', $workspace);
-
-        $timeTracking->update([
-            'start_time' => null,
-            'end_time' => null,
-            'is_running' => false,
-        ]);
-
-        return response()->json($timeTracking->fresh()->load('workspace'));
-    }
-
     /**
      * Get time tracking stats for charts
      */

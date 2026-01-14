@@ -25,7 +25,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('time-tracking/start', [TimeTrackingController::class, 'start'])->name('api.time-tracking.start');
     Route::post('time-tracking/{timeTracking}/pause', [TimeTrackingController::class, 'pause'])->name('api.time-tracking.pause');
     Route::post('time-tracking/{timeTracking}/resume', [TimeTrackingController::class, 'resume'])->name('api.time-tracking.resume');
-    Route::post('time-tracking/{timeTracking}/reset', [TimeTrackingController::class, 'reset'])->name('api.time-tracking.reset');
 
     // Tags
     Route::get('/tags', [TagController::class, 'index'])->name('api.tags');

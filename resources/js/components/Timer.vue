@@ -97,7 +97,6 @@ const form = useForm({
     trackable_type: '',
     start_time: '',
     end_time: '',
-    is_running: false as boolean,
 });
 
 const loadTrackables = async (type: string) => {
@@ -114,8 +113,6 @@ const loadTrackables = async (type: string) => {
 }
 
 const submit = () => {
-    form.is_running = timerStore.isRunning;
-
     form.put(route('time-tracking.update', timeTrackingId.value as number), {
         onSuccess: () => {
             form.reset()
@@ -139,8 +136,9 @@ const reset = () => {
         return;
     }
 
-    timerStore.resetTimer()
     form.reset()
+    timerStore.resetTimer()
+
     trackableType.value = ''
     trackables.value = []
 
@@ -162,7 +160,6 @@ const start = async () => {
         const timeTracking = response.data
         timeTrackingId.value = timeTracking.id
 
-        // Atualiza o store com os dados do servidor
         timerStore.setTimerData({
             id: timeTracking.id,
             start_time: timeTracking.start_time,
@@ -170,14 +167,12 @@ const start = async () => {
             elapsed_time: timeTracking.elapsed_time || 0
         })
 
-        // Primeiro define o tipo para carregar os trackables
         if (timeTracking.trackable_type) {
             trackableType.value = timeTracking.trackable_type
             form.trackable_type = timeTracking.trackable_type
             await loadTrackables(timeTracking.trackable_type)
         }
 
-        // Preenche o formulário com os dados retornados (já formatados pelo servidor)
         form.start_time = timeTracking.start_time_local || ''
         form.end_time = timeTracking.end_time_local || ''
         form.trackable_id = timeTracking.trackable_id || ''
@@ -204,7 +199,6 @@ const toggleTimer = async () => {
 
             form.end_time = timeTracking.end_time_local || ''
         } else {
-            // Resume: chama API que ajusta start_time e limpa end_time
             const response = await axios.post(route('api.time-tracking.resume', timeTrackingId.value))
             const timeTracking = response.data
 
@@ -215,7 +209,6 @@ const toggleTimer = async () => {
                 elapsed_time: timeTracking.elapsed_time
             })
 
-            // Atualiza start_time no form pois o backend ajusta ele ao resumir
             form.start_time = timeTracking.start_time_local || ''
             form.end_time = ''
         }
