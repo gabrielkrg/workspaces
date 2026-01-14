@@ -91,13 +91,15 @@ const columns: ColumnDef<any>[] = [
             const task = row.original;
             return h(
                 'div',
-                { class: 'flex flex-col gap-1' },
+                {
+                    class: ['inline-flex flex-col gap-1'],
+                },
                 [
                     h('span', {
                         class: [
                             'font-medium',
                             task.done ? 'line-through text-muted-foreground' : '',
-                            task.highlight ? 'bg-yellow-200 dark:bg-yellow-900/50 px-1 rounded' : ''
+                            task.highlight ? 'bg-green-200 dark:bg-green-900/50' : ''
                         ]
                     }, task.title),
                     task.description ? h('span', { class: 'text-xs text-muted-foreground line-clamp-1' }, task.description) : null
@@ -139,8 +141,8 @@ const columns: ColumnDef<any>[] = [
                     Badge,
                     {
                         variant: 'secondary',
-                        class: 'text-xs font-normal capitalize cursor-default',
-                        style: tag.color ? { backgroundColor: tag.color, color: 'white' } : {}
+                        class: 'text-xs font-normal capitalize cursor-default text-primary-foreground',
+                        style: tag.color ? { backgroundColor: tag.color } : {}
                     },
                     () => tag.name
                 ))
