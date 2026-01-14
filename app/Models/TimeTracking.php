@@ -14,6 +14,7 @@ class TimeTracking extends Model
         'trackable_type',
         'start_time',
         'end_time',
+        'elapsed_time',
         'is_running',
     ];
 

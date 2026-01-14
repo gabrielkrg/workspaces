@@ -101,6 +101,7 @@ class TimeTrackingController extends Controller
             'trackable_id' => $request->trackable_id,
             'trackable_type' => $request->trackable_type,
             'start_time' => Carbon::now('UTC'),
+            'elapsed_time' => null,
             'is_running' => true,
         ]);
 
@@ -121,8 +122,11 @@ class TimeTrackingController extends Controller
 
         $this->authorize('update', $workspace);
 
+        $elapsedTime = $timeTracking->start_time->diffInSeconds($timeTracking->end_time);
+
         $timeTracking->update([
             'end_time' => Carbon::now('UTC'),
+            'elapsed_time' => $elapsedTime,
             'is_running' => false,
         ]);
 
@@ -148,6 +152,7 @@ class TimeTrackingController extends Controller
             $timeTracking->update([
                 'start_time' => $newStartTime,
                 'end_time' => null,
+                'elapsed_time' => null,
                 'is_running' => true,
             ]);
         } else {
@@ -194,17 +199,13 @@ class TimeTrackingController extends Controller
             'trackable_type.*' => 'string',
         ]);
 
-
         $selectedTypes = $request->input('trackable_type', []);
 
-        if (empty($selectedTypes)) {
-            $types = TimeTracking::$types;
-        } else {
-            $types = array_values(array_filter(
-                TimeTracking::$types,
-                fn($type) => in_array($type['model'], $selectedTypes, true)
-            ));
-        }
+        $types = array_values(array_filter(
+            TimeTracking::$types,
+            fn($type) => in_array($type['model'], $selectedTypes, true)
+        ));
+
 
         $startDate = $request->input('start_date')
             ? Carbon::parse($request->input('start_date'))->startOfDay()
@@ -214,6 +215,23 @@ class TimeTrackingController extends Controller
             ? Carbon::parse($request->input('end_date'))->endOfDay()
             : Carbon::now()->endOfDay();
 
+
+        $rows = TimeTracking::where('workspace_id', $workspace->id)
+            ->whereNotNull('start_time')
+            ->whereNotNull('end_time')
+            ->whereBetween('start_time', [$startDate, $endDate])
+            ->when(!empty($selectedTypes), function ($q) use ($selectedTypes) {
+                $q->whereIn('trackable_type', $selectedTypes);
+            })
+            ->selectRaw('
+                trackable_type,
+                DATE(start_time) as day,
+                SUM(elapsed_time) as total_seconds
+            ')
+            ->groupBy('trackable_type', 'day')
+            ->get();
+
+
         $days = collect(
             CarbonPeriod::create(
                 $startDate->copy()->startOfDay(),
@@ -221,32 +239,24 @@ class TimeTrackingController extends Controller
             )
         )->map(fn(Carbon $date) => $date->toDateString());
 
+        $daysTemplate = $days->mapWithKeys(fn($day) => [$day => 0])->toArray();
+
         $typesTrackings = [];
 
         foreach ($types as $type) {
-            // Base structure
             $typesTrackings[$type['model']] = [
                 'label' => $type['label'],
-                'data' => $days->mapWithKeys(fn($day) => [$day => 0])->toArray(),
+                'data' => $daysTemplate,
             ];
+        }
 
-            // Fetch all trackings for this type in one query
-            $trackings = TimeTracking::where('workspace_id', $workspace->id)
-                ->whereNotNull('start_time')
-                ->whereNotNull('end_time')
-                ->whereBetween('start_time', [$startDate, $endDate])
-                ->where('trackable_type', $type['model'])
-                ->get();
-
-            // Group by day and sum elapsed_time
-            $groupedByDay = $trackings
-                ->groupBy(fn($tracking) => $tracking->start_time->toDateString())
-                ->map(fn($items) => $items->sum('elapsed_time'));
-
-            // Merge sums into the pre-filled days
-            foreach ($groupedByDay as $day => $seconds) {
-                $typesTrackings[$type['model']]['data'][$day] = $seconds;
+        foreach ($rows as $row) {
+            if (!isset($typesTrackings[$row->trackable_type])) {
+                continue;
             }
+
+            $typesTrackings[$row->trackable_type]['data'][$row->day] =
+                (int) $row->total_seconds;
         }
 
 

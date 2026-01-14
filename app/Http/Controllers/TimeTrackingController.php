@@ -59,10 +59,14 @@ class TimeTrackingController extends Controller
             $validated['end_time'] = Carbon::parse($validated['end_time'], $workspaceTimezone)->setTimezone('UTC');
         }
 
+        $elapsedTime = Carbon::parse($validated['start_time'], $workspaceTimezone)->diffInSeconds(Carbon::parse($validated['end_time'], $workspaceTimezone));
+
         TimeTracking::create(
             array_merge($validated, [
                 'user_id' => $user->id,
                 'workspace_id' => $user->workspace->id,
+                'elapsed_time' => $elapsedTime,
+                'is_running' => false,
             ])
         );
 
@@ -82,7 +86,6 @@ class TimeTrackingController extends Controller
             'trackable_type' => 'required|string|max:255',
             'start_time' => 'required|date',
             'end_time' => 'required|date',
-            'is_running' => 'required|boolean',
         ]);
 
         // Convert from workspace timezone to UTC for storage
@@ -91,7 +94,12 @@ class TimeTrackingController extends Controller
         $validated['start_time'] = Carbon::parse($validated['start_time'], $workspaceTimezone)->setTimezone('UTC');
         $validated['end_time'] = Carbon::parse($validated['end_time'], $workspaceTimezone)->setTimezone('UTC');
 
-        $timeTracking->update($validated);
+        $elapsedTime = Carbon::parse($validated['start_time'], $workspaceTimezone)->diffInSeconds(Carbon::parse($validated['end_time'], $workspaceTimezone));
+
+        $timeTracking->update(array_merge($validated, [
+            'elapsed_time' => $elapsedTime,
+            'is_running' => false,
+        ]));
 
         return redirect()->back()->with('success', 'Time tracking updated successfully');
     }
