@@ -56,4 +56,9 @@ class Task extends Model
     {
         return $this->morphToMany(Tag::class, 'taggable');
     }
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
 }

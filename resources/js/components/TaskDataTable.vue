@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, h } from 'vue';
+import { type Client } from '@/types';
 import {
     useVueTable,
     getCoreRowModel,
@@ -117,7 +118,7 @@ const columns: ColumnDef<any>[] = [
             );
         },
         cell: ({ row }) => {
-            const client = row.original.client;
+            const client = row.original.client as Client;
             return client ? client.name : '-';
         },
         sortingFn: (rowA, rowB) => {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Vue and Inertia core imports
 import { ref, watch } from 'vue';
-import { Head, router, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { type BreadcrumbItem, type TimeTracking, type Trackable } from '@/types';
 
 // UI Components - Layout
@@ -32,7 +32,6 @@ import {
 // UI Components - Basic Elements
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 
 // UI Components - Select
 import {
@@ -42,6 +41,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+
+// UI Components - DateTimePicker
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 
 // Custom Components
 import TimeTrackingDataTable from '@/components/TimeTrackingDataTable.vue';
@@ -62,11 +64,25 @@ const props = defineProps<{
     types: { label: string, model: string }[];
 }>();
 
+const page = usePage();
+const workspaceTimezone = page.props.workspaceTimezone;
+
+const now = new Date();
+const nowInWorkspaceTimezone = new Date(now.toLocaleString('en-US', { timeZone: workspaceTimezone as string }));
+
+function toLocalDateTimeString(date: Date) {
+    return date.getFullYear() +
+        '-' + String(date.getMonth() + 1).padStart(2, '0') +
+        '-' + String(date.getDate()).padStart(2, '0') +
+        'T' + String(date.getHours()).padStart(2, '0') +
+        ':' + String(date.getMinutes()).padStart(2, '0');
+}
+
 const form = useForm({
     trackable_id: '',
     trackable_type: '',
-    start_time: '',
-    end_time: '',
+    start_time: toLocalDateTimeString(nowInWorkspaceTimezone),
+    end_time: toLocalDateTimeString(nowInWorkspaceTimezone),
 });
 
 const submit = () => {
@@ -139,6 +155,8 @@ const confirmDelete = () => {
         timeTrackingToDelete.value = null;
     }
 };
+
+
 </script>
 
 <template>
@@ -147,8 +165,7 @@ const confirmDelete = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <div class="flex flex-wrap items-end justify-between gap-4">
-                <div></div>
+            <div class="flex flex-wrap items-end justify-end gap-4">
                 <Sheet>
                     <SheetTrigger as-child>
                         <Button variant="default" class="cursor-pointer">Create</Button>
@@ -198,20 +215,22 @@ const confirmDelete = () => {
                                     </span>
                                 </div>
 
-                                <div class="grid grid-cols-4 items-center gap-4">
-                                    <Label for="start_time" class="text-right">Start Time</Label>
-                                    <Input id="start_time" v-model="form.start_time" type="datetime-local"
-                                        class="col-span-4" />
-                                    <span class="text-sm text-red-500 col-span-full" v-if="form.errors.start_time">
+                                <!-- Start Time -->
+                                <div class="flex flex-col gap-2">
+                                    <Label for="edit-start-time">Start Time</Label>
+                                    <DateTimePicker id="edit-start-time" v-model="form.start_time"
+                                        placeholder="Select start date and time" />
+                                    <span class="text-sm text-red-500" v-if="form.errors.start_time">
                                         {{ form.errors.start_time }}
                                     </span>
                                 </div>
 
-                                <div class="grid grid-cols-4 items-center gap-4">
-                                    <Label for="end_time" class="text-right">End Time</Label>
-                                    <Input id="end_time" v-model="form.end_time" type="datetime-local"
-                                        class="col-span-4" />
-                                    <span class="text-sm text-red-500 col-span-full" v-if="form.errors.end_time">
+                                <!-- End Time -->
+                                <div class="flex flex-col gap-2">
+                                    <Label for="edit-end-time">End Time</Label>
+                                    <DateTimePicker id="edit-end-time" v-model="form.end_time"
+                                        placeholder="Select end date and time" />
+                                    <span class="text-sm text-red-500" v-if="form.errors.end_time">
                                         {{ form.errors.end_time }}
                                     </span>
                                 </div>

@@ -139,7 +139,7 @@ class TimeTracking extends Model
 
     public function client()
     {
-        return $this->morphTo();
+        return $this->trackable?->client;
     }
 
     public function user()

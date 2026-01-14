@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, h } from 'vue';
-import { type TimeTracking, type Trackable } from '@/types';
+import { type TimeTracking, type Trackable, type Client } from '@/types';
 import { parseISO, differenceInSeconds } from 'date-fns';
 
 // TanStack Vue Table
@@ -116,6 +116,29 @@ const columns: ColumnDef<TimeTracking>[] = [
         cell: ({ row }) => {
             const trackable = row.getValue('trackable') as Trackable | null;
             return trackable?.title || 'Deleted Item';
+        },
+        sortingFn: (rowA, rowB) => {
+            const a = (rowA.getValue('trackable') as Trackable | null)?.title || '';
+            const b = (rowB.getValue('trackable') as Trackable | null)?.title || '';
+            return a.localeCompare(b);
+        },
+    },
+    {
+        accessorKey: 'client',
+        header: ({ column }) => {
+            return h(
+                Button,
+                {
+                    variant: 'ghost',
+                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+                },
+                () => ['Client', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+            );
+        },
+        cell: ({ row }) => {
+            const trackable = row.getValue('trackable') as Trackable | null;
+            const client = trackable?.client as Client;
+            return client?.name || '-';
         },
         sortingFn: (rowA, rowB) => {
             const a = (rowA.getValue('trackable') as Trackable | null)?.title || '';

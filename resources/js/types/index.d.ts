@@ -100,6 +100,7 @@ export interface Kanban {
 export interface Trackable {
     id: number;
     title: string;
+    client: Client;
 }
 
 export interface TimeTracking {

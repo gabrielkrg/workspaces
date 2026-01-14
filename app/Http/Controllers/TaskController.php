@@ -70,7 +70,9 @@ class TaskController extends Controller
             $query->where('client_id', $request->client_id);
         }
 
-        $tasks = $query->get();
+        $tasks = $query->with([
+            'client:id,name'
+        ])->get();
         $tags = $workspace->tags()->orderBy('name', 'asc')->get();
         $clients = $workspace->clients()->orderBy('name', 'asc')->get();
 
