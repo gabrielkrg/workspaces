@@ -189,36 +189,37 @@ class TimeTrackingController extends Controller
             fn($type) => in_array($type['model'], $selectedTypes, true)
         ));
 
+        $startDateWorkspace = $request->input('start_date')
+            ? Carbon::parse($request->input('start_date'), $workspace->time_zone)->startOfDay()
+            : Carbon::now($workspace->time_zone)->subDays(7)->startOfDay();
 
-        $startDate = $request->input('start_date')
-            ? Carbon::parse($request->input('start_date'))->startOfDay()
-            : Carbon::now()->subDays(7)->startOfDay();
+        $endDateWorkspace = $request->input('end_date')
+            ? Carbon::parse($request->input('end_date'), $workspace->time_zone)->endOfDay()
+            : Carbon::now($workspace->time_zone)->endOfDay();
 
-        $endDate = $request->input('end_date')
-            ? Carbon::parse($request->input('end_date'))->endOfDay()
-            : Carbon::now()->endOfDay();
-
+        // Convert to UTC for DB query
+        $startDateUtc = $startDateWorkspace->copy()->setTimezone('UTC');
+        $endDateUtc   = $endDateWorkspace->copy()->setTimezone('UTC');
 
         $rows = TimeTracking::where('workspace_id', $workspace->id)
             ->whereNotNull('start_time')
             ->whereNotNull('end_time')
-            ->whereBetween('start_time', [$startDate, $endDate])
+            ->whereBetween('start_time', [$startDateUtc, $endDateUtc])
             ->when(!empty($selectedTypes), function ($q) use ($selectedTypes) {
                 $q->whereIn('trackable_type', $selectedTypes);
             })
-            ->selectRaw('
+            ->selectRaw("
                 trackable_type,
-                DATE(start_time) as day,
+                DATE(CONVERT_TZ(start_time, 'UTC', ?)) as day,
                 SUM(elapsed_time) as total_seconds
-            ')
+            ", [$workspace->time_zone])
             ->groupBy('trackable_type', 'day')
             ->get();
 
-
         $days = collect(
             CarbonPeriod::create(
-                $startDate->copy()->startOfDay(),
-                $endDate->copy()->startOfDay()
+                $startDateWorkspace->copy()->startOfDay(),
+                $endDateWorkspace->copy()->startOfDay()
             )
         )->map(fn(Carbon $date) => $date->toDateString());
 
@@ -241,7 +242,6 @@ class TimeTrackingController extends Controller
             $typesTrackings[$row->trackable_type]['data'][$row->day] =
                 (int) $row->total_seconds;
         }
-
 
         return response()->json(['types' => $typesTrackings]);
     }
