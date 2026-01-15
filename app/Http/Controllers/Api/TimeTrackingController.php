@@ -243,6 +243,17 @@ class TimeTrackingController extends Controller
                 (int) $row->total_seconds;
         }
 
-        return response()->json(['types' => $typesTrackings]);
+        $totalHours = $rows->sum('total_seconds') / 3600;
+        $dailyAverage = $totalHours / $days->count();
+        $activeDays = $days->filter(function ($day) use ($rows) {
+            return $rows->where('day', $day)->where('total_seconds', '>', 0)->isNotEmpty();
+        })->count();
+
+        return response()->json([
+            'types' => $typesTrackings,
+            'total_hours' => $totalHours,
+            'daily_average' => $dailyAverage,
+            'active_days' => $activeDays,
+        ]);
     }
 }

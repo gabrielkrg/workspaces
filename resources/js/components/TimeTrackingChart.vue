@@ -36,7 +36,9 @@ const calendarOpen = ref(false)
 
 const stats = ref<{
     types: { label: string; data: number[] }[],
-    days: string[]
+    total_hours: number
+    daily_average: number
+    active_days: number
 } | null>(null)
 
 // Helper to get computed CSS color value
@@ -357,15 +359,10 @@ watch(trackableType, () => {
                 </CardHeader>
                 <CardContent>
                     <div class="flex items-baseline gap-2">
-                        <span class="text-2xl font-bold">123 h</span>
-                        <!-- <span v-if="Number(percentageChange) !== 0" class="text-xs flex items-center gap-0.5"
-                            :class="Number(percentageChange) >= 0 ? 'text-green-500' : 'text-red-500'">
-                            <TrendingUp v-if="Number(percentageChange) >= 0" class="size-3" />
-                            {{ percentageChange }}%
-                        </span> -->
+                        <span class="text-2xl font-bold">{{ decimalHoursToHM(stats?.total_hours ?? 0) }}</span>
                     </div>
                     <p class="text-xs text-muted-foreground">
-                        <!-- {{ stats?.start_date }} - {{ stats?.end_date }} -->
+                        {{ formattedDateRange }}
                     </p>
                 </CardContent>
             </Card>
@@ -377,7 +374,7 @@ watch(trackableType, () => {
                     <Clock class="size-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div class="text-2xl font-bold">123 h</div>
+                    <div class="text-2xl font-bold">{{ decimalHoursToHM(stats?.daily_average ?? 0) }}</div>
                     <p class="text-xs text-muted-foreground">Per day in period</p>
                 </CardContent>
             </Card>
@@ -389,7 +386,7 @@ watch(trackableType, () => {
                     <Clock class="size-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div class="text-2xl font-bold">123</div>
+                    <div class="text-2xl font-bold">{{ stats?.active_days }}</div>
                     <p class="text-xs text-muted-foreground">Days with tracked time</p>
                 </CardContent>
             </Card>
