@@ -31,6 +31,7 @@ import type { Trackable } from '@/types'
 import { useTimerStore } from '@/stores/timer'
 import { router } from '@inertiajs/vue3'
 import { cn } from '@/lib/utils'
+import { DateTimePicker } from '@/components/ui/date-time-picker'
 
 
 const trackableType = ref('');
@@ -335,17 +336,19 @@ watch(trackableType, async () => {
                         <p class="text-xs text-muted-foreground">Adjust times if needed</p>
 
                         <div class="flex flex-col gap-2">
-                            <Label for="start_time">Start Time</Label>
-                            <Input id="start_time" v-model="form.start_time" type="datetime-local" class="w-full" />
-                            <span class="text-xs text-red-500" v-if="form.errors.start_time">
+                            <Label for="start-time">Start Time</Label>
+                            <DateTimePicker id="start-time" v-model="form.start_time"
+                                placeholder="Select start date and time" />
+                            <span class="text-sm text-red-500" v-if="form.errors.start_time">
                                 {{ form.errors.start_time }}
                             </span>
                         </div>
 
                         <div class="flex flex-col gap-2">
-                            <Label for="end_time">End Time</Label>
-                            <Input id="end_time" v-model="form.end_time" type="datetime-local" class="w-full" />
-                            <span class="text-xs text-red-500" v-if="form.errors.end_time">
+                            <Label for="end-time">End Time</Label>
+                            <DateTimePicker id="end-time" v-model="form.end_time"
+                                placeholder="Select end date and time" />
+                            <span class="text-sm text-red-500" v-if="form.errors.end_time">
                                 {{ form.errors.end_time }}
                             </span>
                         </div>

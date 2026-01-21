@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { CalendarIcon } from 'lucide-vue-next'
 import { CalendarDate } from '@internationalized/date'
 import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
 
 const props = defineProps<{
     modelValue: string
@@ -121,8 +122,7 @@ const onTimeChange = (e: Event) => {
             <Calendar :model-value="calendarValue" @update:model-value="onCalendarSelect" />
             <div class="border-t p-3">
                 <Label for="time-picker" class="text-xs text-muted-foreground">Time</Label>
-                <input id="time-picker" type="time" v-model="localTime" @change="onTimeChange"
-                    class="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm" />
+                <Input type="time" v-model="localTime" @change="onTimeChange" />
             </div>
         </PopoverContent>
     </Popover>
