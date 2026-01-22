@@ -48,6 +48,7 @@ class TimeTrackingController extends Controller
             'trackable_type' => 'required|string|max:255',
             'start_time' => 'required|date',
             'end_time' => 'nullable|date',
+            'is_running' => 'nullable|boolean',
         ]);
 
         // Convert from workspace timezone to UTC for storage
@@ -59,14 +60,17 @@ class TimeTrackingController extends Controller
             $validated['end_time'] = Carbon::parse($validated['end_time'], $workspaceTimezone)->setTimezone('UTC');
         }
 
-        $elapsedTime = Carbon::parse($validated['start_time'], $workspaceTimezone)->diffInSeconds(Carbon::parse($validated['end_time'], $workspaceTimezone));
+        $elapsedTime = 0;
+        if (!empty($validated['end_time'])) {
+            $elapsedTime = Carbon::parse($validated['start_time'], $workspaceTimezone)->diffInSeconds(Carbon::parse($validated['end_time'], $workspaceTimezone));
+        }
 
         TimeTracking::create(
             array_merge($validated, [
                 'user_id' => $user->id,
                 'workspace_id' => $user->workspace->id,
                 'elapsed_time' => $elapsedTime,
-                'is_running' => false,
+                'is_running' => $validated['is_running'] ?? false,
             ])
         );
 
@@ -114,6 +118,34 @@ class TimeTrackingController extends Controller
 
         $timeTracking->delete();
 
-        return redirect()->route('time-tracking.index')->with('success', 'Time tracking deleted successfully');
+        return redirect()->back()->with('success', 'Time tracking deleted successfully');
+    }
+
+    public function start(Request $request)
+    {
+        $user = Auth::user();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
+
+        $this->authorize('update', $workspace);
+
+        $validated = $request->validate([
+            'trackable_id' => 'required|integer',
+            'trackable_type' => 'required|string|max:255',
+        ]);
+
+        if (TimeTracking::where('user_id', $user->id)->where('workspace_id', $workspace->id)->where('is_running', true)->exists()) {
+            return redirect()->back()->with('error', 'You have a running time tracking');
+        }
+
+        TimeTracking::create(array_merge($validated, [
+            'user_id' => $user->id,
+            'workspace_id' => $workspace->id,
+            'start_time' => Carbon::now('UTC'),
+            'elapsed_time' => null,
+            'is_running' => true,
+        ]));
+
+        return redirect()->back()->with('success', 'Time tracking started successfully');
     }
 }

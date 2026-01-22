@@ -51,6 +51,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('time-tracking', [TimeTrackingController::class, 'store'])->name('time-tracking.store');
     Route::put('time-tracking/{timeTracking}', [TimeTrackingController::class, 'update'])->name('time-tracking.update');
     Route::delete('time-tracking/{timeTracking}', [TimeTrackingController::class, 'destroy'])->name('time-tracking.destroy');
+    Route::post('time-tracking/start', [TimeTrackingController::class, 'start'])->name('time-tracking.start');
 
     // Kanban
     Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
