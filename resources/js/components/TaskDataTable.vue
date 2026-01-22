@@ -36,9 +36,9 @@ import {
     Trash2,
     Highlighter,
     Kanban,
-    Check
 } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
+import StartTimer from '@/components/StartTimer.vue';
 
 const props = defineProps<{
     tasks: any[];
@@ -189,6 +189,7 @@ const columns: ColumnDef<any>[] = [
                     {},
                     {
                         default: () => [
+                            h(StartTimer, { trackable_id: task.id, trackable_type: 'App\\Models\\Task' }),
                             h(DropdownMenuTrigger, { asChild: true }, () =>
                                 h(Button, { variant: 'ghost', class: 'h-8 w-8 p-0' }, () =>
                                     h(MoreHorizontal, { class: 'h-4 w-4' })

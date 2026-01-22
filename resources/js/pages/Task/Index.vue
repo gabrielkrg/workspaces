@@ -25,6 +25,7 @@ import OrderFilter from './Filters/OrderFilter.vue';
 
 import CreateTask from './CreateTask.vue';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import HeadingLarge from '@/components/HeadingLarge.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -154,28 +155,11 @@ watch(
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-2 rounded-xl p-4">
-            <Collapsible v-model:open="isFiltersOpen" class="w-full space-y-2">
-                <CollapsibleTrigger as-child>
-                    <div class="inline-flex items-center justify-between gap-2 cursor-pointer">
-                        <h3 class="font-semibold text-sm">Filters</h3>
-                        <Button variant="ghost" size="sm" class="w-9 p-0">
-                            <ChevronDown
-                                :class="cn('h-4 w-4 transition-transform duration-200', isFiltersOpen ? 'rotate-180' : '')" />
-                            <span class="sr-only">Toggle filters</span>
-                        </Button>
-                    </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent
-                    class="md:block md:h-auto md:overflow-visible data-[state=closed]:hidden md:data-[state=closed]:block">
-                    <div class="flex flex-wrap items-center gap-4 w-full">
-                        <TitleFilter v-model="filtersForm.search" @submit="submitFilters" />
-                        <TagFilter v-model="filtersForm.tags" :tags="tags" />
-                        <ClientFilter v-model="filtersForm.client_id" :clients="clients" />
-                        <StatusFilter v-model="filtersForm.done" />
-                        <OrderFilter v-model="filtersForm.order" />
-                    </div>
-                </CollapsibleContent>
-            </Collapsible>
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <HeadingLarge title="Tasks" description="Here's a list of your tasks!" />
+                <CreateTask :clients="clients" :tags="tags" />
+            </div>
+
 
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <!-- progress -->
@@ -191,7 +175,29 @@ watch(
                     </div>
                 </div>
 
-                <CreateTask :clients="clients" :tags="tags" />
+                <Collapsible v-model:open="isFiltersOpen" class="w-full space-y-2">
+                    <CollapsibleTrigger as-child>
+                        <div class="inline-flex items-center justify-between gap-2 cursor-pointer">
+                            <h3 class="font-semibold text-sm">Filters</h3>
+                            <Button variant="ghost" size="sm" class="w-9 p-0">
+                                <ChevronDown
+                                    :class="cn('h-4 w-4 transition-transform duration-200', isFiltersOpen ? 'rotate-180' : '')" />
+                                <span class="sr-only">Toggle filters</span>
+                            </Button>
+                        </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent
+                        class="md:block md:h-auto md:overflow-visible data-[state=closed]:hidden md:data-[state=closed]:block">
+                        <div class="flex flex-wrap items-center gap-4 w-full">
+                            <TitleFilter v-model="filtersForm.search" @submit="submitFilters" />
+                            <TagFilter v-model="filtersForm.tags" :tags="tags" />
+                            <ClientFilter v-model="filtersForm.client_id" :clients="clients" />
+                            <StatusFilter v-model="filtersForm.done" />
+                            <OrderFilter v-model="filtersForm.order" />
+                        </div>
+                    </CollapsibleContent>
+                </Collapsible>
+
             </div>
 
             <TaskDataTable :tasks="tasks" @toggle-done="(task) => updateTask(task, { done: !task.done })"

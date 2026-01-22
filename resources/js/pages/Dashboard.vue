@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-
+import HeadingLarge from '@/components/HeadingLarge.vue';
 import { Kanban, ListTodo, Ticket, Users } from 'lucide-vue-next';
 import DashboardStatCard from '@/components/DashboardStatCard.vue';
 import TimeTrackingChart from '@/components/TimeTrackingChart.vue';
@@ -35,10 +35,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex-1 space-y-6 md:p-8 md:pt-6 p-4 pt-2">
             <div>
-                <h2 class='text-2xl font-bold tracking-tight'>Dashboard</h2>
-                <p class='text-muted-foreground'>
-                    Here&apos;s a overview of your workspace!
-                </p>
+                <HeadingLarge title="Dashboard" description="Here's a overview of your workspace!" />
             </div>
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <DashboardStatCard :href="route('kanban.index')" title="Cards" :value="workspace.cards_count"
