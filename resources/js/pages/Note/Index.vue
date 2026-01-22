@@ -30,6 +30,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { PropType, ref, computed } from 'vue';
 import type { Note } from '@/types';
 import HeadingLarge from '@/components/HeadingLarge.vue';
+import NotesDataTable from '@/components/NotesDataTable.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -57,12 +58,22 @@ const submit = () => {
 
 // update note
 const currentNote = ref(props.currentNote);
+const isEditSheetOpen = ref(false);
 
 const selectNote = (note: Note) => {
     currentNote.value = note;
 
     updateForm.title = note.title;
     updateForm.content = note.content;
+};
+
+const handleEdit = (note: Note) => {
+    selectNote(note);
+    isEditSheetOpen.value = true;
+};
+
+const handleDelete = (noteId: number) => {
+    deleteNote(noteId);
 };
 
 const updateForm = useForm({
@@ -73,6 +84,8 @@ const updateForm = useForm({
 const updateNote = () => {
     updateForm.put(route('notes.update', { note: currentNote.value?.id }), {
         onSuccess: () => {
+            currentNote.value = null;
+            isEditSheetOpen.value = false;
             router.get(route('notes.index'), {
                 preserveState: true,
                 replace: true,
@@ -136,99 +149,33 @@ const hasNotes = computed(() => props.notes && props.notes.length > 0);
                 </Dialog>
             </div>
 
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4"
-                v-if="hasNotes">
-                <div v-for="note in notes" :key="note.id" class="group flex items-start gap-4 border-b p-4">
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white cursor-pointer"
-                                @click="router.visit(route('notes.show', { note: note.id }))">
-                                {{ note.title }}
-                            </h2>
+            <NotesDataTable :notes="notes || []" @edit="handleEdit" @delete="handleDelete" />
+
+            <!-- Edit Sheet -->
+            <Sheet v-model:open="isEditSheetOpen">
+                <SheetContent>
+                    <form @submit.prevent="updateNote()" v-if="currentNote">
+                        <SheetHeader>
+                            <SheetTitle> Edit note </SheetTitle>
+                            <SheetDescription> Click save when you're done.
+                            </SheetDescription>
+                        </SheetHeader>
+                        <div class="grid gap-4 p-4">
+                            <div class="grid grid-cols-4 items-center gap-4">
+                                <Label for="title" class="text-right"> Title </Label>
+                                <Input id="title" v-model="updateForm.title" class="col-span-4" />
+                                <span class="text-sm text-red-500 col-span-full"
+                                    v-if="updateForm.errors.title">
+                                    {{ updateForm.errors.title }}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="flex items-start justify-end">
-                        <Popover class="relative">
-                            <PopoverTrigger as-child>
-                                <button class="cursor-pointer p-2">
-                                    <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
-                                </button>
-                            </PopoverTrigger>
-
-                            <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
-                                align="end">
-                                <Sheet>
-                                    <SheetTrigger as-child>
-                                        <SheetClose as-child>
-                                            <div @click="selectNote(note)"
-                                                class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
-                                                Edit
-                                            </div>
-                                        </SheetClose>
-                                    </SheetTrigger>
-                                    <SheetContent>
-                                        <form @submit.prevent="updateNote()">
-                                            <SheetHeader>
-                                                <SheetTitle> Edit note </SheetTitle>
-                                                <SheetDescription> Click save when you're done.
-                                                </SheetDescription>
-                                            </SheetHeader>
-                                            <div class="grid gap-4 p-4">
-                                                <div class="grid grid-cols-4 items-center gap-4">
-                                                    <Label for="title" class="text-right"> Title </Label>
-                                                    <Input id="title" v-model="updateForm.title" class="col-span-4" />
-                                                    <span class="text-sm text-red-500 col-span-full"
-                                                        v-if="updateForm.errors.title">
-                                                        {{ updateForm.errors.title }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <SheetFooter>
-                                                <Button type="submit"> Save changes </Button>
-                                            </SheetFooter>
-                                        </form>
-                                    </SheetContent>
-                                </Sheet>
-
-                                <Button variant="ghost"
-                                    class="block w-full cursor-pointer px-4 py-2 text-left text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-none"
-                                    @click="router.visit(route('notes.show', { note: note.id }))">
-                                    View
-                                </Button>
-
-                                <AlertDialog>
-                                    <AlertDialogTrigger as-child>
-                                        <div
-                                            class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900">
-                                            Delete
-                                        </div>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone. This will remove the note.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel class="cursor-pointer">Cancel</AlertDialogCancel>
-
-                                            <Button variant="destructive" type="button" class="cursor-pointer"
-                                                @click="note.id && deleteNote(note.id)">
-                                                Delete
-                                            </Button>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                </div>
-            </div>
-            <div v-else class="flex h-32 items-center justify-center rounded-lg border">
-                <p class="text-gray-800 dark:text-gray-100">There are no notes yet</p>
-            </div>
+                        <SheetFooter>
+                            <Button type="submit"> Save changes </Button>
+                        </SheetFooter>
+                    </form>
+                </SheetContent>
+            </Sheet>
         </div>
     </AppLayout>
 </template>

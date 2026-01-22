@@ -20,6 +20,7 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import { EllipsisVertical } from 'lucide-vue-next';
 import { onMounted, onUnmounted, ref } from 'vue';
 import HeadingLarge from '@/components/HeadingLarge.vue';
+import ClientsDataTable from '@/components/ClientsDataTable.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -65,6 +66,7 @@ const handleClickOutside = (event) => {
 };
 
 const selectedClient = ref(null);
+const isEditSheetOpen = ref(false);
 
 const updateForm = useForm({
     name: '',
@@ -88,12 +90,23 @@ const selectClient = (client) => {
     updateForm.zip = client.zip;
 };
 
+const handleEdit = (client) => {
+    selectClient(client);
+    isEditSheetOpen.value = true;
+};
+
+const handleDelete = (clientId) => {
+    deleteClient(clientId);
+};
+
 const update = (clientId) => {
     if (selectedClient.value == null) return;
 
     updateForm.put(route('clients.update', clientId), {
         onSuccess: () => {
             updateForm.reset();
+            selectedClient.value = null;
+            isEditSheetOpen.value = false;
 
             router.get(route('clients.index'), {
                 preserveState: true,
@@ -184,125 +197,61 @@ onUnmounted(() => {
                 </Sheet>
             </div>
 
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min p-4"
-                v-if="clients.length > 0">
-                <!-- clients -->
-                <div v-for="client in clients" :key="client.id" class="group flex items-start gap-4 border-b p-4">
+            <ClientsDataTable :clients="clients || []" @edit="handleEdit" @delete="handleDelete" />
 
-                    <!-- Name -->
-                    <div class="flex-1 min-w-0">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                            {{ client.name }}
-                        </h2>
-                    </div>
+            <!-- Edit Sheet -->
+            <Sheet v-model:open="isEditSheetOpen">
+                <SheetContent>
+                    <form @submit.prevent="update(selectedClient?.id)" v-if="selectedClient">
+                        <SheetHeader>
+                            <SheetTitle>Edit client</SheetTitle>
+                            <SheetDescription>Click save when you're done.</SheetDescription>
+                        </SheetHeader>
+                        <div class="grid gap-4 p-4">
+                            <div class="grid grid-cols-4 items-center gap-4">
+                                <Label for="name" class="text-right">Name</Label>
+                                <Input id="name" v-model="updateForm.name" class="col-span-4" />
+                                <span class="text-sm text-red-500 col-span-full"
+                                    v-if="updateForm.errors.name">
+                                    {{ updateForm.errors.name }}
+                                </span>
+                            </div>
 
-                    <!-- Actions -->
-                    <div class="flex items-start justify-end">
-                        <Popover class="relative">
-                            <PopoverTrigger as-child>
-                                <button class="cursor-pointer p-2">
-                                    <EllipsisVertical class="h-5 w-5 text-gray-900 dark:text-white" />
-                                </button>
-                            </PopoverTrigger>
+                            <div class="grid grid-cols-4 items-center gap-4">
+                                <Label for="email" class="text-right">Email</Label>
+                                <Input id="email" v-model="updateForm.email" class="col-span-4" />
+                                <span class="text-sm text-red-500 col-span-full"
+                                    v-if="updateForm.errors.email">
+                                    {{ updateForm.errors.email }}
+                                </span>
+                            </div>
 
-                            <PopoverContent class="bg-sidebar absolute right-5 z-50 mt-2 w-40 rounded p-0 shadow"
-                                align="end">
-                                <Sheet>
-                                    <SheetTrigger as-child>
-                                        <div @click="selectClient(client)"
-                                            class="dark:hover:bg-muted block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100">
-                                            Edit
-                                        </div>
-                                    </SheetTrigger>
-                                    <SheetContent>
-                                        <form @submit.prevent="update(client.id)">
-                                            <SheetHeader>
-                                                <SheetTitle>Edit client</SheetTitle>
-                                                <SheetDescription>Click save when you're done.</SheetDescription>
-                                            </SheetHeader>
-                                            <div class="grid gap-4 p-4">
-                                                <div class="grid grid-cols-4 items-center gap-4">
-                                                    <Label for="name" class="text-right">Name</Label>
-                                                    <Input id="name" v-model="updateForm.name" class="col-span-4" />
-                                                    <span class="text-sm text-red-500 col-span-full"
-                                                        v-if="updateForm.errors.name">
-                                                        {{ updateForm.errors.name }}
-                                                    </span>
-                                                </div>
+                            <div class="grid grid-cols-4 items-center gap-4">
+                                <Label for="phone" class="text-right">Phone</Label>
+                                <Input id="phone" v-model="updateForm.phone" class="col-span-4" />
+                                <span class="text-sm text-red-500 col-span-full"
+                                    v-if="updateForm.errors.phone">
+                                    {{ updateForm.errors.phone }}
+                                </span>
+                            </div>
 
-                                                <div class="grid grid-cols-4 items-center gap-4">
-                                                    <Label for="email" class="text-right">Email</Label>
-                                                    <Input id="email" v-model="updateForm.email" class="col-span-4" />
-                                                    <span class="text-sm text-red-500 col-span-full"
-                                                        v-if="updateForm.errors.email">
-                                                        {{ updateForm.errors.email }}
-                                                    </span>
-                                                </div>
+                            <div class="grid grid-cols-4 items-center gap-4">
+                                <Label for="address" class="text-right">Address</Label>
+                                <Input id="address" v-model="updateForm.address"
+                                    class="col-span-4" />
+                                <span class="text-sm text-red-500 col-span-full"
+                                    v-if="updateForm.errors.address">
+                                    {{ updateForm.errors.address }}
+                                </span>
+                            </div>
 
-                                                <div class="grid grid-cols-4 items-center gap-4">
-                                                    <Label for="phone" class="text-right">Phone</Label>
-                                                    <Input id="phone" v-model="updateForm.phone" class="col-span-4" />
-                                                    <span class="text-sm text-red-500 col-span-full"
-                                                        v-if="updateForm.errors.phone">
-                                                        {{ updateForm.errors.phone }}
-                                                    </span>
-                                                </div>
-
-                                                <div class="grid grid-cols-4 items-center gap-4">
-                                                    <Label for="address" class="text-right">Address</Label>
-                                                    <Input id="address" v-model="updateForm.address"
-                                                        class="col-span-4" />
-                                                    <span class="text-sm text-red-500 col-span-full"
-                                                        v-if="updateForm.errors.address">
-                                                        {{ updateForm.errors.address }}
-                                                    </span>
-                                                </div>
-
-                                            </div>
-                                            <SheetFooter>
-                                                <Button type="submit">Save changes</Button>
-                                            </SheetFooter>
-                                        </form>
-                                    </SheetContent>
-                                </Sheet>
-                                <Dialog>
-                                    <DialogTrigger as-child>
-                                        <div class="block w-full cursor-pointer px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
-                                            variant="destructive">
-                                            Delete
-                                        </div>
-                                    </DialogTrigger>
-
-                                    <DialogContent>
-                                        <DialogHeader class="space-y-3">
-                                            <DialogTitle>Are you sure you want to delete this client?
-                                            </DialogTitle>
-                                            <DialogDescription>
-                                                Once your client is deleted, there's no way to recover it.
-                                            </DialogDescription>
-                                        </DialogHeader>
-
-                                        <DialogFooter class="gap-2">
-                                            <DialogClose as-child>
-                                                <Button variant="secondary" class="cursor-pointer"
-                                                    type="button">Cancel</Button>
-                                            </DialogClose>
-
-                                            <Button variant="destructive" class="cursor-pointer" type="button"
-                                                @click="deleteClient(client.id)">
-                                                Delete client
-                                            </Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                </Dialog>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                </div>
-            </div>
-            <div v-else class="flex h-32 items-center justify-center rounded-lg border">
-                <p class="text-gray-800 dark:text-gray-100">There are no clients yet</p>
-            </div>
+                        </div>
+                        <SheetFooter>
+                            <Button type="submit">Save changes</Button>
+                        </SheetFooter>
+                    </form>
+                </SheetContent>
+            </Sheet>
         </div>
     </AppLayout>
 </template>
