@@ -14,6 +14,8 @@ import draggable from 'vuedraggable';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { Kanban, Tag } from '@/types';
+import HeadingLarge from '@/components/HeadingLarge.vue';
+import CreateKanban from '@/components/kanban/CreateKanban.vue';
 
 defineProps<{
     kanbans: Kanban[];
@@ -28,59 +30,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const newColumnName = ref('');
-const columns = ref<Column[]>([]);
-
-const form = useForm({
-    name: '',
-    columns: [] as unknown as Record<string, any>[],
-});
-
-const addColumn = (columnName: string) => {
-    if (!columnName.trim()) return;
-
-    const newColumn: Column = {
-        name: columnName,
-        order: columns.value.length + 1,
-    };
-
-    columns.value.push(newColumn);
-
-    form.columns = columns.value.map(column => ({
-        name: column.name,
-        order: column.order,
-    }));
-
-    newColumnName.value = '';
-};
-
-const removeColumn = (index: number) => {
-    columns.value.splice(index, 1);
-    columns.value.forEach((column, i) => {
-        column.order = i + 1;
-    });
-
-    form.columns = columns.value.map(column => ({
-        name: column.name,
-        order: column.order,
-    }));
-};
-
-const columnOrder = () => {
-    form.columns.forEach((column, index) => {
-        column.order = index + 1;
-        column.id = column.id;
-        column.name = column.name;
-    });
-};
-
-const submit = () => {
-    form.post(route('kanban.store'), {
-        onSuccess: () => {
-            form.reset();
-            columns.value = [];
-        },
-    });
-};
 
 const formUpdateKanban = useForm({
     name: '',
@@ -155,68 +104,9 @@ const updateColumnOrder = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <div class="flex flex-wrap items-end justify-between gap-4">
-                <Sheet>
-                    <SheetTrigger as-child>
-                        <Button variant="default" class="cursor-pointer"> Create </Button>
-                    </SheetTrigger>
-                    <SheetContent>
-                        <form @submit.prevent="submit">
-                            <SheetHeader>
-                                <SheetTitle>Create Kanban</SheetTitle>
-                                <SheetDescription>Fill the fields to create a new Kanban. Click save when you're done.
-                                </SheetDescription>
-                            </SheetHeader>
-                            <div class="grid gap-4 p-4">
-                                <div class="grid grid-cols-4 items-center gap-4">
-                                    <Label for="name" class="text-right">Name</Label>
-                                    <Input id="name" v-model="form.name" class="col-span-4" />
-                                    <span class="text-sm text-red-500 col-span-full" v-if="form.errors.name">
-                                        {{ form.errors.name }}
-                                    </span>
-                                </div>
-
-                                <div class="grid grid-cols-4 items-center gap-4">
-                                    <Label for="edit-columns" class="text-right">Columns</Label>
-
-                                    <div class="col-span-4">
-                                        <draggable v-model="form.columns" :item-key="'id'" handle=".handle"
-                                            class="flex flex-col gap-2" @change="columnOrder">
-                                            <template #item="{ element: column, index }">
-                                                <div class="flex items-center gap-2">
-                                                    <div class="cursor-move px-2 handle">
-                                                        <GripVertical class="h-4 w-4 text-gray-400" />
-                                                    </div>
-                                                    <div class="flex-1">
-                                                        <Input v-model="column.name" class="bg-gray-100" />
-                                                    </div>
-                                                    <Button variant="destructive" type="button" size="icon"
-                                                        :class="cn('cursor-pointer')" @click="removeColumn(index)">
-                                                        <Trash2 class="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </template>
-                                        </draggable>
-                                        <div class="mt-2 flex gap-2">
-                                            <Input id="edit-new-column" v-model="newColumnName"
-                                                placeholder="Add new column..."
-                                                @keyup.enter="addColumn(newColumnName)" />
-                                            <Button type="button" @click="addColumn(newColumnName)">
-                                                Add
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    <span class="text-sm text-red-500 col-span-full" v-if="form.errors.columns">
-                                        {{ form.errors.columns }}
-                                    </span>
-                                </div>
-                            </div>
-                            <SheetFooter>
-                                <Button type="submit" class="cursor-pointer">Save</Button>
-                            </SheetFooter>
-                        </form>
-                    </SheetContent>
-                </Sheet>
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <HeadingLarge title="Kanbans" description="Here's a list of your kanbans!" />
+                <CreateKanban />
             </div>
 
             <!-- Kanbans List -->
