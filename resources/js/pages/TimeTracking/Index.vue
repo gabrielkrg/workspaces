@@ -48,6 +48,7 @@ import { DateTimePicker } from '@/components/ui/date-time-picker';
 // Custom Components
 import TimeTrackingDataTable from '@/components/TimeTrackingDataTable.vue';
 import EditTimeTrackingSheet from '@/components/EditTimeTrackingSheet.vue';
+import HeadingLarge from '@/components/HeadingLarge.vue';
 
 // Third-party libraries
 import axios from 'axios';
@@ -164,8 +165,9 @@ const confirmDelete = () => {
     <Head title="Time Tracking" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <div class="flex flex-wrap items-end justify-end gap-4">
+        <div class="flex-1 space-y-6 md:p-8 md:pt-6 p-4 pt-2">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <HeadingLarge title="Time Tracking" description="Track and manage your time entries!" />
                 <Sheet>
                     <SheetTrigger as-child>
                         <Button variant="default" class="cursor-pointer">Create</Button>

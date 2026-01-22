@@ -154,8 +154,8 @@ watch(
     <Head title="Tasks" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-2 rounded-xl p-4">
-            <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="flex-1 space-y-6 md:p-8 md:pt-6 p-4 pt-2">
+            <div class="flex flex-wrap items-center justify-between gap-4">
                 <HeadingLarge title="Tasks" description="Here's a list of your tasks!" />
                 <CreateTask :clients="clients" :tags="tags" />
             </div>

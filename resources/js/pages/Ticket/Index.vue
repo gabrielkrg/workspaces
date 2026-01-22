@@ -24,6 +24,7 @@ import {
 
 // Popover Components
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import HeadingLarge from '@/components/HeadingLarge.vue';
 
 // Select Components
 import Select from '@/components/ui/select/Select.vue';
@@ -128,9 +129,9 @@ const deleteTicket = (id: number) => {
     <Head title="Tickets" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <div class="flex flex-wrap items-end justify-between gap-4">
-                <div></div>
+        <div class="flex-1 space-y-6 md:p-8 md:pt-6 p-4 pt-2">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <HeadingLarge title="Tickets" description="Here's a list of your tickets!" />
                 <Sheet>
                     <SheetTrigger as-child>
                         <Button variant="default" class="cursor-pointer"> Create </Button>

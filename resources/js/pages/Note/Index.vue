@@ -29,6 +29,7 @@ import { EllipsisVertical } from 'lucide-vue-next';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PropType, ref, computed } from 'vue';
 import type { Note } from '@/types';
+import HeadingLarge from '@/components/HeadingLarge.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -103,9 +104,9 @@ const hasNotes = computed(() => props.notes && props.notes.length > 0);
     <Head title="Notes" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-            <div class="flex flex-wrap items-end justify-between gap-4">
-                <div></div>
+        <div class="flex-1 space-y-6 md:p-8 md:pt-6 p-4 pt-2">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <HeadingLarge title="Notes" description="Here's a list of your notes!" />
                 <Dialog>
                     <DialogTrigger as-child>
                         <Button variant="default" class="cursor-pointer"> Create </Button>
