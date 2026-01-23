@@ -8,20 +8,18 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\CardController;
-use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TimeTrackingController;
 use App\Http\Controllers\ClientController;
+use Inertia\Inertia;
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', function () {
-        return redirect()->route('dashboard');
-    })->name('home');
+// Welcome page - accessible to everyone
+Route::get('/', function () {
+    return Inertia::render('Welcome');
+})->name('home');
 
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-});
 
 Route::middleware(['auth'])->group(function () {
-
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     // Tasks
     Route::get('tasks', [TaskController::class, 'index'])->name('tasks.index');
     Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');

@@ -12,20 +12,24 @@ rm -f bootstrap/cache/routes-v7.php
 rm -f bootstrap/cache/services.php
 rm -f bootstrap/cache/packages.php
 
-# 2. Limpar via Artisan (se possível)
+# 2. Limpar cache de pacotes antes de regenerar autoload
+echo "2. Limpando cache de pacotes..."
+rm -f bootstrap/cache/packages.php
+
+# 3. Limpar via Artisan (se possível)
 php artisan optimize:clear 2>/dev/null || echo "⚠️  Não foi possível executar optimize:clear"
 
-# 3. Regenerar autoload do Composer
-echo "2. Regenerando autoload do Composer..."
-composer dump-autoload --optimize --no-dev
+# 4. Regenerar autoload do Composer (sem --no-dev para evitar problemas com package discovery)
+echo "3. Regenerando autoload do Composer..."
+composer dump-autoload --optimize
 
-# 4. Limpar cache de storage
-echo "3. Limpando cache de storage..."
+# 5. Limpar cache de storage
+echo "4. Limpando cache de storage..."
 rm -rf storage/framework/cache/data/*
 rm -rf storage/framework/views/*
 
-# 5. Recriar caches (apenas se não houver erros)
-# echo "4. Recriando caches..."
+# 6. Recriar caches (apenas se não houver erros)
+# echo "5. Recriando caches..."
 # php artisan config:cache
 # php artisan route:cache
 # php artisan view:cache
