@@ -15,14 +15,12 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { Button } from '@/components/ui/button'
-import { Clock, TrendingUp, CalendarIcon } from 'lucide-vue-next'
+import { Clock, CalendarIcon } from 'lucide-vue-next'
 
 const types = [
     { label: 'Task', model: 'App\\Models\\Task' },
     { label: 'Card', model: 'App\\Models\\Card' },
-    { label: 'Ticket', model: 'App\\Models\\Ticket' },
 ]
-
 
 const loading = ref(false)
 const trackableType = ref<string[]>(
