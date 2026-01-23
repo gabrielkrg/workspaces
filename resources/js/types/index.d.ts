@@ -18,12 +18,18 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface Translations {
+    [key: string]: string | Translations;
+}
+
 export interface SharedData extends PageProps {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
+    locale: string;
+    translations: Translations;
 }
 
 export interface Workspace {
