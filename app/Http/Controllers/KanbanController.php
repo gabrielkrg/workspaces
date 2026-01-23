@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Kanban;
 use App\Models\Workspace;
 use App\Models\Card;
+use App\Services\KanbanCloneService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -198,5 +199,29 @@ class KanbanController extends Controller
         }
 
         return redirect()->back()->with('success', 'Cards created successfully');
+    }
+
+    public function clone(Request $request, Kanban $kanban)
+    {
+        $request->validate([
+            'workspace_id' => 'required|integer|exists:workspaces,id',
+        ]);
+
+        $user = Auth::user();
+
+        $workspace = Workspace::findOrFail($user->workspace_id);
+        $targetWorkspace = Workspace::findOrFail($request->workspace_id);
+
+        $this->authorize('update', $workspace);
+        $this->authorize('update', $targetWorkspace);
+
+        if ($workspace->id === $targetWorkspace->id) {
+            return redirect()->back()->with('error', 'You cannot clone a kanban to the same workspace');
+        }
+
+        $cloneService = new KanbanCloneService();
+        $cloneService->clone($kanban, $request->workspace_id, $user);
+
+        return redirect()->back()->with('success', 'Kanban cloned successfully');
     }
 }

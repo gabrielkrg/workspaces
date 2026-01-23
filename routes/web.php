@@ -59,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('kanban', [KanbanController::class, 'store'])->name('kanban.store');
     Route::put('kanban/{kanban}', [KanbanController::class, 'update'])->name('kanban.update');
     Route::delete('kanban/{kanban}', [KanbanController::class, 'delete'])->name('kanban.delete');
+    Route::post('kanban/{kanban}/clone', [KanbanController::class, 'clone'])->name('kanban.clone');
 
     // Columns
     Route::post('columns/{kanban}', [ColumnController::class, 'store'])->name('columns.store');
