@@ -29,16 +29,16 @@ const mainNavItems: NavItem[] = [
         href: '/tags',
         icon: Tags,
     },
-    {
-        title: 'Notes',
-        href: '/notes',
-        icon: NotebookText,
-    },
-    {
-        title: 'Tickets',
-        href: '/tickets',
-        icon: Ticket,
-    },
+    // {
+    //     title: 'Notes',
+    //     href: '/notes',
+    //     icon: NotebookText,
+    // },
+    // {
+    //     title: 'Tickets',
+    //     href: '/tickets',
+    //     icon: Ticket,
+    // },
     {
         title: 'Clients',
         href: '/clients',

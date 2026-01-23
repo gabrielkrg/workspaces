@@ -28,31 +28,6 @@ Route::middleware(['auth'])->group(function () {
     Route::put('tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('tasks/{task}', [TaskController::class, 'delete'])->name('tasks.delete');
 
-    // Tags
-    Route::get('tags', [TagController::class, 'index'])->name('tags.index');
-    Route::post('tags', [TagController::class, 'store'])->name('tags.store');
-    Route::put('tags/{tag}', [TagController::class, 'update'])->name('tags.update');
-    Route::delete('tags/{tag}', [TagController::class, 'delete'])->name('tags.delete');
-
-    // Tickets
-    Route::get('tickets', [TicketController::class, 'index'])->name('tickets.index');
-    Route::post('tickets', [TicketController::class, 'store'])->name('tickets.store');
-    Route::put('tickets/{ticket}', [TicketController::class, 'update'])->name('tickets.update');
-    Route::delete('tickets/{ticket}', [TicketController::class, 'destroy'])->name('tickets.destroy');
-
-    // Clients
-    Route::get('clients', [ClientController::class, 'index'])->name('clients.index');
-    Route::post('clients', [ClientController::class, 'store'])->name('clients.store');
-    Route::put('clients/{client}', [ClientController::class, 'update'])->name('clients.update');
-    Route::delete('clients/{client}', [ClientController::class, 'delete'])->name('clients.delete');
-
-    // Time Tracking
-    Route::get('time-tracking', [TimeTrackingController::class, 'index'])->name('time-tracking.index');
-    Route::post('time-tracking', [TimeTrackingController::class, 'store'])->name('time-tracking.store');
-    Route::put('time-tracking/{timeTracking}', [TimeTrackingController::class, 'update'])->name('time-tracking.update');
-    Route::delete('time-tracking/{timeTracking}', [TimeTrackingController::class, 'destroy'])->name('time-tracking.destroy');
-    Route::post('time-tracking/start', [TimeTrackingController::class, 'start'])->name('time-tracking.start');
-
     // Kanban
     Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
     Route::get('kanban/{kanban}', [KanbanController::class, 'show'])->name('kanban.show');
@@ -75,12 +50,39 @@ Route::middleware(['auth'])->group(function () {
     Route::get('cards/{card}/tasks', [CardController::class, 'getTasks'])->name('cards.get.tasks');
     Route::post('bulk-cards', [KanbanController::class, 'bulkCards'])->name('cards.bulk');
 
+    // Clients
+    Route::get('clients', [ClientController::class, 'index'])->name('clients.index');
+    Route::post('clients', [ClientController::class, 'store'])->name('clients.store');
+    Route::put('clients/{client}', [ClientController::class, 'update'])->name('clients.update');
+    Route::delete('clients/{client}', [ClientController::class, 'delete'])->name('clients.delete');
+
+    // Time Tracking
+    Route::get('time-tracking', [TimeTrackingController::class, 'index'])->name('time-tracking.index');
+    Route::post('time-tracking', [TimeTrackingController::class, 'store'])->name('time-tracking.store');
+    Route::put('time-tracking/{timeTracking}', [TimeTrackingController::class, 'update'])->name('time-tracking.update');
+    Route::delete('time-tracking/{timeTracking}', [TimeTrackingController::class, 'destroy'])->name('time-tracking.destroy');
+    Route::post('time-tracking/start', [TimeTrackingController::class, 'start'])->name('time-tracking.start');
+
+    // Tags
+    Route::get('tags', [TagController::class, 'index'])->name('tags.index');
+    Route::post('tags', [TagController::class, 'store'])->name('tags.store');
+    Route::put('tags/{tag}', [TagController::class, 'update'])->name('tags.update');
+    Route::delete('tags/{tag}', [TagController::class, 'delete'])->name('tags.delete');
+
+    /*
+    // Tickets
+    Route::get('tickets', [TicketController::class, 'index'])->name('tickets.index');
+    Route::post('tickets', [TicketController::class, 'store'])->name('tickets.store');
+    Route::put('tickets/{ticket}', [TicketController::class, 'update'])->name('tickets.update');
+    Route::delete('tickets/{ticket}', [TicketController::class, 'destroy'])->name('tickets.destroy');
+
     // Notes
     Route::get('notes', [NoteController::class, 'index'])->name('notes.index');
     Route::get('notes/{note}', [NoteController::class, 'show'])->name('notes.show');
     Route::post('notes', [NoteController::class, 'store'])->name('notes.store');
     Route::put('notes/{note}', [NoteController::class, 'update'])->name('notes.update');
     Route::delete('notes/{note}', [NoteController::class, 'delete'])->name('notes.delete');
+    */
 });
 
 require __DIR__ . '/settings.php';

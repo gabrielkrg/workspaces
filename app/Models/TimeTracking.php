@@ -42,10 +42,6 @@ class TimeTracking extends Model
             'label' => 'Task',
             'model' => 'App\\Models\\Task',
         ],
-        [
-            'label' => 'Ticket',
-            'model' => 'App\\Models\\Ticket',
-        ],
     ];
 
     public function getFormattedStartTimeAttribute()

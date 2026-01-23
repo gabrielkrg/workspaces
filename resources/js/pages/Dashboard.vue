@@ -37,15 +37,12 @@ const breadcrumbs: BreadcrumbItem[] = [
             <div>
                 <HeadingLarge title="Dashboard" description="Here's a overview of your workspace!" />
             </div>
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <DashboardStatCard :href="route('kanban.index')" title="Cards" :value="workspace.cards_count"
                     :icon="Kanban" />
 
                 <DashboardStatCard :href="route('tasks.index')" title="Tasks" :value="workspace.tasks_count"
                     :icon="ListTodo" />
-
-                <DashboardStatCard :href="route('tickets.index')" title="Tickets" :value="workspace.tickets_count"
-                    :icon="Ticket" />
 
                 <DashboardStatCard :href="route('clients.index')" title="Clients" :value="workspace.clients_count"
                     :icon="Users" />
