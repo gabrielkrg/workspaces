@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
-import { type SharedData, type User, type Workspace } from '@/types';
+import { type SharedData, type User } from '@/types';
 import { router, usePage } from '@inertiajs/vue3';
 import { ChevronsUpDown } from 'lucide-vue-next';
 import WorkspaceMenuContent from './WorkspaceMenuContent.vue';

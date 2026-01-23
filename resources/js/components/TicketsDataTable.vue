@@ -8,7 +8,6 @@ import {
     FlexRender,
     type ColumnDef,
     type SortingState,
-    type ColumnFiltersState,
 } from '@tanstack/vue-table';
 import {
     Table,
@@ -45,7 +44,6 @@ const emit = defineEmits<{
 
 // Table Setup
 const sorting = ref<SortingState>([]);
-const columnFilters = ref<ColumnFiltersState>([]);
 
 const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {

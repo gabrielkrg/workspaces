@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import HeadingLarge from '@/components/HeadingLarge.vue';
-import { Kanban, ListTodo, Ticket, Users } from 'lucide-vue-next';
+import { Kanban, ListTodo, Users } from 'lucide-vue-next';
 import DashboardStatCard from '@/components/DashboardStatCard.vue';
 import TimeTrackingChart from '@/components/TimeTrackingChart.vue';
 

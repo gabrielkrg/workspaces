@@ -5,17 +5,8 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import {
-    AlertDialog,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+
 import {
     Dialog,
     DialogTrigger,
@@ -25,9 +16,7 @@ import {
     DialogDescription,
     DialogFooter,
 } from '@/components/ui/dialog';
-import { EllipsisVertical } from 'lucide-vue-next';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { PropType, ref, computed } from 'vue';
+import { PropType, ref } from 'vue';
 import type { Note } from '@/types';
 import HeadingLarge from '@/components/HeadingLarge.vue';
 import NotesDataTable from '@/components/NotesDataTable.vue';
@@ -108,8 +97,6 @@ const deleteNote = (noteId: number) => {
     }
 };
 
-// Add this computed property to handle empty state
-const hasNotes = computed(() => props.notes && props.notes.length > 0);
 </script>
 
 <template>
@@ -164,8 +151,7 @@ const hasNotes = computed(() => props.notes && props.notes.length > 0);
                             <div class="grid grid-cols-4 items-center gap-4">
                                 <Label for="title" class="text-right"> Title </Label>
                                 <Input id="title" v-model="updateForm.title" class="col-span-4" />
-                                <span class="text-sm text-red-500 col-span-full"
-                                    v-if="updateForm.errors.title">
+                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.title">
                                     {{ updateForm.errors.title }}
                                 </span>
                             </div>

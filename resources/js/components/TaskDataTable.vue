@@ -9,7 +9,6 @@ import {
     FlexRender,
     type ColumnDef,
     type SortingState,
-    type ColumnFiltersState,
 } from '@tanstack/vue-table';
 import {
     Table,
@@ -53,7 +52,6 @@ const emit = defineEmits<{
 
 // Table Setup
 const sorting = ref<SortingState>([]);
-const columnFilters = ref<ColumnFiltersState>([]);
 
 const columns: ColumnDef<any>[] = [
     {
@@ -66,7 +64,7 @@ const columns: ColumnDef<any>[] = [
                 { class: 'flex items-center justify-start' },
                 h(Checkbox, {
                     modelValue: !!task.done,
-                    'onUpdate:modelValue': (val: any) => {
+                    'onUpdate:modelValue': () => {
                         emit('toggle-done', task);
                     },
                     class: 'cursor-pointer'

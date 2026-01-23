@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Head, router } from '@inertiajs/vue3';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { Kanban, Tag } from '@/types';
 import HeadingLarge from '@/components/HeadingLarge.vue';

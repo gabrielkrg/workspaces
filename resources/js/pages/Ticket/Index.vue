@@ -3,7 +3,6 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import { EllipsisVertical } from 'lucide-vue-next';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,6 @@ import {
 } from '@/components/ui/sheet';
 
 // Popover Components
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import HeadingLarge from '@/components/HeadingLarge.vue';
 import TicketsDataTable from '@/components/TicketsDataTable.vue';
 
@@ -34,17 +32,6 @@ import SelectValue from '@/components/ui/select/SelectValue.vue';
 import SelectContent from '@/components/ui/select/SelectContent.vue';
 import SelectItem from '@/components/ui/select/SelectItem.vue';
 
-// Dialog Components
-import {
-    Dialog,
-    DialogTrigger,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
-    DialogClose
-} from '@/components/ui/dialog';
 import type { Ticket, Client } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -208,15 +195,12 @@ const deleteTicket = (id: number) => {
                         <SheetTitle>Edit Ticket</SheetTitle>
                         <SheetDescription>Update ticket details</SheetDescription>
                     </SheetHeader>
-                    <form v-if="selectedTicket" @submit.prevent="updateTicket"
-                        class="space-y-4 mt-4 p-4">
+                    <form v-if="selectedTicket" @submit.prevent="updateTicket" class="space-y-4 mt-4 p-4">
                         <div class="grid gap-4">
                             <div class="grid grid-cols-4 items-center gap-4">
                                 <Label for="update-title" class="text-right">Title</Label>
-                                <Input id="update-title" v-model="updateForm.title"
-                                    class="col-span-4" />
-                                <span class="text-sm text-red-500 col-span-full"
-                                    v-if="updateForm.errors.title">
+                                <Input id="update-title" v-model="updateForm.title" class="col-span-4" />
+                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.title">
                                     {{ updateForm.errors.title }}
                                 </span>
 
@@ -229,14 +213,12 @@ const deleteTicket = (id: number) => {
                                         <SelectValue placeholder="Select" />
                                     </SelectTrigger>
                                     <SelectContent position="popper">
-                                        <SelectItem v-for="client in clients" :key="client.id"
-                                            :value="client.id">
+                                        <SelectItem v-for="client in clients" :key="client.id" :value="client.id">
                                             {{ client.name }}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <span class="text-sm text-red-500 col-span-full"
-                                    v-if="updateForm.errors.client_id">
+                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.client_id">
                                     {{ updateForm.errors.client_id }}
                                 </span>
                             </div>
@@ -254,19 +236,15 @@ const deleteTicket = (id: number) => {
                                         <SelectItem value="pending">Pending</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <span class="text-sm text-red-500 col-span-full"
-                                    v-if="updateForm.errors.status">
+                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.status">
                                     {{ updateForm.errors.status }}
                                 </span>
                             </div>
 
                             <div class="grid grid-cols-4 items-center gap-4">
-                                <Label for="update-description"
-                                    class="text-right">Description</Label>
-                                <Textarea id="update-description" v-model="updateForm.description"
-                                    class="col-span-4" />
-                                <span class="text-sm text-red-500 col-span-full"
-                                    v-if="updateForm.errors.description">
+                                <Label for="update-description" class="text-right">Description</Label>
+                                <Textarea id="update-description" v-model="updateForm.description" class="col-span-4" />
+                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.description">
                                     {{ updateForm.errors.description }}
                                 </span>
                             </div>
@@ -274,8 +252,8 @@ const deleteTicket = (id: number) => {
                         </div>
 
                         <div class="flex justify-end gap-2">
-                            <Button variant="outline" class="cursor-pointer"
-                                type="button" @click="isEditSheetOpen = false">Cancel</Button>
+                            <Button variant="outline" class="cursor-pointer" type="button"
+                                @click="isEditSheetOpen = false">Cancel</Button>
 
                             <Button type="submit" class="cursor-pointer">Save Changes</Button>
                         </div>

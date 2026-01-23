@@ -1,23 +1,11 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { EllipsisVertical } from 'lucide-vue-next';
 import { onMounted, onUnmounted, ref } from 'vue';
 import HeadingLarge from '@/components/HeadingLarge.vue';
 import ClientsDataTable from '@/components/ClientsDataTable.vue';
@@ -211,8 +199,7 @@ onUnmounted(() => {
                             <div class="grid grid-cols-4 items-center gap-4">
                                 <Label for="name" class="text-right">Name</Label>
                                 <Input id="name" v-model="updateForm.name" class="col-span-4" />
-                                <span class="text-sm text-red-500 col-span-full"
-                                    v-if="updateForm.errors.name">
+                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.name">
                                     {{ updateForm.errors.name }}
                                 </span>
                             </div>
@@ -220,8 +207,7 @@ onUnmounted(() => {
                             <div class="grid grid-cols-4 items-center gap-4">
                                 <Label for="email" class="text-right">Email</Label>
                                 <Input id="email" v-model="updateForm.email" class="col-span-4" />
-                                <span class="text-sm text-red-500 col-span-full"
-                                    v-if="updateForm.errors.email">
+                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.email">
                                     {{ updateForm.errors.email }}
                                 </span>
                             </div>
@@ -229,18 +215,15 @@ onUnmounted(() => {
                             <div class="grid grid-cols-4 items-center gap-4">
                                 <Label for="phone" class="text-right">Phone</Label>
                                 <Input id="phone" v-model="updateForm.phone" class="col-span-4" />
-                                <span class="text-sm text-red-500 col-span-full"
-                                    v-if="updateForm.errors.phone">
+                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.phone">
                                     {{ updateForm.errors.phone }}
                                 </span>
                             </div>
 
                             <div class="grid grid-cols-4 items-center gap-4">
                                 <Label for="address" class="text-right">Address</Label>
-                                <Input id="address" v-model="updateForm.address"
-                                    class="col-span-4" />
-                                <span class="text-sm text-red-500 col-span-full"
-                                    v-if="updateForm.errors.address">
+                                <Input id="address" v-model="updateForm.address" class="col-span-4" />
+                                <span class="text-sm text-red-500 col-span-full" v-if="updateForm.errors.address">
                                     {{ updateForm.errors.address }}
                                 </span>
                             </div>
