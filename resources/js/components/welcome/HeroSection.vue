@@ -2,6 +2,9 @@
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight } from 'lucide-vue-next';
+import { useTranslation } from '@/hook/use-translation';
+
+const { t } = useTranslation();
 
 defineProps<{
     title?: string;
@@ -16,20 +19,15 @@ defineProps<{
         <div class="mx-auto max-w-7xl px-6 lg:px-8">
             <div class="mx-auto max-w-2xl text-center">
                 <h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-                    {{
-                        title || 'Gerencie seu trabalho com eficiência'
-                    }}
+                    {{ title || t('welcome.title') }}
                 </h1>
                 <p class="mt-6 text-lg leading-8 text-muted-foreground">
-                    {{
-                        description ||
-                        'Uma plataforma completa para gerenciar tarefas, projetos, clientes e tempo detrabalho.'
-                    }}
+                    {{ description || t('welcome.description') }}
                 </p>
                 <div v-if="ctaHref" class="mt-10 flex items-center justify-center gap-x-6">
                     <Link :href="ctaHref">
                         <Button size="lg" class="group">
-                            {{ ctaText || 'Começar agora' }}
+                            {{ ctaText || t('welcome.cta_guest') }}
                             <ArrowRight class="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                         </Button>
                     </Link>
