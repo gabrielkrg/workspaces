@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     # environment: production
     env:
-      APP_DIR: /var/www/workspaces
+      APP_DIR: /var/www/workspaces 
 
 
     steps:
