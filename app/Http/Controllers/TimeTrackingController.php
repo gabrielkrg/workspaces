@@ -27,7 +27,8 @@ class TimeTrackingController extends Controller
                 'trackable.client:id,name',
             ])
             ->orderBy('updated_at', 'desc')
-            ->get();
+            ->get()
+            ->each(fn (TimeTracking $timeTracking) => $timeTracking->setRelation('workspace', $workspace));
 
         return Inertia::render('TimeTracking/Index', [
             'timeTrackings' => $timeTrackings,

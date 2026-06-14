@@ -74,11 +74,7 @@ class TimeTracking extends Model
      */
     protected function getWorkspaceTimezone(): string
     {
-        $workspace = $this->relationLoaded('workspace')
-            ? $this->workspace
-            : Workspace::find($this->workspace_id);
-
-        return $workspace?->time_zone ?? config('app.timezone');
+        return $this->workspace?->time_zone ?? config('app.timezone');
     }
 
     /**
